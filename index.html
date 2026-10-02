@@ -1205,7 +1205,11 @@ const TYPES={
   "一般":"#C8C8C8",          // 同「普通」
 };
 const TYPE_FALLBACK="#8B7F6E";   // 認不得的類型
-const EXT=[".png",".jpg",".jpeg",".webp"];      // 依序嘗試的副檔名
+/* 依序嘗試的副檔名。順序很重要：猜錯一次就是一次 404，線上版會明顯變慢。
+   img/item/ 幾乎都是 .png，img/icon/ 幾乎都是 .webp，所以兩邊用不同順序。
+   以後主要存檔格式變了，改這兩行就好。 */
+const EXT      =[".png",".jpg",".jpeg",".webp"];   // img/item/ 用（提示框截圖）
+const EXT_ICON =[".webp",".png",".jpg",".jpeg"];   // img/icon/ 用（小圖示）
 
 const wall=document.getElementById("wall"), groupBar=document.getElementById("groups");
 const tally=document.getElementById("tally"), q=document.getElementById("q");
@@ -1292,7 +1296,7 @@ function findIcon(d){
   const key=zw(d.icon||d.name||d.en);
   if(!key) return Promise.resolve(null);
   if(key in iconCache) return Promise.resolve(iconCache[key]);
-  const bases=d.icon?[key]:EXT.map(e=>key+e);
+  const bases=d.icon?[key]:EXT_ICON.map(e=>key+e);
   return new Promise(res=>{
     let i=0;
     const next=()=>{
