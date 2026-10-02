@@ -1132,18 +1132,48 @@ body .gbtns .pri:hover{background:#DD8B36}
 <script src="strats.js"></script>
 <script>
 (function(){
-  const tabs=[["t-drops","tab-drops"],["t-filter","tab-filter"],["t-beast","tab-beast"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
+  /* ── 要隱藏哪些分頁 ───────────────────────────────
+     把名字從下面這個清單刪掉，那個分頁就會重新出現。
+       drops  掉落查詢器        filter 物品過濾器
+       beast  野獸查詢器        tali   魔符查詢器
+       scarab 聖甲蟲            strat  刷圖策略
+       math   小學數學
+     程式和資料都還在，只是不顯示而已。
+     全部都顯示 → 寫成 const HIDE=[];                      */
+  const HIDE=["filter","beast","tali","scarab","strat","math"];
+
+  const ALL=[["t-drops","tab-drops"],["t-filter","tab-filter"],["t-beast","tab-beast"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
+  const key=p=>p.replace("tab-","");
+  const tabs=ALL.filter(([b,p])=>!HIDE.includes(key(p)));
+
+  /* 被藏起來的：按鈕和內容都收掉 */
+  ALL.forEach(([b,p])=>{
+    if(tabs.some(t=>t[1]===p)) return;
+    const btn=document.getElementById(b), panel=document.getElementById(p);
+    if(btn) btn.hidden=true;
+    if(panel) panel.hidden=true;
+  });
+  /* 只剩一個分頁的話，整排按鈕也沒意義了 */
+  if(tabs.length<2){
+    const bar=document.querySelector(".tabs");
+    if(bar) bar.hidden=true;
+  }
+
   function go(id){
     tabs.forEach(([b,p])=>{
       const on=p===id;
       document.getElementById(b).setAttribute("aria-selected",on);
       document.getElementById(p).hidden=!on;
     });
-    try{ location.hash = id.replace("tab-",""); }catch(e){}
+    try{ location.hash = key(id); }catch(e){}
   }
   tabs.forEach(([b,p])=>document.getElementById(b).onclick=()=>go(p));
-  const h=location.hash.slice(1);
-  if(["filter","beast","tali","scarab","strat","math"].includes(h)) go("tab-"+h);
+
+  if(tabs.length){
+    const h=location.hash.slice(1);
+    const want=tabs.find(([b,p])=>key(p)===h);
+    go(want ? want[1] : tabs[0][1]);
+  }
 })();
 </script>
 <script>
