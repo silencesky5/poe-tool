@@ -1123,6 +1123,7 @@ body .gbtns .pri:hover{background:#DD8B36}
 <div class="gveil" id="gveil"><div class="gsheet" id="gsheet"></div></div>
 <div class="sveil" id="sveil"><div class="ssheet" id="ssheet"></div></div>
 </div>
+<script src="img/manifest.js"></script>
 <script src="data.js"></script>
 <script src="terms.js"></script>
 <script src="dust.js"></script>
@@ -1211,6 +1212,17 @@ const TYPE_FALLBACK="#8B7F6E";   // 認不得的類型
 const EXT      =[".png",".jpg",".jpeg",".webp"];   // img/item/ 用（提示框截圖）
 const EXT_ICON =[".webp",".png",".jpg",".jpeg"];   // img/icon/ 用（小圖示）
 
+/* 圖片清單（img/manifest.js，由上傳網站.bat 自動產生）。
+   查得到就直接知道檔名，一次請求就拿到圖；查不到（剛加還沒重跑 bat）
+   就退回原本「依序試副檔名」的做法，所以清單過期也不會壞。 */
+function mapUrl(dir,name){
+  const M=(typeof IMG_MAP!=="undefined" && IMG_MAP) ? IMG_MAP : null;   // 每次現查，載入順序怎樣都不會漏
+  const t=M && M[dir];
+  if(!t) return null;
+  const ext=t[name];
+  return ext ? "img/"+dir+"/"+encodeURIComponent(name+"."+ext) : null;
+}
+
 const wall=document.getElementById("wall"), groupBar=document.getElementById("groups");
 const tally=document.getElementById("tally"), q=document.getElementById("q");
 const toast=document.getElementById("toast"), veil=document.getElementById("veil"), sheet=document.getElementById("sheet");
@@ -1276,6 +1288,10 @@ function findCard(d){
   if(!key) return Promise.resolve(null);
   if(key in cardCache) return Promise.resolve(cardCache[key]);
 
+  if(!d.card){
+    const hit=mapUrl("item",key);
+    if(hit){ cardCache[key]=hit; return Promise.resolve(hit); }
+  }
   const bases=d.card ? [zw(d.card)] : EXT.map(e=>key+e);
   return new Promise(res=>{
     let i=0;
@@ -1296,6 +1312,11 @@ function findIcon(d){
   const key=zw(d.icon||d.name||d.en);
   if(!key) return Promise.resolve(null);
   if(key in iconCache) return Promise.resolve(iconCache[key]);
+
+  if(!d.icon){
+    const hit=mapUrl("icon",key);
+    if(hit){ iconCache[key]=hit; return Promise.resolve(hit); }
+  }
   const bases=d.icon?[key]:EXT_ICON.map(e=>key+e);
   return new Promise(res=>{
     let i=0;
@@ -1311,9 +1332,22 @@ function findIcon(d){
   });
 }
 
-/* 掃一輪目前畫面上的物品，抓到圖就重畫一次 */
+/* 掃一輪目前畫面上的物品，抓到圖就重畫一次。
+   先用清單把查得到的一次補完（不碰網路，立刻就有圖），
+   清單裡沒有的才去試副檔名，慢慢補上來，不會卡住前面那一批。 */
 async function warmIcons(list){
   const items=list.flatMap(b=>[...(b.entry||[]),...b.drops]);
+
+  let filled=0;
+  items.forEach(d=>{
+    if(d.icon) return;
+    const key=zw(d.icon||d.name||d.en);
+    if(!key || key in iconCache) return;
+    const hit=mapUrl("icon",key);
+    if(hit){ iconCache[key]=hit; filled++; }
+  });
+  if(filled) paint();
+
   const before=Object.keys(iconCache).length;
   await Promise.all(items.map(findIcon));
   if(Object.keys(iconCache).length!==before) paint();
@@ -1482,7 +1516,7 @@ function card(b,term,i){
         const kn=k.name||k.en;
         const kic=iconCache[zw(k.icon||k.name||k.en)];
         return `<span class="ekey ${cardCache[keyOf(k)]?"has":""}" data-b="${bi}" data-e="${b.entry.indexOf(k)}">
-          <span class="kic">${kic?`<img src="${kic}" alt="">`:`<span class="kd"></span>`}</span><span class="kn">${hit(kn,term)}</span>${k.count?`<b>×${esc(k.count)}</b>`:""}</span>`;
+          <span class="kic">${kic?`<img src="${kic}" alt="" loading="lazy" decoding="async">`:`<span class="kd"></span>`}</span><span class="kn">${hit(kn,term)}</span>${k.count?`<b>×${esc(k.count)}</b>`:""}</span>`;
       }).join("")}</div>
     </div>`:"";
 
@@ -1502,7 +1536,7 @@ function card(b,term,i){
     const color=TYPES[d.type]||TYPE_FALLBACK;
     const ic=iconCache[zw(d.icon||d.name||d.en)];
     return `<div class="drop ${cardCache[keyOf(d)]?"has":""}" data-b="${bi}" data-d="${di}" style="color:${color}">
-      ${ic?`<span class="ic"><img src="${ic}" alt=""></span>`:`<span class="dot"></span>`}
+      ${ic?`<span class="ic"><img src="${ic}" alt="" loading="lazy" decoding="async"></span>`:`<span class="dot"></span>`}
       <span class="dn"><span class="a">${hit(main,term)}</span>
         ${second?`<span class="b">${hit(second,term)}</span>`:""}
         ${d.note?`<span class="dnote">${hit(d.note,term)}</span>`:""}</span>
