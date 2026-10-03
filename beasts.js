@@ -9,6 +9,8 @@
      name:   "費爾羅猛虎幻獸",
      use:    "到費爾羅的巢窟",   這隻能做什麼工藝
      price:  1, unit:"C",      買價。unit 填 "C"（混沌）或 "D"（神聖）
+     tag:    "高價值",         分類標籤。側欄會自動長出按鈕，一鍵勾選整類
+                               多個分類寫成 tag:["高價值","首領"]
      note:   "備註",            選填
    }
    ============================================================ */
@@ -19,15 +21,15 @@ const DIVINE_RATE = 200;
 const BEASTS = [
 
   /* ═══ 獸性 ═══════════════════════════════════ */
-  { group:"獸性", name:"初始之地費爾羅", use:"等級 30 傲貓祝福技能", price:70, unit:"C" },
-  { group:"獸性", name:"野性之毛刺看守獸", use:"增加 1 個強勢詞綴至 1 件非傳奇物品", price:200, unit:"C" },
-  { group:"獸性", name:"野性之地獄犬幻獸", use:"重骰 1 個看守之眼詞綴", price:110, unit:"C",
+  { group:"獸性", name:"初始之地費爾羅", tag:"首領", use:"等級 30 傲貓祝福技能", price:70, unit:"C" },
+  { group:"獸性", name:"野性之毛刺看守獸", tag:"高價值", use:"增加 1 個強勢詞綴至 1 件非傳奇物品", price:200, unit:"C" },
+  { group:"獸性", name:"野性之地獄犬幻獸", tag:"高價值", use:"重骰 1 個看守之眼詞綴", price:110, unit:"C",
     note:"不能重骰最大生命、魔力或能量護盾詞綴" },
-  { group:"獸性", name:"野性之叢林巨獸", use:"為一顆卓越輔助貴石增加 5 億經驗值", price:70, unit:"C" },
-  { group:"獸性", name:"原始之羊人", use:"夢魘地圖", price:49, unit:"C",
+  { group:"獸性", name:"野性之叢林巨獸", tag:"高價值", use:"為一顆卓越輔助貴石增加 5 億經驗值", price:70, unit:"C" },
+  { group:"獸性", name:"原始之羊人", tag:"高價值", use:"夢魘地圖", price:49, unit:"C",
     note:"任意顏色根據紅色野獸等級" },
   { group:"獸性", name:"原始之野雛女酋", use:"追憶傳奇地圖", price:1, unit:"C" },
-  { group:"獸性", name:"費爾羅猛虎幻獸", use:"到費爾羅的巢窟", price:10, unit:"C" },
+  { group:"獸性", name:"費爾羅猛虎幻獸", tag:"傳送門", use:"到費爾羅的巢窟", price:10, unit:"C" },
   { group:"獸性", name:"費爾羅巨獸", use:["製作傳奇(弓)", "增加 1 個詞綴至十字軍王之物"], price:1, unit:"C" },
   { group:"獸性", name:"費爾羅惡狼幻獸", use:"增加 1 個前綴，隨機移除 1 個後綴", price:1, unit:"C",
     note:"只能使用於稀有物品" },
@@ -45,9 +47,9 @@ const BEASTS = [
   { group:"獸性", name:"費爾羅羊人", use:"製造傳奇（藥劑）", price:1, unit:"C" },
 
   /* ═══ 飛沙 ═══════════════════════════════════ */
-  { group:"飛沙", name:"初始之天斯卡沃", use:"等級 30 飛羽祝福技能", price:63, unit:"C" },
-  { group:"飛沙", name:"靈現之禿鷹", use:"重骰 1 個傳奇物品上的追憶固定詞綴", price:50, unit:"C"},
-  { group:"飛沙", name:"斯卡沃雛鳥", use:"到斯卡沃的棲地", price:5, unit:"C" },
+  { group:"飛沙", name:"初始之天斯卡沃", tag:"首領", use:"等級 30 飛羽祝福技能", price:63, unit:"C" },
+  { group:"飛沙", name:"靈現之禿鷹", tag:"高價值", use:"重骰 1 個傳奇物品上的追憶固定詞綴", price:50, unit:"C"},
+  { group:"飛沙", name:"斯卡沃雛鳥", tag:"傳送門", use:"到斯卡沃的棲地", price:5, unit:"C" },
   { group:"飛沙", name:"斯卡沃噬血毒蛇", use:["製造傳奇（劍或斧）", "增加 1 個詞綴至尊師之物"], price:1, unit:"C" },
   { group:"飛沙", name:"斯卡沃恐喙鳥", use:"製造稀有（頭盔_四個相連插槽的頭盔）", price:1, unit:"C" },
   { group:"飛沙", name:"斯卡沃龍蜥", use:"隨機 1 組堆疊 10 個的通貨", price:1, unit:"C" },
@@ -56,13 +58,13 @@ const BEASTS = [
   { group:"飛沙", name:"斯卡沃反芻鳥", use:"製造傳奇（鞋子）", price:1, unit:"C" },
 
   /* ═══ 洞窟 ═══════════════════════════════════ */
-  { group:"洞窟", name:"初始之潭奎爾珊", use:"等級 30 蟹將祝福技能", price:180, unit:"C" },
-  { group:"洞窟", name:"奎爾珊鳴蛙", use:["套用悉妮蔻拉的髮絲（至 1 個魔法物品)", "製造拓印(魔法物品)"], price:440, unit:"C" },
-  { group:"洞窟", name:"原始之粉碎之爪", use:"一個有價值的聖甲蟲", price:37, unit:"C" },
+  { group:"洞窟", name:"初始之潭奎爾珊", tag:"首領", use:"等級 30 蟹將祝福技能", price:180, unit:"C" },
+  { group:"洞窟", name:"奎爾珊鳴蛙", tag:"高價值", use:["套用悉妮蔻拉的髮絲（至 1 個魔法物品)", "製造拓印(魔法物品)"], price:440, unit:"C" },
+  { group:"洞窟", name:"原始之粉碎之爪", tag:"高價值", use:"一個有價值的聖甲蟲", price:37, unit:"C" },
   { group:"洞窟", name:"奎爾珊之奴", use:["汙染一張地圖(擁有一條固定詞綴)", "汙染一張地圖(兩次)"], price:2, unit:"C" },
   { group:"洞窟", name:"靈現之看守者", use:"使用 3 顆高等級、高品質的輔助貴石", price:10, unit:"C",
     note:"產出的貴石不會是卓越系列" },
-  { group:"洞窟", name:"奎爾珊蛛蛛蟹", use:"到奎爾珊的澳口", price:5, unit:"C" },
+  { group:"洞窟", name:"奎爾珊蛛蛛蟹", tag:"傳送門", use:"到奎爾珊的澳口", price:5, unit:"C" },
   { group:"洞窟", name:"奎爾珊看守者", use:["製造傳奇（爪或匕首）", "增加 1 個詞綴至狩獵者之物"], price:1, unit:"C" },
   { group:"洞窟", name:"奎爾珊殘暴的蟹", use:["製造傳奇（道具）", "增加 1 個詞綴至稀有地圖"], price:1, unit:"C",
     note:"只能使用於稀有地圖" },
@@ -71,11 +73,11 @@ const BEASTS = [
   { group:"洞窟", name:"奎爾珊烏賊", use:"重骰一個魔符的基底類型", price:10, unit:"C" },
 
   /* ═══ 深潭 ═══════════════════════════════════ */
-  { group:"深潭", name:"初始之夜菲恩絲", use:"等級 30 毒蛛祝福技能", price:80, unit:"C" },
-  { group:"深潭", name:"菲恩絲疫病蜘蛛", use:["在一個至少擁有6條詞綴的稀有魔符上(破裂2條詞綴)", "製造拓印(稀有魔符)"], price:800, unit:"C",
+  { group:"深潭", name:"初始之夜菲恩絲", tag:"首領", use:"等級 30 毒蛛祝福技能", price:80, unit:"C" },
+  { group:"深潭", name:"菲恩絲疫病蜘蛛", tag:"高價值", use:["在一個至少擁有6條詞綴的稀有魔符上(破裂2條詞綴)", "製造拓印(稀有魔符)"], price:800, unit:"C",
     note:"勢力或分裂之物無法套用" },
   { group:"深潭", name:"靈現之艾伯拉赫", use:"塑者守護者、尊師守護者或征服者地圖", price:4, unit:"C" },
-  { group:"深潭", name:"菲恩絲混血蜘蛛", use:"到菲恩絲的獸穴", price:5, unit:"C" },
+  { group:"深潭", name:"菲恩絲混血蜘蛛", tag:"傳送門", use:"到菲恩絲的獸穴", price:5, unit:"C" },
   { group:"深潭", name:"菲恩絲女皇", use:["製造傳奇（長杖）", "增加 1 個詞綴至救贖者之物"], price:1, unit:"C" },
   { group:"深潭", name:"菲恩絲搗亂者", use:["製造傳奇（法杖）", "增加 1 個詞綴至總督軍之物"], price:1, unit:"C" },
   { group:"深潭", name:"菲恩絲吞噬獸", use:["製造傳奇（盾或箭袋）", "增加 1 個詞綴至塑者之物"], price:1, unit:"C" },
@@ -83,7 +85,7 @@ const BEASTS = [
   { group:"深潭", name:"菲恩絲黑寡婦", use:"製造傳奇（手套）", price:1, unit:"C" },
 
   /* ═══ 其他（不在四個天賦分類裡的）══════════ */
-  { group:"其他", name:"黑色莫里根", use:"", price:5, unit:"D",
+  { group:"其他", name:"黑色莫里根", tag:"高價值", use:"", price:5, unit:"D",
     note:"T14+ 地圖稀有出現" },
 
 ];

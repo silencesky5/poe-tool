@@ -431,6 +431,21 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
 #tab-beast .bcount{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--accent)}
 #tab-beast .bthrow{display:flex;flex-direction:column;gap:7px;margin-bottom:9px}
 #tab-beast .brow3{display:flex;gap:6px;align-items:stretch}
+/* 分類快速勾選 */
+#tab-beast .btags{display:flex;flex-wrap:wrap;gap:6px}
+#tab-beast .btags:empty{display:none}
+#tab-beast .btag{flex:1 1 auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    background:#14110F;border:1px solid var(--edge-hi);color:#B3A692;font-family:var(--sans);
+    font-size:13px;font-weight:600;letter-spacing:.04em;padding:7px 10px;border-radius:4px;
+    cursor:pointer;transition:all .13s;white-space:nowrap}
+#tab-beast .btag:hover{border-color:#6B5B48;color:#fff}
+#tab-beast .btag .n{font-family:var(--mono);font-size:11px;font-weight:400;opacity:.65}
+#tab-beast .btag.on{border-color:var(--accent);background:rgba(199,124,46,.18);color:var(--accent)}
+#tab-beast .btag.on .n{opacity:.85}
+/* 清單裡的分類小標 */
+#tab-beast .btg{flex-shrink:0;font-family:var(--sans);font-size:11.5px;font-weight:500;letter-spacing:.04em;
+    color:#C9A227;background:rgba(201,162,39,.13);border:1px solid rgba(201,162,39,.38);
+    border-radius:4px;padding:2px 8px;line-height:1.5}
 #tab-beast .bside textarea{width:100%;height:82px;background:#0B0A09;border:1px solid var(--edge);
     color:#9FE0A0;font-family:var(--mono);font-size:11.5px;line-height:1.6;padding:8px;
     border-radius:4px;outline:none;resize:vertical}
@@ -963,6 +978,7 @@ body .gbtns .pri:hover{background:#DD8B36}
       <div class="btool">
         <div class="btitle">要保留的野獸 <span class="bcount" id="bkeepn"></span></div>
         <div class="bthrow">
+          <div class="btags" id="btags"></div>
           <div class="brow3">
             <button class="bmini" id="ball">全選</button>
             <button class="bmini" id="bnone">全部取消</button>
@@ -1141,7 +1157,7 @@ body .gbtns .pri:hover{background:#DD8B36}
        math   小學數學
      程式和資料都還在，只是不顯示而已。
      全部都顯示 → 寫成 const HIDE=[];                      */
-  const HIDE=["filter","beast","tali","scarab","strat","math"];
+  const HIDE=["filter","tali","scarab","strat","math"];
 
   const ALL=[["t-drops","tab-drops"],["t-filter","tab-filter"],["t-beast","tab-beast"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
   const key=p=>p.replace("tab-","");
@@ -2562,6 +2578,7 @@ if(typeof BEASTS==="undefined"){
           <input type="checkbox" class="bpick" data-n="${esc(b.name)}" ${picked.has(b.name)?"checked":""}>
           <span class="gbar"></span>
           ${fam==="全部"?`<span class="bfam2">${esc(b.group||"")}</span>`:""}
+          ${tagsOf(b).map(t=>`<span class="btg">${esc(t)}</span>`).join("")}
           <span class="bname">${hit(b.name,term)}</span>
         </span>
         <span>
@@ -2581,6 +2598,43 @@ if(typeof BEASTS==="undefined"){
   /* ---------- 分揀工具 ---------- */
   const picked=new Set();          // 打勾的野獸名稱
   const SAVE_KEY="poe-tool/beast-picked";
+
+  /* ── 分類快速勾選 ──────────────────────────────
+     按鈕是從 beasts.js 的 tag 欄位自動長出來的。
+     想加新分類，直接在資料裡寫 tag:"新名字" 就會多一顆按鈕。
+     TAG_ORDER 只是排版順序，沒列到的會排在後面。      */
+  const TAG_ORDER=["高價值","傳送門","首領"];
+  const tagsOf=b=>{
+    const t=b.tag;
+    if(!t) return [];
+    return (Array.isArray(t)?t:[t]).map(x=>String(x).trim()).filter(Boolean);
+  };
+  function allTags(){
+    const seen=new Set();
+    BEASTS.forEach(b=>tagsOf(b).forEach(t=>seen.add(t)));
+    const rest=[...seen].filter(t=>!TAG_ORDER.includes(t));
+    return [...TAG_ORDER.filter(t=>seen.has(t)), ...rest];
+  }
+  const membersOf=t=>BEASTS.filter(b=>tagsOf(b).includes(t));
+
+  function paintTags(){
+    const box=$b("btags"); if(!box) return;
+    box.innerHTML=allTags().map(t=>{
+      const m=membersOf(t);
+      const on=m.length>0 && m.every(b=>picked.has(b.name));
+      return `<button class="btag ${on?"on":""}" data-t="${esc(t)}"
+        title="${on?"再按一次取消整類":"一鍵勾選整類"}">${esc(t)}<span class="n">${m.length}</span></button>`;
+    }).join("");
+  }
+
+  $b("btags").addEventListener("click",e=>{
+    const btn=e.target.closest(".btag"); if(!btn) return;
+    const m=membersOf(btn.dataset.t);
+    if(!m.length) return;
+    const allOn=m.every(b=>picked.has(b.name));      // 整類都勾了 → 再按就是整類取消
+    m.forEach(b=>{ if(allOn) picked.delete(b.name); else picked.add(b.name); });
+    saveP(); draw(); runSplit(); paintTags();
+  });
 
   /* 記住勾選：存在這台電腦的瀏覽器裡，換電腦或別人連進來都是各自獨立的 */
   function saveP(){
@@ -2685,13 +2739,13 @@ if(typeof BEASTS==="undefined"){
     }
   });
 
-  $b("ball").onclick=()=>{ BEASTS.forEach(b=>picked.add(b.name)); saveP(); draw(); runSplit(); };
-  $b("bnone").onclick=()=>{ picked.clear(); saveP(); draw(); runSplit(); };
+  $b("ball").onclick=()=>{ BEASTS.forEach(b=>picked.add(b.name)); saveP(); draw(); runSplit(); paintTags(); };
+  $b("bnone").onclick=()=>{ picked.clear(); saveP(); draw(); runSplit(); paintTags(); };
   $b("bclr").onclick=()=>{
     if(!confirm("要清除記住的勾選嗎？")) return;
     picked.clear();
     try{ localStorage.removeItem(SAVE_KEY); }catch(e){}
-    draw(); runSplit();
+    draw(); runSplit(); paintTags();
   };
 
   /* 點勾選框即時更新名單 */
@@ -2699,7 +2753,7 @@ if(typeof BEASTS==="undefined"){
     if(on) picked.add(name); else picked.delete(name);
     row.classList.toggle("on",on);
     const cb=row.querySelector(".bpick"); if(cb) cb.checked=on;
-    saveP(); runSplit(); paintTally();
+    saveP(); runSplit(); paintTally(); paintTags();
   }
   $b("blist").addEventListener("change",e=>{
     const cb=e.target.closest(".bpick"); if(!cb) return;
@@ -2716,7 +2770,7 @@ if(typeof BEASTS==="undefined"){
 
 
   loadP();
-  famList(); draw(); runSplit();
+  famList(); draw(); runSplit(); paintTags();
 }
 
 })();
