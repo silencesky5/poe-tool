@@ -416,18 +416,29 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
     color:var(--bone);font-family:var(--sans);font-size:14px;padding:10px 13px;border-radius:4px;outline:none}
 #tab-beast .bbar input[type=text]:focus{border-color:var(--accent)}
 #tab-beast .bbar input::placeholder{color:#5F564B}
-#tab-beast .bsort{display:inline-flex;align-items:center;gap:7px;background:#1B1713;border:1px solid var(--edge-hi);
-    color:#A2957F;font-size:13px;padding:0 12px;height:39px;border-radius:4px;white-space:nowrap}
+#tab-beast .bsort{display:inline-flex;align-items:center;gap:7px;background:#221D18;border:1px solid #4A4036;
+    color:#C2B5A0;font-size:13px;padding:0 12px;height:39px;border-radius:4px;white-space:nowrap}
 #tab-beast .bsort select{background:#0F0D0B;border:1px solid var(--edge);color:var(--bone);font-family:var(--sans);
     font-size:13px;padding:5px 7px;border-radius:3px;outline:none;cursor:pointer}
-#tab-beast .btally{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--dim);margin-left:auto}
+#tab-beast .btally{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:#9A8F7E;margin-left:auto}
 #tab-beast .btally b{color:var(--accent);font-weight:500}
-#tab-beast .bgrid{display:grid;grid-template-columns:190px 1fr;gap:16px;align-items:start}
+#tab-beast .bgrid{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+@media(max-width:1100px){#tab-beast .bgrid{grid-template-columns:260px 1fr}}
+@media(max-width:820px){#tab-beast .bgrid{grid-template-columns:1fr}}
 #tab-beast .bside{display:flex;flex-direction:column;gap:12px}
-#tab-beast .bside>div{background:var(--card);border:1px solid var(--edge);border-radius:6px;padding:8px}
+#tab-beast .bside>div{background:#1A1714;border:1px solid #3A3129;border-radius:6px;padding:8px}
+/* 保留＝綠、可丟＝紅褐，一眼分得出來 */
+#tab-beast .btool.keep{background:linear-gradient(180deg,rgba(91,200,63,.09),rgba(91,200,63,.02) 70%),#181713;
+    border-color:#46613A}
+#tab-beast .btool.keep .btitle{color:#A8DC92}
+#tab-beast .btool.keep .bcount{color:#8FDC7A}
+#tab-beast .btool.drop{background:linear-gradient(180deg,rgba(194,80,63,.09),rgba(194,80,63,.02) 70%),#1A1513;
+    border-color:#6B413A}
+#tab-beast .btool.drop .btitle{color:#E3A194}
+#tab-beast .btool.drop .bcount{color:#D98C7C}
 #tab-beast .btool{padding:11px 11px 12px!important}
-#tab-beast .btitle{font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.08em;
-    color:#A2957F;margin-bottom:9px;display:flex;align-items:center;gap:7px}
+#tab-beast .btitle{font-family:var(--sans);font-size:14px;font-weight:700;letter-spacing:.06em;
+    color:#C4B59A;margin-bottom:10px;display:flex;align-items:center;gap:7px}
 #tab-beast .bcount{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--accent)}
 #tab-beast .bthrow{display:flex;flex-direction:column;gap:7px;margin-bottom:9px}
 #tab-beast .brow3{display:flex;gap:6px;align-items:stretch}
@@ -461,8 +472,8 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
 #tab-beast .blim input{width:58px;background:#0B0A09;border:1px solid var(--edge-hi);color:var(--bone);
   font-family:var(--mono);font-size:12.5px;text-align:center;padding:3px;border-radius:3px;outline:none}
 #tab-beast .blim input:focus{border-color:var(--accent)}
-#tab-beast .bmini{flex:1;background:#1B1713;border:1px solid var(--edge-hi);color:#A2957F;
-  font-family:var(--sans);font-size:12px;padding:5px;border-radius:4px;cursor:pointer;transition:all .13s}
+#tab-beast .bmini{flex:1;background:#221D18;border:1px solid #4A4036;color:#C2B5A0;white-space:nowrap;
+  font-family:var(--sans);font-size:13px;font-weight:500;padding:7px 6px;border-radius:4px;cursor:pointer;transition:all .13s}
 #tab-beast .bmini:hover{border-color:#6B5B48;color:#fff}
 #tab-beast .bpick{width:17px;height:17px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;margin:0}
 #tab-beast .brow.on{background:rgba(199,124,46,.07)}
@@ -471,11 +482,11 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
 #tab-beast .bwrap2 input{width:92px;text-align:left;font-size:12px;padding:3px 6px}
 #tab-beast .bwrap2 input::placeholder{color:#4A443C;font-size:11px}
 #tab-beast .bbox{display:flex;flex-direction:column;gap:9px}
-#tab-beast .bempty{color:#4A443C;font-size:12px;padding:10px 2px}
+#tab-beast .bempty{color:#8B8072;font-size:12.5px;padding:10px 2px}
 #tab-beast .bseg{border:1px solid var(--edge);border-radius:5px;overflow:hidden;background:#0B0A09}
 #tab-beast .bsegh{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:5px 9px;background:#14110F;border-bottom:1px solid var(--edge);
-  font-family:var(--mono);font-size:10.5px;color:#8B7F6E}
+  padding:5px 9px;background:#221D18;border-bottom:1px solid #3A3129;
+  font-family:var(--mono);font-size:11px;color:#A79A85}
 #tab-beast .bsegh b{color:var(--accent);font-weight:500}
 #tab-beast .bseg textarea{width:100%;height:74px;background:none;border:none;color:#9FE0A0;
   font-family:var(--mono);font-size:11.5px;line-height:1.6;padding:8px;outline:none;resize:vertical}
@@ -494,31 +505,33 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
 #tab-beast .bnav[aria-current="true"]{background:var(--gc,var(--accent));color:#0E0C0A;font-weight:600}
 #tab-beast .bnav[aria-current="true"] .gdot{background:#0E0C0A!important;box-shadow:none}
 #tab-beast .bnavsep{height:1px;background:var(--edge);margin:6px 4px}
-#tab-beast .bmain{background:var(--card);border:1px solid var(--edge);border-radius:6px;overflow:hidden}
-#tab-beast .bhead{display:grid;grid-template-columns:258px 1fr;gap:14px;padding:11px 16px;
-    border-bottom:1px solid var(--edge);background:#17130F;
-    font-family:var(--sans);font-size:12.5px;font-weight:600;letter-spacing:.1em;color:#A2957F}
+#tab-beast .bmain{background:#16130F;border:1px solid #3A3129;border-radius:6px;overflow:hidden}
+#tab-beast .bhead{display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:14px;padding:12px 16px;
+    border-bottom:1px solid #3A3129;background:#221D18;
+    font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.1em;color:#CDBEA4}
 #tab-beast .blist{max-height:74vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2A241D transparent}
-#tab-beast .brow{cursor:pointer;user-select:none;display:grid;grid-template-columns:258px 1fr;gap:14px;padding:11px 16px;align-items:center;
-    border-bottom:1px solid rgba(255,255,255,.04);transition:background .12s}
+#tab-beast .brow{cursor:pointer;user-select:none;display:grid;grid-template-columns:minmax(0,340px) 1fr;gap:14px;padding:11px 16px;align-items:center;
+    border-bottom:1px solid rgba(255,255,255,.085);transition:background .12s}
 #tab-beast .brow:last-child{border-bottom:none}
 #tab-beast .brow:hover{background:rgba(255,255,255,.035)}
-#tab-beast .bnamecell{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+/* 標籤固定寬度不壓縮，名字佔剩下的空間，真的太長才自己換行 —— 不會整個掉到標籤下面 */
+#tab-beast .bnamecell{display:flex;gap:9px;align-items:center;flex-wrap:nowrap;min-width:0}
 #tab-beast .gbar{width:4px;align-self:stretch;border-radius:2px;background:var(--gc,#8B7F6E);
     flex-shrink:0;opacity:.9;min-height:22px}
-#tab-beast .bname{font-family:var(--serif);font-size:15.5px;color:var(--bone);line-height:1.4}
+#tab-beast .bname{font-family:var(--serif);font-size:16.5px;font-weight:700;color:#F0E7D6;
+    line-height:1.4;min-width:0;flex:1 1 auto}
 #tab-beast .bfam2{flex-shrink:0;font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:.06em;
     color:var(--gc,#8B7F6E);background:color-mix(in srgb,var(--gc,#8B7F6E) 14%,transparent);
     border:1px solid color-mix(in srgb,var(--gc,#8B7F6E) 40%,transparent);
     border-radius:4px;padding:2px 9px;line-height:1.5}
 #tab-beast .bfam2:empty{display:none}
-#tab-beast .buse{font-size:13.5px;color:#B9AC96;line-height:1.6}
+#tab-beast .buse{font-size:14px;color:#CEC1AB;line-height:1.65}
 #tab-beast .buse em{font-style:normal;background:rgba(199,124,46,.25);color:#F0C088;border-radius:2px}
 #tab-beast .uline{display:block;position:relative;padding-left:14px}
 #tab-beast .uline+.uline{margin-top:5px}
 #tab-beast .uline::before{content:"";position:absolute;left:2px;top:.62em;width:5px;height:5px;
     border-radius:50%;background:var(--gc,#8B7F6E);opacity:.65}
-#tab-beast .bnote{font-size:11.5px;color:#7B7062;line-height:1.5;margin-top:4px}
+#tab-beast .bnote{font-size:12px;color:#A1957F;line-height:1.55;margin-top:4px}
 #tab-beast .bnone{padding:40px;text-align:center;color:var(--muted);font-size:14px;line-height:1.9}
 #tab-beast .bnone code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.05);
     padding:1px 5px;border-radius:2px;color:#57A8A0}
@@ -975,7 +988,7 @@ body .gbtns .pri:hover{background:#DD8B36}
     <nav class="bside">
       <div id="bfam"></div>
 
-      <div class="btool">
+      <div class="btool keep">
         <div class="btitle">要保留的野獸 <span class="bcount" id="bkeepn"></span></div>
         <div class="bthrow">
           <div class="btags" id="btags"></div>
@@ -990,7 +1003,7 @@ body .gbtns .pri:hover{background:#DD8B36}
         <div id="bkeepbox" class="bbox"><div class="bempty">在右邊清單打勾，這裡就會出現名單</div></div>
       </div>
 
-      <div class="btool">
+      <div class="btool drop">
         <div class="btitle">其餘可丟 <span class="bcount" id="bdropn"></span></div>
         <div id="bdropbox" class="bbox"><div class="bempty">沒打勾的會自動落到這裡</div></div>
       </div>
