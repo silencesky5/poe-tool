@@ -43,11 +43,11 @@ body{background:radial-gradient(1000px 500px at 15% -8%,#1C1814 0%,transparent 5
 #shell .tab:focus-visible{outline:2px solid #57A8A0;outline-offset:2px}
 #shell hr{border:none;border-top:1px solid #2C2620;margin:16px 0 0}
 [hidden]{display:none!important}
-#tab-drops,#tab-filter,#tab-beast,#tab-tali,#tab-math,#tab-scarab,#tab-strat{max-width:1300px;margin:0 auto;padding:0 18px}
+#tab-drops,#tab-filter,#tab-beast,#tab-tali,#tab-math,#tab-scarab,#tab-strat,#tab-chart{max-width:1300px;margin:0 auto;padding:0 18px}
 /* 滿版：左右不留白，寬螢幕一行能塞更多卡片 */
 body.wide #shell{max-width:none}
 body.wide #tab-drops,body.wide #tab-filter,body.wide #tab-beast,body.wide #tab-tali,
-body.wide #tab-math,body.wide #tab-scarab,body.wide #tab-strat,
+body.wide #tab-math,body.wide #tab-scarab,body.wide #tab-strat,body.wide #tab-chart,
 body.wide #tab-drops .wrap{max-width:none}
 #tab-drops *{box-sizing:border-box}
 #tab-drops,#tab-drops .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
@@ -533,6 +533,63 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
     border-radius:50%;background:var(--gc,#8B7F6E);opacity:.65}
 #tab-beast .bnote{font-size:12px;color:#A1957F;line-height:1.55;margin-top:4px}
 #tab-beast .bnone{padding:40px;text-align:center;color:var(--muted);font-size:14px;line-height:1.9}
+/* ══ 3.29 海圖 ══════════════════════════════════════════ */
+#tab-chart .cwrap{padding:22px 0 70px;display:flex;flex-direction:column;gap:22px}
+
+/* 上半：機制說明 */
+#tab-chart .cintro{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+#tab-chart .cblk{background:#1A1714;border:1px solid #3A3129;border-radius:7px;padding:15px 17px}
+#tab-chart .cblk h3{margin:0 0 9px;font-family:var(--serif);font-size:18px;font-weight:700;
+    letter-spacing:.03em;color:#F0E7D6}
+#tab-chart .cblk p{margin:0 0 8px;font-size:14px;line-height:1.75;color:#CEC1AB}
+#tab-chart .cblk p:last-child{margin-bottom:0}
+#tab-chart .cwarn{margin-top:11px;font-size:13px;line-height:1.6;color:#E3A194;
+    background:rgba(194,80,63,.1);border-left:3px solid #C2503F;border-radius:0 4px 4px 0;padding:8px 11px}
+
+/* 下半：玩法卡 */
+#tab-chart .cplan{background:#17140F;border:1px solid #3A3129;border-radius:7px;overflow:hidden}
+#tab-chart .cplan+.cplan{margin-top:18px}
+#tab-chart .chead{display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:15px 18px;
+    background:#221D18;border-bottom:1px solid #3A3129}
+#tab-chart .cname{font-family:var(--serif);font-size:21px;font-weight:700;letter-spacing:.03em;color:#F0E7D6}
+#tab-chart .ctag{font-family:var(--sans);font-size:12px;font-weight:600;letter-spacing:.06em;
+    color:#E3A194;background:rgba(194,80,63,.14);border:1px solid rgba(194,80,63,.45);
+    border-radius:4px;padding:3px 10px}
+#tab-chart .cgoal{flex:1 1 100%;font-size:14px;line-height:1.7;color:#CEC1AB}
+#tab-chart .cbody{padding:16px 18px 20px;display:flex;flex-direction:column;gap:18px}
+#tab-chart .csec{display:flex;flex-direction:column;gap:9px}
+#tab-chart .clab{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.1em;color:#CDBEA4}
+#tab-chart .clist{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+#tab-chart .clist li{font-size:14px;line-height:1.7;color:#CEC1AB}
+#tab-chart .clist.bad li{color:#E0B0A6}
+#tab-chart .clink{font-family:var(--mono);font-size:12.5px;color:#57A8A0;text-decoration:none;
+    border-bottom:1px solid transparent;transition:.14s;word-break:break-all}
+#tab-chart .clink:hover{color:#7FD0C8;border-bottom-color:rgba(127,208,200,.5)}
+
+/* 需要的海圖 */
+#tab-chart .cneed{display:flex;flex-direction:column;gap:7px}
+#tab-chart .cneed div{display:flex;align-items:baseline;gap:10px;background:#14110F;
+    border:1px solid #3A3129;border-radius:5px;padding:8px 12px}
+#tab-chart .cneed b{font-family:var(--serif);font-size:15px;font-weight:700;color:#F0E7D6;flex-shrink:0}
+#tab-chart .cneed .cnt{font-family:var(--mono);font-size:13px;color:var(--accent);flex-shrink:0}
+#tab-chart .cneed span.nt{font-size:13px;color:#A1957F;line-height:1.5}
+
+/* 九宮格盤面 */
+#tab-chart .cboard{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;max-width:620px}
+#tab-chart .ccell{position:relative;min-height:104px;background:#14110F;border:1px solid #3A3129;
+    border-radius:6px;padding:11px 12px 12px;display:flex;flex-direction:column;gap:6px;transition:.13s}
+#tab-chart .ccell.c4{border-color:var(--accent);background:linear-gradient(180deg,rgba(199,124,46,.13),transparent 70%),#17130F}
+#tab-chart .ccell.c3{border-color:#6B5B48}
+#tab-chart .ccell.empty{border-style:dashed;opacity:.5}
+#tab-chart .cadj{align-self:flex-start;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;
+    color:#A1957F;background:rgba(255,255,255,.05);border-radius:3px;padding:2px 7px}
+#tab-chart .ccell.c4 .cadj{color:#120E0A;background:var(--accent);font-weight:700}
+#tab-chart .ccn{font-family:var(--serif);font-size:15.5px;font-weight:700;color:#F0E7D6;line-height:1.35}
+#tab-chart .ccw{font-size:12.5px;line-height:1.55;color:#A1957F}
+#tab-chart .chint{font-size:12.5px;color:#A1957F;line-height:1.6}
+@media(max-width:560px){#tab-chart .cboard{max-width:none}
+  #tab-chart .ccell{min-height:88px;padding:9px 10px}}
+
 #tab-beast .bnone code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.05);
     padding:1px 5px;border-radius:2px;color:#57A8A0}
 @media(max-width:820px){#tab-beast .bgrid{grid-template-columns:1fr}}
@@ -895,6 +952,7 @@ body .gbtns .pri:hover{background:#DD8B36}
       <button class="tab" id="t-tali"   role="tab" aria-selected="false" aria-controls="tab-tali">魔符查詢器</button>
       <button class="tab" id="t-scarab" role="tab" aria-selected="false" aria-controls="tab-scarab">聖甲蟲</button>
       <button class="tab" id="t-strat"  role="tab" aria-selected="false" aria-controls="tab-strat">刷圖策略</button>
+      <button class="tab" id="t-chart"  role="tab" aria-selected="false" aria-controls="tab-chart">3.29 海圖</button>
       <button class="tab" id="t-math"   role="tab" aria-selected="false" aria-controls="tab-math">小學數學</button>
     </div>
   </div>
@@ -1152,6 +1210,13 @@ body .gbtns .pri:hover{background:#DD8B36}
 <div class="gveil" id="gveil"><div class="gsheet" id="gsheet"></div></div>
 <div class="sveil" id="sveil"><div class="ssheet" id="ssheet"></div></div>
 </div>
+
+<div id="tab-chart" role="tabpanel" hidden>
+<div class="cwrap">
+  <section class="cintro" id="cintro"></section>
+  <div class="cplans" id="cplans"></div>
+</div>
+</div>
 <script src="img/manifest.js"></script>
 <script src="data.js"></script>
 <script src="terms.js"></script>
@@ -1160,6 +1225,7 @@ body .gbtns .pri:hover{background:#DD8B36}
 <script src="talismans.js"></script>
 <script src="scarabs.js"></script>
 <script src="strats.js"></script>
+<script src="charts.js"></script>
 <script>
 (function(){
   /* ── 要隱藏哪些分頁 ───────────────────────────────
@@ -1172,7 +1238,7 @@ body .gbtns .pri:hover{background:#DD8B36}
      全部都顯示 → 寫成 const HIDE=[];                      */
   const HIDE=["filter","tali","scarab","strat","math"];
 
-  const ALL=[["t-drops","tab-drops"],["t-filter","tab-filter"],["t-beast","tab-beast"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
+  const ALL=[["t-drops","tab-drops"],["t-beast","tab-beast"],["t-chart","tab-chart"],["t-filter","tab-filter"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
   const key=p=>p.replace("tab-","");
   const tabs=ALL.filter(([b,p])=>!HIDE.includes(key(p)));
 
@@ -2786,6 +2852,92 @@ if(typeof BEASTS==="undefined"){
   famList(); draw(); runSplit(); paintTags();
 }
 
+})();
+</script>
+<script>
+/* ══ 3.29 海圖分頁 ══════════════════════════════════════════
+   資料都在 charts.js。這裡只負責畫。
+   欄位順序 = 你在 charts.js 裡寫的順序（SECT 有的欄位才會畫）。 */
+(function(){
+if(typeof CHART_INTRO==="undefined" && typeof CHART_PLANS==="undefined"){
+  document.getElementById("cintro").innerHTML =
+    `<div class="cblk"><h3>找不到 charts.js</h3><p>它要跟這個網頁放在同一個資料夾。</p></div>`;
+  return;
+}
+const esc=s=>String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+const arr=v=>v==null?[]:(Array.isArray(v)?v:[v]).filter(x=>x!=null&&x!=="");
+const ul=(items,cls)=>items.length?`<ul class="clist ${cls||""}">${items.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`:"";
+const sec=(label,inner)=>inner?`<div class="csec"><span class="clab">${esc(label)}</span>${inner}</div>`:"";
+
+/* ── 上半：機制說明 ── */
+const intro=(typeof CHART_INTRO!=="undefined"&&Array.isArray(CHART_INTRO))?CHART_INTRO:[];
+document.getElementById("cintro").innerHTML = intro.map(b=>`
+  <div class="cblk">
+    <h3>${esc(b.h||"")}</h3>
+    ${arr(b.p).map(x=>`<p>${esc(x)}</p>`).join("")}
+    ${b.warn?`<div class="cwarn">${esc(b.warn)}</div>`:""}
+  </div>`).join("");
+
+/* ── 九宮格：相鄰面數自己算，角 2、邊 3、中間 4 ── */
+const ADJ=[2,3,2, 3,4,3, 2,3,2];
+function board(cells){
+  const g=[];
+  for(let i=0;i<9;i++){
+    const c=cells[i];
+    const n=ADJ[i];
+    if(!c||!c.name){
+      g.push(`<div class="ccell empty"><span class="cadj">貼 ${n} 面</span></div>`);
+      continue;
+    }
+    g.push(`<div class="ccell c${n}">
+      <span class="cadj">貼 ${n} 面</span>
+      <span class="ccn">${esc(c.name)}</span>
+      ${c.why?`<span class="ccw">${esc(c.why)}</span>`:""}
+    </div>`);
+  }
+  return `<div class="cboard">${g.join("")}</div>
+    <div class="chint">中間格貼 4 面，相鄰加成吃最多；角落只貼 2 面，放最不重要的。</div>`;
+}
+
+/* ── 需要的海圖 ── */
+function need(list){
+  if(!list.length) return "";
+  return `<div class="cneed">${list.map(x=>`
+    <div><b>${esc(x.name||"")}</b>${x.count?`<span class="cnt">×${esc(x.count)}</span>`:""}
+      ${x.note?`<span class="nt">${esc(x.note)}</span>`:""}</div>`).join("")}</div>`;
+}
+
+/* ── 一個欄位一個畫法。想加新欄位就往這裡加一行。 ── */
+const SECT={
+  charts: p=>sec("需要的海圖", need(arr(p.charts))),
+  board:  p=>sec("盤面擺法", Array.isArray(p.board)&&p.board.length ? board(p.board) : ""),
+  keep:   p=>sec("要留的詞綴", ul(arr(p.keep))),
+  avoid:  p=>sec("要避開的詞綴", ul(arr(p.avoid),"bad")),
+  lantern:p=>sec("提燈鋪法", ul(arr(p.lantern))),
+  altar:  p=>sec("祭壇處理", ul(arr(p.altar))),
+  atlas:  p=>sec("天賦重點", ul(arr(p.atlas))),
+  steps:  p=>sec("操作順序", ul(arr(p.steps))),
+  warn:   p=>sec("注意事項", ul(arr(p.warn),"bad")),
+  link:   p=>p.link?sec("參考",`<a class="clink" href="${esc(p.link)}" target="_blank" rel="noopener">${esc(p.link)}</a>`):"",
+};
+const ORDER=Object.keys(SECT);
+/* 照你在 charts.js 裡寫的欄位順序走，沒寫到的排後面 */
+function keysOf(p){
+  const mine=Object.keys(p).filter(k=>k in SECT);
+  return [...mine, ...ORDER.filter(k=>!mine.includes(k))];
+}
+
+const plans=(typeof CHART_PLANS!=="undefined"&&Array.isArray(CHART_PLANS))?CHART_PLANS:[];
+document.getElementById("cplans").innerHTML = plans.length ? plans.map(p=>`
+  <section class="cplan">
+    <div class="chead">
+      <span class="cname">${esc(p.name||"（未命名）")}</span>
+      ${p.tag?`<span class="ctag">${esc(p.tag)}</span>`:""}
+      ${p.goal?`<span class="cgoal">${esc(p.goal)}</span>`:""}
+    </div>
+    <div class="cbody">${keysOf(p).map(k=>SECT[k](p)).join("")}</div>
+  </section>`).join("")
+  : `<div class="cblk"><h3>還沒有玩法</h3><p>打開 <code>charts.js</code>，在 CHART_PLANS 裡面加一張卡。</p></div>`;
 })();
 </script>
 <script>
