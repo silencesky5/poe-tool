@@ -606,6 +606,10 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
 #tab-hero .hgsep{padding:9px 18px;background:var(--h-soft);border-bottom:1px solid var(--h-line);
   font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--h-mid)}
 #tab-hero .hnamec{display:flex;align-items:center;gap:9px;min-width:0}
+#tab-hero .hic{width:40px;height:40px;flex-shrink:0;border-radius:6px;background:#2A2724;
+  border:1px solid var(--h-line2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+#tab-hero .hic img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
+#tab-hero .hic0{background:repeating-linear-gradient(45deg,#F0EEE9 0 5px,#E7E4DD 5px 10px);border-style:dashed}
 #tab-hero .hname{font-size:16px;font-weight:700;color:var(--h-ink);line-height:1.4;min-width:0}
 #tab-hero .hen{font-family:var(--mono);font-size:12.5px;color:var(--h-low);margin-top:2px}
 #tab-hero .hnote{font-size:13.5px;color:var(--h-mid);line-height:1.6}
@@ -3016,7 +3020,21 @@ if(typeof HS_ITEMS==="undefined"){
 const esc=s=>String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
 const UNIT=(typeof HS_UNIT!=="undefined"&&HS_UNIT)?HS_UNIT:"";
 const ORDER=(typeof HS_GROUPS!=="undefined"&&Array.isArray(HS_GROUPS))?HS_GROUPS:[];
+
+/* 圖片放 img/hs/，檔名就用道具的中文名（或資料裡的 icon 欄位）。
+   副檔名不用寫，img/manifest.js 會告訴我們是 png 還是 webp。
+   清單裡查不到的就不顯示圖，不會破圖也不會多發請求。 */
+function iconUrl(x){
+  const M=(typeof IMG_MAP!=="undefined"&&IMG_MAP&&IMG_MAP.hs)?IMG_MAP.hs:null;
+  if(!M) return null;
+  const key=String(x.icon||x.name||"").trim();
+  const ext=M[key];
+  return ext ? "img/hs/"+encodeURIComponent(key+"."+ext) : null;
+}
 const ITEMS=HS_ITEMS.filter(x=>x&&x.name);
+
+/* 先掃一遍：真的有圖片可用嗎？沒有的話整欄圖框都不畫。 */
+const ANY_ICON = ITEMS.some(x=>iconUrl(x));
 
 let fam="全部", sort="none", onlyBlank=false;
 
@@ -3086,6 +3104,10 @@ function draw(){
   const row=({x})=>`
     <div class="hrow">
       <span class="hnamec">
+        ${(()=>{ if(!ANY_ICON) return "";          // 一張圖都沒有就不留位子
+          const u=iconUrl(x);
+          return u?`<span class="hic"><img src="${u}" alt="" loading="lazy" decoding="async"></span>`
+                  :`<span class="hic hic0"></span>`;})()}
         ${x.tier?`<span class="htier t${esc(x.tier)}">${esc(x.tier)}</span>`:""}
         <span>
           <span class="hname">${hit(x.name,term)}</span>
