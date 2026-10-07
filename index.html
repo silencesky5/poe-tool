@@ -593,50 +593,56 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
 #tab-hero .hnav .n{font-family:var(--mono);font-size:12px;opacity:.75;font-weight:400}
 #tab-hero .hsep{height:1px;background:var(--h-line);margin:6px 4px}
 
-/* 清單 */
-#tab-hero .hmain{background:var(--h-card);border:1px solid var(--h-line);border-radius:8px;overflow:hidden}
-#tab-hero .hhead,#tab-hero .hrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.6fr) 150px;
-  gap:14px;padding:12px 18px;align-items:center}
-#tab-hero .hhead{background:var(--h-soft);border-bottom:1px solid var(--h-line2);
-  font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--h-mid)}
-#tab-hero .hhead .r{text-align:right}
-#tab-hero .hrow{border-bottom:1px solid #F0EEE9;transition:background .12s}
-#tab-hero .hrow:last-child{border-bottom:none}
-#tab-hero .hrow:hover{background:#FAF8F4}
-#tab-hero .hgsep{padding:9px 18px;background:var(--h-soft);border-bottom:1px solid var(--h-line);
-  font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--h-mid)}
-#tab-hero .hnamec{display:flex;align-items:center;gap:9px;min-width:0}
-#tab-hero .hic{width:40px;height:40px;flex-shrink:0;border-radius:6px;background:#2A2724;
+/* 卡片牆 */
+#tab-hero .hmain{display:flex;flex-direction:column;gap:20px}
+#tab-hero .hgsec{display:flex;flex-direction:column;gap:11px}
+#tab-hero .hgtitle{display:flex;align-items:center;gap:11px;font-size:14px;font-weight:700;
+  letter-spacing:.1em;color:var(--h-mid)}
+#tab-hero .hgtitle::after{content:"";flex:1;height:1px;background:var(--h-line)}
+#tab-hero .hgtitle .n{font-family:var(--mono);font-size:12px;font-weight:400;color:var(--h-low)}
+#tab-hero .hcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px}
+
+#tab-hero .hcard{background:var(--h-card);border:1px solid var(--h-line);border-radius:8px;
+  padding:12px 12px 0;display:flex;flex-direction:column;gap:8px;cursor:default;
+  transition:border-color .13s,box-shadow .13s,transform .13s}
+#tab-hero .hcard:hover{border-color:var(--h-gold);box-shadow:0 3px 12px rgba(35,33,29,.1);transform:translateY(-1px)}
+#tab-hero .hctop{display:flex;align-items:center;gap:9px;min-height:40px}
+#tab-hero .hic{width:38px;height:38px;flex-shrink:0;border-radius:6px;background:#2A2724;
   border:1px solid var(--h-line2);display:flex;align-items:center;justify-content:center;overflow:hidden}
 #tab-hero .hic img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated;display:block}
-#tab-hero .hic0{background:repeating-linear-gradient(45deg,#F0EEE9 0 5px,#E7E4DD 5px 10px);border-style:dashed}
-#tab-hero .hname{font-size:16px;font-weight:700;color:var(--h-ink);line-height:1.4;min-width:0}
-#tab-hero .hen{font-family:var(--mono);font-size:12.5px;color:var(--h-low);margin-top:2px}
-#tab-hero .hnote{font-size:13.5px;color:var(--h-mid);line-height:1.6}
-#tab-hero .hnote:empty::before{content:"—";color:#C9C4B8}
-#tab-hero .hprice{justify-self:end;font-family:var(--mono);font-size:16px;font-weight:700;
-  color:var(--h-gold);background:var(--h-gold-bg);border:1px solid #E8D4A4;
-  border-radius:5px;padding:5px 11px;white-space:nowrap}
-#tab-hero .hprice .u{font-size:11.5px;font-weight:400;opacity:.75;margin-left:3px}
-#tab-hero .hprice.none{color:#A09A8E;background:#F4F2EE;border:1px dashed var(--h-line2);font-size:13px;font-weight:500}
-#tab-hero .htier{flex-shrink:0;font-family:var(--mono);font-size:11.5px;font-weight:700;
-  border-radius:4px;padding:2px 8px;line-height:1.6;border:1px solid}
+#tab-hero .hname{font-size:14.5px;font-weight:700;color:var(--h-ink);line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#tab-hero .hcfoot{margin:0 -12px;padding:8px 12px;border-top:1px solid #F0EEE9;
+  display:flex;align-items:center;gap:7px}
+#tab-hero .hprice{font-family:var(--mono);font-size:15.5px;font-weight:700;color:var(--h-gold);
+  white-space:nowrap}
+#tab-hero .hprice .u{font-size:11px;font-weight:400;opacity:.7;margin-left:3px}
+#tab-hero .hprice.none{color:#A8A296;font-size:13px;font-weight:500}
+#tab-hero .htier{margin-left:auto;flex-shrink:0;font-family:var(--mono);font-size:11px;font-weight:700;
+  border-radius:4px;padding:1px 7px;border:1px solid}
 #tab-hero .htier.tD{color:#6B6459;background:#F0EEE9;border-color:#D6D1C6}
 #tab-hero .htier.tC{color:#2F7A47;background:#E8F5EC;border-color:#AFD9BE}
 #tab-hero .htier.tA{color:#2B5FA8;background:#E8F0FB;border-color:#B3CBEA}
 #tab-hero .htier.tS{color:#7A3FA8;background:#F3EAFB;border-color:#D5BDEB}
 #tab-hero .htier.tSS{color:#B0601E;background:#FDF0E2;border-color:#EFC89B}
 #tab-hero .htier.tB{color:#1F7E85;background:#E4F4F5;border-color:#A8D9DC}
+
+/* 滑鼠提示 */
+#tab-hero .htip{position:fixed;z-index:60;max-width:320px;pointer-events:none;opacity:0;
+  background:#FFFFFF;border:1px solid var(--h-line2);border-radius:8px;
+  box-shadow:0 8px 28px rgba(35,33,29,.22);padding:13px 15px;transition:opacity .11s}
+#tab-hero .htip.on{opacity:1}
+#tab-hero .htip .tn{font-size:15.5px;font-weight:700;color:var(--h-ink);line-height:1.4}
+#tab-hero .htip .te{font-family:var(--mono);font-size:12px;color:var(--h-low);margin-top:2px}
+#tab-hero .htip .tl{display:inline-block;font-family:var(--mono);font-size:11.5px;color:var(--h-gold);
+  background:var(--h-gold-bg);border:1px solid #E8D4A4;border-radius:4px;padding:1px 7px;margin-top:7px}
+#tab-hero .htip .td{font-size:13.5px;line-height:1.7;color:var(--h-mid);margin-top:8px;
+  padding-top:8px;border-top:1px solid #F0EEE9}
+
 #tab-hero .hnone{padding:44px;text-align:center;color:var(--h-low);font-size:14.5px;line-height:1.9}
 #tab-hero .hnone code{font-family:var(--mono);font-size:13px;background:var(--h-soft);
   padding:2px 6px;border-radius:3px;color:var(--h-gold)}
 #tab-hero mark{background:#FDF0C4;color:var(--h-ink);border-radius:2px;padding:0 1px}
-@media(max-width:700px){
-  #tab-hero .hhead{display:none}
-  #tab-hero .hrow{grid-template-columns:1fr auto;gap:8px 12px}
-  #tab-hero .hnote{grid-column:1/-1}
-  #tab-hero .hprice{justify-self:start}
-}
 
 /* ══ 3.29 海圖 ══════════════════════════════════════════ */
 #tab-chart .cwrap{padding:22px 0 70px;display:flex;flex-direction:column;gap:26px}
@@ -1359,6 +1365,7 @@ body .gbtns .pri:hover{background:#DD8B36}
     <nav class="hside" id="hside"></nav>
     <main class="hmain" id="hmain"></main>
   </div>
+  <div class="htip" id="htip"></div>
 </div>
 </div>
 
@@ -3101,39 +3108,63 @@ function draw(){
     return;
   }
 
-  const row=({x})=>`
-    <div class="hrow">
-      <span class="hnamec">
-        ${(()=>{ if(!ANY_ICON) return "";          // 一張圖都沒有就不留位子
-          const u=iconUrl(x);
+  const card=({x},i)=>`
+    <div class="hcard" data-i="${i}">
+      <div class="hctop">
+        ${ANY_ICON?(()=>{const u=iconUrl(x);
           return u?`<span class="hic"><img src="${u}" alt="" loading="lazy" decoding="async"></span>`
-                  :`<span class="hic hic0"></span>`;})()}
+                  :`<span class="hic"></span>`;})():""}
+        <span class="hname">${hit(x.name,term)}</span>
+      </div>
+      <div class="hcfoot">
+        ${has(x)?`<span class="hprice">${esc(x.price)}<span class="u">${esc(UNIT)}</span></span>`
+                :`<span class="hprice none">未記錄</span>`}
         ${x.tier?`<span class="htier t${esc(x.tier)}">${esc(x.tier)}</span>`:""}
-        <span>
-          <span class="hname">${hit(x.name,term)}</span>
-          ${x.en&&x.en!==x.name?`<span class="hen">${hit(x.en,term)}</span>`:""}
-        </span>
-      </span>
-      <span class="hnote">${hit(x.note||"",term)}</span>
-      ${has(x)
-        ? `<span class="hprice">${esc(x.price)}<span class="u">${esc(UNIT)}</span></span>`
-        : `<span class="hprice none">未記錄</span>`}
+      </div>
     </div>`;
 
-  /* 選「全部」而且沒排序時，照分類插入小標題 */
-  let html=`<div class="hhead"><span>道具</span><span>備註</span><span class="r">價格</span></div>`;
+  /* 選「全部」而且沒排序沒搜尋時，照分類分段；否則就一片卡牆 */
+  let html="";
   if(fam==="全部"&&sort==="none"&&!term){
     groups().forEach(g=>{
       const seg=list.filter(({x})=>(x.g||"未分類")===g);
       if(!seg.length) return;
-      html+=`<div class="hgsep">${esc(g)}　<span style="font-weight:400;opacity:.7">${seg.length}</span></div>`;
-      html+=seg.map(row).join("");
+      html+=`<section class="hgsec">
+        <h3 class="hgtitle">${esc(g)}<span class="n">${seg.length}</span></h3>
+        <div class="hcards">${seg.map(e=>card(e,ITEMS.indexOf(e.x))).join("")}</div>
+      </section>`;
     });
   }else{
-    html+=list.map(row).join("");
+    html=`<div class="hcards">${list.map(e=>card(e,ITEMS.indexOf(e.x))).join("")}</div>`;
   }
   $("hmain").innerHTML=html;
 }
+
+/* ── 滑鼠移上去才顯示敘述 ── */
+const tip=$("htip");
+let tipFor=null;
+function showTip(el,ev){
+  const x=ITEMS[+el.dataset.i]; if(!x) return;
+  tip.innerHTML=`<div class="tn">${esc(x.name)}</div>
+    ${x.en&&x.en!==x.name?`<div class="te">${esc(x.en)}</div>`:""}
+    ${x.lv?`<span class="tl">等級 ${esc(x.lv)}</span>`:""}
+    ${x.note?`<div class="td">${esc(x.note)}</div>`:""}`;
+  tip.classList.add("on");
+  place(ev);
+}
+function place(ev){
+  const w=tip.offsetWidth||300, h=tip.offsetHeight||100;
+  let L=ev.clientX+16, T=ev.clientY+16;
+  if(L+w>innerWidth-12)  L=ev.clientX-w-16;
+  if(T+h>innerHeight-12) T=Math.max(12, innerHeight-h-12);
+  tip.style.left=L+"px"; tip.style.top=T+"px";
+}
+$("hmain").addEventListener("mousemove",e=>{
+  const el=e.target.closest(".hcard");
+  if(!el){ if(tipFor){ tipFor=null; tip.classList.remove("on"); } return; }
+  if(el!==tipFor){ tipFor=el; showTip(el,e); } else place(e);
+});
+$("hmain").addEventListener("mouseleave",()=>{ tipFor=null; tip.classList.remove("on"); });
 
 $("hq").addEventListener("input",draw);
 $("hsort").addEventListener("change",e=>{sort=e.target.value;draw();});
