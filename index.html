@@ -44,11 +44,11 @@ body{background:radial-gradient(1100px 520px at 18% -10%,#1C1C1A 0%,transparent 
 #shell .tab:focus-visible{outline:2px solid #57A8A0;outline-offset:2px}
 #shell hr{border:none;border-top:1px solid #2B2A28;margin:16px 0 0}
 [hidden]{display:none!important}
-#tab-drops,#tab-filter,#tab-beast,#tab-tali,#tab-math,#tab-scarab,#tab-strat,#tab-chart{max-width:1300px;margin:0 auto;padding:0 18px}
+#tab-drops,#tab-filter,#tab-beast,#tab-tali,#tab-math,#tab-scarab,#tab-strat,#tab-chart,#tab-hero{max-width:1300px;margin:0 auto;padding:0 18px}
 /* 滿版：左右不留白，寬螢幕一行能塞更多卡片 */
 body.wide #shell{max-width:none}
 body.wide #tab-drops,body.wide #tab-filter,body.wide #tab-beast,body.wide #tab-tali,
-body.wide #tab-math,body.wide #tab-scarab,body.wide #tab-strat,body.wide #tab-chart,
+body.wide #tab-math,body.wide #tab-scarab,body.wide #tab-strat,body.wide #tab-chart,body.wide #tab-hero,
 body.wide #tab-drops .wrap{max-width:none}
 #tab-drops *{box-sizing:border-box}
 #tab-drops,#tab-drops .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
@@ -534,6 +534,106 @@ body .ebtns{display:flex;gap:9px;margin-top:14px}
     border-radius:50%;background:var(--gc,#948F87);opacity:.65}
 #tab-beast .bnote{font-size:12px;color:#A6A199;line-height:1.55;margin-top:4px}
 #tab-beast .bnone{padding:40px;text-align:center;color:var(--muted);font-size:14px;line-height:1.9}
+/* ══ 英雄圍城 物價表 ══════════════════════════════════════
+   這一頁是亮色的，跟其他分頁完全獨立。
+   所有規則都鎖在 #tab-hero 底下，不會影響到 PoE 那幾頁。
+   改色票就改這一組變數。 */
+#tab-hero{
+  --h-bg:#F5F3EF;      /* 整頁底 */
+  --h-card:#FFFFFF;    /* 卡片／列 */
+  --h-soft:#EFEDE7;    /* 次要面板 */
+  --h-line:#DFDBD2;    /* 框線 */
+  --h-line2:#C9C4B8;   /* 深框線 */
+  --h-ink:#23211D;     /* 主文字 */
+  --h-mid:#5E584E;     /* 次文字 */
+  --h-low:#8C8578;     /* 弱文字 */
+  --h-gold:#B07A1E;    /* 價格／重點 */
+  --h-gold-bg:#FDF4E0;
+}
+#tab-hero .hwrap{background:var(--h-bg);border:1px solid var(--h-line2);border-radius:10px;
+  padding:22px 24px 28px;margin:22px 0 70px;color:var(--h-ink);
+  display:flex;flex-direction:column;gap:18px}
+
+/* 標頭 */
+#tab-hero .hhero{background:linear-gradient(135deg,#FFF6E2,#FFFFFF 62%);
+  border:1px solid var(--h-line);border-left:4px solid var(--h-gold);
+  border-radius:8px;padding:20px 24px}
+#tab-hero .hhtitle{font-family:var(--serif);font-size:27px;font-weight:700;letter-spacing:.04em;
+  color:var(--h-ink);line-height:1.3}
+#tab-hero .hhsub{margin-top:7px;font-size:14px;line-height:1.7;color:var(--h-mid)}
+
+/* 工具列 */
+#tab-hero .hbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#tab-hero .hbar input[type=text]{flex:1 1 280px;min-width:0;background:var(--h-card);
+  border:1px solid var(--h-line2);color:var(--h-ink);font-family:var(--sans);font-size:14.5px;
+  padding:10px 14px;border-radius:6px;outline:none}
+#tab-hero .hbar input[type=text]:focus{border-color:var(--h-gold);box-shadow:0 0 0 3px rgba(176,122,30,.14)}
+#tab-hero .hbar input::placeholder{color:var(--h-low)}
+#tab-hero .hsortw,#tab-hero .hchk{display:inline-flex;align-items:center;gap:8px;background:var(--h-card);
+  border:1px solid var(--h-line2);color:var(--h-mid);font-size:13.5px;padding:0 13px;height:41px;
+  border-radius:6px;white-space:nowrap;cursor:pointer}
+#tab-hero .hsortw select{background:var(--h-soft);border:1px solid var(--h-line2);color:var(--h-ink);
+  font-family:var(--sans);font-size:13.5px;padding:5px 8px;border-radius:4px;outline:none;cursor:pointer}
+#tab-hero .hchk input{width:16px;height:16px;accent-color:var(--h-gold);cursor:pointer;margin:0}
+#tab-hero .htally{font-family:var(--mono);font-size:12.5px;color:var(--h-mid);margin-left:auto}
+#tab-hero .htally b{color:var(--h-gold);font-weight:700}
+
+/* 版面 */
+#tab-hero .hgrid{display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:start}
+@media(max-width:860px){#tab-hero .hgrid{grid-template-columns:1fr}
+  #tab-hero .hwrap{padding:16px 14px 22px}}
+
+/* 分類側欄 */
+#tab-hero .hside{background:var(--h-card);border:1px solid var(--h-line);border-radius:8px;padding:8px}
+#tab-hero .hnav{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;
+  background:none;border:none;border-radius:6px;padding:10px 12px;cursor:pointer;text-align:left;
+  color:var(--h-mid);font-family:var(--sans);font-size:15px;font-weight:600;transition:all .13s}
+#tab-hero .hnav:hover{background:var(--h-soft);color:var(--h-ink)}
+#tab-hero .hnav[aria-current="true"]{background:var(--h-gold);color:#fff}
+#tab-hero .hnav .n{font-family:var(--mono);font-size:12px;opacity:.75;font-weight:400}
+#tab-hero .hsep{height:1px;background:var(--h-line);margin:6px 4px}
+
+/* 清單 */
+#tab-hero .hmain{background:var(--h-card);border:1px solid var(--h-line);border-radius:8px;overflow:hidden}
+#tab-hero .hhead,#tab-hero .hrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.6fr) 150px;
+  gap:14px;padding:12px 18px;align-items:center}
+#tab-hero .hhead{background:var(--h-soft);border-bottom:1px solid var(--h-line2);
+  font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--h-mid)}
+#tab-hero .hhead .r{text-align:right}
+#tab-hero .hrow{border-bottom:1px solid #F0EEE9;transition:background .12s}
+#tab-hero .hrow:last-child{border-bottom:none}
+#tab-hero .hrow:hover{background:#FAF8F4}
+#tab-hero .hgsep{padding:9px 18px;background:var(--h-soft);border-bottom:1px solid var(--h-line);
+  font-size:12.5px;font-weight:700;letter-spacing:.1em;color:var(--h-mid)}
+#tab-hero .hnamec{display:flex;align-items:center;gap:9px;min-width:0}
+#tab-hero .hname{font-size:16px;font-weight:700;color:var(--h-ink);line-height:1.4;min-width:0}
+#tab-hero .hen{font-family:var(--mono);font-size:12.5px;color:var(--h-low);margin-top:2px}
+#tab-hero .hnote{font-size:13.5px;color:var(--h-mid);line-height:1.6}
+#tab-hero .hnote:empty::before{content:"—";color:#C9C4B8}
+#tab-hero .hprice{justify-self:end;font-family:var(--mono);font-size:16px;font-weight:700;
+  color:var(--h-gold);background:var(--h-gold-bg);border:1px solid #E8D4A4;
+  border-radius:5px;padding:5px 11px;white-space:nowrap}
+#tab-hero .hprice .u{font-size:11.5px;font-weight:400;opacity:.75;margin-left:3px}
+#tab-hero .hprice.none{color:#A09A8E;background:#F4F2EE;border:1px dashed var(--h-line2);font-size:13px;font-weight:500}
+#tab-hero .htier{flex-shrink:0;font-family:var(--mono);font-size:11.5px;font-weight:700;
+  border-radius:4px;padding:2px 8px;line-height:1.6;border:1px solid}
+#tab-hero .htier.tD{color:#6B6459;background:#F0EEE9;border-color:#D6D1C6}
+#tab-hero .htier.tC{color:#2F7A47;background:#E8F5EC;border-color:#AFD9BE}
+#tab-hero .htier.tA{color:#2B5FA8;background:#E8F0FB;border-color:#B3CBEA}
+#tab-hero .htier.tS{color:#7A3FA8;background:#F3EAFB;border-color:#D5BDEB}
+#tab-hero .htier.tSS{color:#B0601E;background:#FDF0E2;border-color:#EFC89B}
+#tab-hero .htier.tB{color:#1F7E85;background:#E4F4F5;border-color:#A8D9DC}
+#tab-hero .hnone{padding:44px;text-align:center;color:var(--h-low);font-size:14.5px;line-height:1.9}
+#tab-hero .hnone code{font-family:var(--mono);font-size:13px;background:var(--h-soft);
+  padding:2px 6px;border-radius:3px;color:var(--h-gold)}
+#tab-hero mark{background:#FDF0C4;color:var(--h-ink);border-radius:2px;padding:0 1px}
+@media(max-width:700px){
+  #tab-hero .hhead{display:none}
+  #tab-hero .hrow{grid-template-columns:1fr auto;gap:8px 12px}
+  #tab-hero .hnote{grid-column:1/-1}
+  #tab-hero .hprice{justify-self:start}
+}
+
 /* ══ 3.29 海圖 ══════════════════════════════════════════ */
 #tab-chart .cwrap{padding:22px 0 70px;display:flex;flex-direction:column;gap:26px}
 
@@ -973,6 +1073,7 @@ body .gbtns .pri:hover{background:#DD8B36}
       <button class="tab" id="t-scarab" role="tab" aria-selected="false" aria-controls="tab-scarab">聖甲蟲</button>
       <button class="tab" id="t-strat"  role="tab" aria-selected="false" aria-controls="tab-strat">刷圖策略</button>
       <button class="tab" id="t-chart"  role="tab" aria-selected="false" aria-controls="tab-chart">3.29 海圖</button>
+      <button class="tab" id="t-hero"   role="tab" aria-selected="false" aria-controls="tab-hero">英雄圍城</button>
       <button class="tab" id="t-math"   role="tab" aria-selected="false" aria-controls="tab-math">小學數學</button>
     </div>
   </div>
@@ -1231,6 +1332,32 @@ body .gbtns .pri:hover{background:#DD8B36}
 <div class="sveil" id="sveil"><div class="ssheet" id="ssheet"></div></div>
 </div>
 
+<div id="tab-hero" role="tabpanel" hidden>
+<div class="hwrap">
+  <header class="hhero">
+    <div class="hhtitle">英雄圍城 物價表</div>
+    <div class="hhsub" id="hhsub"></div>
+  </header>
+  <div class="hbar">
+    <input id="hq" type="text" placeholder="搜尋道具名稱、英文名或備註…" autocomplete="off">
+    <label class="hsortw">排序
+      <select id="hsort">
+        <option value="none">原順序</option>
+        <option value="p1">價格高→低</option>
+        <option value="p2">價格低→高</option>
+        <option value="name">名稱</option>
+      </select>
+    </label>
+    <label class="hchk"><input type="checkbox" id="honly">只看未記錄</label>
+    <span class="htally" id="htally"></span>
+  </div>
+  <div class="hgrid">
+    <nav class="hside" id="hside"></nav>
+    <main class="hmain" id="hmain"></main>
+  </div>
+</div>
+</div>
+
 <div id="tab-chart" role="tabpanel" hidden>
 <div class="cwrap">
   <header class="chero" id="chero"></header>
@@ -1247,6 +1374,7 @@ body .gbtns .pri:hover{background:#DD8B36}
 <script src="scarabs.js"></script>
 <script src="strats.js"></script>
 <script src="charts.js"></script>
+<script src="heroes.js"></script>
 <script>
 (function(){
   /* ── 要隱藏哪些分頁 ───────────────────────────────
@@ -1259,7 +1387,7 @@ body .gbtns .pri:hover{background:#DD8B36}
      全部都顯示 → 寫成 const HIDE=[];                      */
   const HIDE=["filter","tali","scarab","strat","math"];
 
-  const ALL=[["t-drops","tab-drops"],["t-beast","tab-beast"],["t-chart","tab-chart"],["t-filter","tab-filter"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
+  const ALL=[["t-drops","tab-drops"],["t-beast","tab-beast"],["t-chart","tab-chart"],["t-hero","tab-hero"],["t-filter","tab-filter"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"],["t-math","tab-math"]];
   const key=p=>p.replace("tab-","");
   const tabs=ALL.filter(([b,p])=>!HIDE.includes(key(p)));
 
@@ -2873,6 +3001,122 @@ if(typeof BEASTS==="undefined"){
   famList(); draw(); runSplit(); paintTags();
 }
 
+})();
+</script>
+<script>
+/* ══ 英雄圍城 物價表 ════════════════════════════════════════
+   資料在 heroes.js。這裡只負責畫＋搜尋＋排序。
+   價格是寫在資料檔裡的，所以你上傳之後朋友也看得到。 */
+(function(){
+const $=id=>document.getElementById(id);
+if(typeof HS_ITEMS==="undefined"){
+  $("hmain").innerHTML=`<div class="hnone">找不到 <code>heroes.js</code><br>它要跟這個網頁放在同一個資料夾。</div>`;
+  return;
+}
+const esc=s=>String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+const UNIT=(typeof HS_UNIT!=="undefined"&&HS_UNIT)?HS_UNIT:"";
+const ORDER=(typeof HS_GROUPS!=="undefined"&&Array.isArray(HS_GROUPS))?HS_GROUPS:[];
+const ITEMS=HS_ITEMS.filter(x=>x&&x.name);
+
+let fam="全部", sort="none", onlyBlank=false;
+
+const hit=(t,term)=>{
+  const str=esc(t||"");
+  if(!term) return str;
+  const i=str.toLowerCase().indexOf(term);
+  return i<0?str:str.slice(0,i)+"<mark>"+str.slice(i,i+term.length)+"</mark>"+str.slice(i+term.length);
+};
+const has=x=>String(x.price??"").trim()!=="";
+/* 只有純數字（可帶小數、逗號）才排得進價格排序 */
+const num=x=>{
+  const v=String(x.price??"").replace(/[,\s]/g,"");
+  return /^\d+(\.\d+)?$/.test(v) ? parseFloat(v) : null;
+};
+const groups=()=>{
+  const seen=new Set(); ITEMS.forEach(x=>seen.add(x.g||"未分類"));
+  const rest=[...seen].filter(g=>!ORDER.includes(g));
+  return [...ORDER.filter(g=>seen.has(g)), ...rest];
+};
+
+function side(){
+  const nav=$("hside"); nav.innerHTML="";
+  const mk=(label,count,active,onclick)=>{
+    const b=document.createElement("button");
+    b.className="hnav";
+    b.innerHTML=`<span>${esc(label)}</span><span class="n">${count}</span>`;
+    b.setAttribute("aria-current",active);
+    b.onclick=onclick; nav.appendChild(b);
+  };
+  mk("全部",ITEMS.length,fam==="全部",()=>{fam="全部";side();draw();});
+  const sep=document.createElement("div"); sep.className="hsep"; nav.appendChild(sep);
+  groups().forEach(g=>{
+    const n=ITEMS.filter(x=>(x.g||"未分類")===g).length;
+    mk(g,n,fam===g,()=>{fam=g;side();draw();});
+  });
+}
+
+function draw(){
+  const term=$("hq").value.trim().toLowerCase();
+  let list=ITEMS.map((x,i)=>({x,i}))
+    .filter(({x})=>fam==="全部"||(x.g||"未分類")===fam)
+    .filter(({x})=>!onlyBlank||!has(x))
+    .filter(({x})=>!term||
+      (x.name+" "+(x.en||"")+" "+(x.note||"")+" "+(x.tier||"")+" "+(x.g||"")).toLowerCase().includes(term));
+
+  /* 排序名次：純數字照值排；寫了但不是純數字（例如 "2.5k"、"約 80"）排在所有數字之後；
+     完全沒記錄的排最後。這樣「有記錄的」永遠在「沒記錄的」上面。 */
+  const rank=x=>{ const v=num(x); return v!=null ? v : (has(x) ? -1 : -2); };
+  if(sort==="p1")   list.sort((a,b)=>rank(b.x)-rank(a.x)||a.i-b.i);
+  if(sort==="p2")   list.sort((a,b)=>{
+    const ra=rank(a.x), rb=rank(b.x);
+    if(ra<0||rb<0) return (ra<0?1:0)-(rb<0?1:0) || rb-ra || a.i-b.i;  // 無值的一律墊底
+    return ra-rb || a.i-b.i;
+  });
+  if(sort==="name") list.sort((a,b)=>a.x.name.localeCompare(b.x.name,"zh-Hant"));
+
+  const done=list.filter(({x})=>has(x)).length;
+  $("htally").innerHTML=`<b>${list.length}</b> 筆 · 已記錄 <b>${done}</b> · 未記錄 <b>${list.length-done}</b>`;
+  $("hhsub").textContent=`計價單位：${UNIT}　·　共 ${ITEMS.length} 筆，已記錄 ${ITEMS.filter(has).length} 筆。價格寫在 heroes.js 裡。`;
+
+  if(!list.length){
+    $("hmain").innerHTML=`<div class="hnone">沒有符合的道具。<br>換個關鍵字，或到 <code>heroes.js</code> 把它加進去。</div>`;
+    return;
+  }
+
+  const row=({x})=>`
+    <div class="hrow">
+      <span class="hnamec">
+        ${x.tier?`<span class="htier t${esc(x.tier)}">${esc(x.tier)}</span>`:""}
+        <span>
+          <span class="hname">${hit(x.name,term)}</span>
+          ${x.en&&x.en!==x.name?`<span class="hen">${hit(x.en,term)}</span>`:""}
+        </span>
+      </span>
+      <span class="hnote">${hit(x.note||"",term)}</span>
+      ${has(x)
+        ? `<span class="hprice">${esc(x.price)}<span class="u">${esc(UNIT)}</span></span>`
+        : `<span class="hprice none">未記錄</span>`}
+    </div>`;
+
+  /* 選「全部」而且沒排序時，照分類插入小標題 */
+  let html=`<div class="hhead"><span>道具</span><span>備註</span><span class="r">價格</span></div>`;
+  if(fam==="全部"&&sort==="none"&&!term){
+    groups().forEach(g=>{
+      const seg=list.filter(({x})=>(x.g||"未分類")===g);
+      if(!seg.length) return;
+      html+=`<div class="hgsep">${esc(g)}　<span style="font-weight:400;opacity:.7">${seg.length}</span></div>`;
+      html+=seg.map(row).join("");
+    });
+  }else{
+    html+=list.map(row).join("");
+  }
+  $("hmain").innerHTML=html;
+}
+
+$("hq").addEventListener("input",draw);
+$("hsort").addEventListener("change",e=>{sort=e.target.value;draw();});
+$("honly").addEventListener("change",e=>{onlyBlank=e.target.checked;draw();});
+side(); draw();
 })();
 </script>
 <script>
