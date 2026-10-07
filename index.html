@@ -3028,14 +3028,20 @@ const esc=s=>String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&am
 const UNIT=(typeof HS_UNIT!=="undefined"&&HS_UNIT)?HS_UNIT:"";
 const ORDER=(typeof HS_GROUPS!=="undefined"&&Array.isArray(HS_GROUPS))?HS_GROUPS:[];
 
-/* 圖片放 img/hs/，檔名直接用道具的中文名就好，例如 img/hs/碎裂紅寶石.png。
-   找不到中文名時，才退回去找資料裡的 icon 欄位（遊戲原始 sprite 檔名）。
+/* 圖片放 img/hs/，三種檔名都認得，依序試：
+     1. 道具的中文名        例如 img/hs/碎裂紅寶石.png
+     2. 資料裡的 icon 欄位   例如 img/hs/Chipped_Ruby_spr_0.png
+     3. icon 欄位補上 _spr_0 例如 Golden_Key → Golden_Key_spr_0.png
+   第 2、3 種是為了讓你從外站右鍵「另存圖片」之後不用改名就能用。
    副檔名不用寫，img/manifest.js 會告訴我們是 png 還是 webp。
    清單裡查不到的就不顯示圖，不會破圖也不會多發請求。 */
 function iconUrl(x){
   const M=(typeof IMG_MAP!=="undefined"&&IMG_MAP&&IMG_MAP.hs)?IMG_MAP.hs:null;
   if(!M) return null;
-  for(const k of [x.name, x.icon]){
+  const raw=String(x.icon||"").trim();
+  const tries=[x.name, raw];
+  if(raw && !/_spr_\d+$/.test(raw)) tries.push(raw+"_spr_0");
+  for(const k of tries){
     const key=String(k||"").trim();
     if(!key) continue;
     const ext=M[key];
