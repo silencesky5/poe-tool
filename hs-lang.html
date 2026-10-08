@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>英雄圍城 翻譯編輯器</title>
+<!--
+  英雄圍城 繁中翻譯編輯器
+  ─────────────────────────────────────────────
+  資料：hs-lang/ 資料夾裡的 16 個 translations*.csv（網路流傳的繁中翻譯包）。
+  修改：存在你這台電腦的瀏覽器裡（localStorage），清除瀏覽器資料會不見，
+        記得常用「匯出改過的檔案」或「備份修改」。
+  套用：匯出的 CSV → 覆蓋 C:\poe-tool\hs-lang\ 裡的同名檔（網站更新）
+                    → 也複製到遊戲的翻譯資料夾（遊戲生效）。
+  匯出時只會改「中文（zh）」那一欄，其他字元、換行格式一個都不動。
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --bg:#F5F3EF; --card:#FFFFFF; --soft:#EFEDE7; --line:#DFDBD2; --line2:#C9C4B8;
+  --ink:#23211D; --mid:#5E584E; --low:#8C8578; --gold:#B07A1E; --gold-bg:#FDF4E0;
+  --edit:#2B7A4B; --edit-bg:#EAF6EE; --warn:#B4472E; --warn-bg:#FBECE7; --new:#2B5FA8; --new-bg:#E8F0FB;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--gold)}
+button,select,input,textarea{font:inherit;color:inherit}
+.wrap{max-width:1400px;margin:0 auto;padding:18px 18px 80px}
+
+/* 標頭 */
+.top{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.top h1{margin:0;font-size:24px;letter-spacing:.04em}
+.top h1 small{font-size:13px;color:var(--low);font-weight:400;margin-left:8px}
+.top .back{font-size:13.5px;text-decoration:none;color:var(--mid);border:1px solid var(--line2);border-radius:6px;padding:4px 10px;background:var(--card)}
+.top .back:hover{border-color:var(--gold);color:var(--gold)}
+.top .sp{flex:1}
+.stat{font-family:var(--mono);font-size:12.5px;color:var(--mid)}
+.stat b{color:var(--edit)}
+
+.note{background:var(--gold-bg);border:1px solid #EFD9A8;border-left:4px solid var(--gold);border-radius:8px;
+  padding:10px 14px;font-size:13.5px;color:var(--mid);margin-bottom:14px}
+.note b{color:var(--ink)}
+.note details summary{cursor:pointer;color:var(--ink);font-weight:600}
+.note ol{margin:6px 0 2px;padding-left:20px}
+
+/* 工具列 */
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:10px;margin-bottom:12px;position:sticky;top:0;z-index:20;box-shadow:0 2px 8px rgba(35,33,29,.05)}
+.bar input[type=search]{flex:1 1 260px;min-width:0;border:1px solid var(--line2);border-radius:7px;padding:7px 11px;background:#fff}
+.bar input:focus,.bar select:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(176,122,30,.14)}
+.bar select{border:1px solid var(--line2);border-radius:7px;padding:7px 8px;background:#fff}
+.btn{border:1px solid var(--line2);background:#fff;border-radius:7px;padding:6px 11px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn.pri{background:var(--gold);border-color:var(--gold);color:#fff}
+.btn.pri:hover{filter:brightness(1.08);color:#fff}
+.btn.sm{padding:3px 9px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--mid);cursor:pointer;user-select:none}
+.chk input{accent-color:var(--gold)}
+
+/* 版面 */
+.grid{display:grid;grid-template-columns:230px 1fr;gap:14px;align-items:start}
+.side{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;position:sticky;top:70px;max-height:calc(100vh - 90px);overflow:auto}
+.side .fbtn{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;text-align:left;
+  padding:7px 9px;border-radius:7px;cursor:pointer;color:var(--mid)}
+.side .fbtn:hover{background:var(--soft);color:var(--ink)}
+.side .fbtn[aria-current=true]{background:var(--gold);color:#fff}
+.side .fbtn .nm{flex:1;min-width:0}
+.side .fbtn .en{display:block;font-family:var(--mono);font-size:11px;opacity:.7}
+.side .fbtn .n{font-family:var(--mono);font-size:11.5px;opacity:.75}
+.side .fbtn .ed{font-family:var(--mono);font-size:11px;background:var(--edit);color:#fff;border-radius:10px;padding:0 6px}
+.side .fbtn[aria-current=true] .ed{background:#fff;color:var(--edit)}
+.side .sep{height:1px;background:var(--line);margin:6px 4px}
+.side .tools{display:flex;flex-direction:column;gap:6px;padding:4px}
+.mfile{display:none}
+
+.main{min-width:0}
+.sub{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;font-size:13.5px;color:var(--mid)}
+.sub .tally{font-family:var(--mono);font-size:12.5px}
+.sub .tally b{color:var(--gold)}
+
+/* 列 */
+.rows{display:flex;flex-direction:column;gap:6px}
+.sec{font-weight:700;font-size:13.5px;color:var(--gold);margin:10px 2px 0;display:flex;align-items:center;gap:8px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) auto;gap:12px;background:var(--card);
+  border:1px solid var(--line);border-radius:8px;padding:9px 12px;align-items:start}
+.row.edited{border-color:#9FD0B1;background:linear-gradient(90deg,var(--edit-bg),#fff 40%)}
+.row.isnew{box-shadow:inset 3px 0 0 var(--new)}
+.k{font-family:var(--mono);font-size:11.5px;color:var(--low);word-break:break-all}
+.k .fn{color:var(--gold)}
+.en{font-size:14px;color:var(--mid);word-break:break-word;margin-top:2px}
+.ja{font-size:13px;color:var(--low);margin-top:3px;word-break:break-word}
+.zh{font-size:15px;word-break:break-word;cursor:text;border-radius:6px;padding:3px 6px;margin:-3px -6px;min-height:28px}
+.zh:hover{background:var(--soft)}
+.zh.empty{color:var(--warn);font-style:italic}
+.orig{font-size:12.5px;color:var(--low);margin-top:4px;text-decoration:line-through;word-break:break-word}
+.flags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.flag{font-size:11px;border-radius:10px;padding:0 7px;border:1px solid}
+.flag.w{color:var(--warn);background:var(--warn-bg);border-color:#EBC3B6}
+.flag.e{color:var(--edit);background:var(--edit-bg);border-color:#9FD0B1}
+.flag.n{color:var(--new);background:var(--new-bg);border-color:#B3CBEA}
+.act{display:flex;flex-direction:column;gap:5px}
+textarea.ed{width:100%;min-height:62px;resize:vertical;border:1px solid var(--gold);border-radius:6px;padding:6px 8px;
+  background:#fff;box-shadow:0 0 0 3px rgba(176,122,30,.14);font-size:15px;line-height:1.55}
+.hint{font-size:11.5px;color:var(--low);margin-top:3px}
+
+/* 遊戲標籤 */
+.tag{font-family:var(--mono);font-size:10.5px;color:var(--low);background:var(--soft);border:1px solid var(--line);
+  border-radius:4px;padding:0 3px;margin:0 1px;vertical-align:1px}
+.c_red{color:#C0392B}.c_coin,.c_gold{color:#A8741A}.c_yellow{color:#B08A00}.c_aqua{color:#18879A}
+.c_purple{color:#7A3FA8}.c_green{color:#2E8B4A}.c_heroic{color:#8A5A2B}.c_blue{color:#2B5FA8}.c_orange{color:#C26A1B}
+.c_pink{color:#C2477E}.c_gray,.c_grey{color:#8C8578}.c_white{color:#5E584E}
+.more{display:block;margin:14px auto;padding:9px 22px}
+.empty-state{padding:40px 10px;text-align:center;color:var(--low)}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:#23211D;color:#fff;
+  padding:9px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;z-index:99;max-width:90vw}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* 取代視窗 */
+dialog{border:1px solid var(--line2);border-radius:12px;padding:0;max-width:560px;width:calc(100vw - 32px);color:var(--ink)}
+dialog::backdrop{background:rgba(35,33,29,.35)}
+dialog .dh{padding:14px 18px;border-bottom:1px solid var(--line);font-weight:700}
+dialog .db{padding:14px 18px;display:flex;flex-direction:column;gap:10px}
+dialog .db label{font-size:13.5px;color:var(--mid);display:flex;flex-direction:column;gap:4px}
+dialog .db input[type=text]{border:1px solid var(--line2);border-radius:7px;padding:7px 10px}
+dialog .df{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.prev{font-size:13px;background:var(--soft);border-radius:7px;padding:8px 10px;max-height:180px;overflow:auto}
+.prev div{padding:2px 0;border-bottom:1px dashed var(--line)}
+
+@media (max-width:860px){
+  .grid{grid-template-columns:1fr}
+  .side{display:none}
+  .mfile{display:block;flex:1 1 100%}
+  .row{grid-template-columns:1fr}
+  .act{flex-direction:row}
+  .bar{position:static}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="back" href="index.html">← 回工具箱</a>
+    <h1>英雄圍城 翻譯編輯器<small>Hero Siege 繁中翻譯包</small></h1>
+    <span class="sp"></span>
+    <span class="stat" id="stat">載入中…</span>
+  </div>
+
+  <div class="note">
+    <details>
+      <summary>怎麼用（第一次看這裡）</summary>
+      <ol>
+        <li>點<b>中文那一格</b>就能改；按 <b>Enter</b> 存，<b>Esc</b> 取消。要換行請打 <code>[nl]</code>。</li>
+        <li>改過的會變綠色，可以按「還原」回到原本的翻譯。修改只存在<b>這台電腦的這個瀏覽器</b>裡。</li>
+        <li>改完按左邊「<b>匯出改過的檔案</b>」，會下載一個 zip。</li>
+        <li>把 zip 裡的 CSV：① 覆蓋 <code>C:\poe-tool\hs-lang\</code> 的同名檔，再執行「上傳網站.bat」；② 複製到遊戲的翻譯資料夾，重開遊戲生效。</li>
+        <li>網站更新後，那些修改就變成「原本的翻譯」，綠色標記會自動消失。</li>
+        <li><code>[c_red]</code>、<code>[nl]</code> 這類方括號是遊戲的顏色／換行標籤，<b>不要刪</b>，英文有幾個中文就要有幾個；不一致會出現紅色「標籤不符」。</li>
+      </ol>
+      原翻譯為網路流傳的繁中翻譯包，作者不詳，這裡僅做修訂。
+    </details>
+  </div>
+
+  <div class="bar">
+    <select id="mfile" class="mfile" aria-label="檔案"></select>
+    <input type="search" id="q" placeholder="搜尋 中文／英文／代碼…（例：混沌之柱、Chaos Shrine）" autocomplete="off">
+    <select id="scope" aria-label="搜尋範圍">
+      <option value="file">只搜這個檔案</option>
+      <option value="all">搜全部檔案</option>
+    </select>
+    <select id="flt" aria-label="篩選">
+      <option value="">全部</option>
+      <option value="untr">未翻譯（中文空白）</option>
+      <option value="same">中文＝英文</option>
+      <option value="tags">標籤不符</option>
+      <option value="edited">我改過的</option>
+      <option value="new">新條目／英文有變（匯入新版後）</option>
+    </select>
+    <select id="sec" aria-label="分類"><option value="">所有分類</option></select>
+    <label class="chk"><input type="checkbox" id="showJa"> 日文參考</label>
+    <label class="chk"><input type="checkbox" id="preview" checked> 顏色預覽</label>
+    <button class="btn" id="btnRep">批次取代…</button>
+  </div>
+
+  <div class="grid">
+    <aside class="side">
+      <div id="files"></div>
+      <div class="sep"></div>
+      <div class="tools">
+        <button class="btn pri" id="btnExportChanged">匯出改過的檔案（zip）</button>
+        <button class="btn" id="btnExportFile">下載目前這個檔案</button>
+        <button class="btn" id="btnExportAll">匯出全部 16 個（zip）</button>
+        <div class="sep"></div>
+        <button class="btn" id="btnBackup">備份修改（json）</button>
+        <button class="btn" id="btnRestore">匯入備份…</button>
+        <button class="btn" id="btnImport">匯入新版官方 CSV…</button>
+        <button class="btn" id="btnClear">清除全部修改</button>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="sub"><span class="tally" id="tally"></span></div>
+      <div class="rows" id="rows"></div>
+      <button class="btn more" id="more" hidden>再顯示 200 筆</button>
+    </main>
+  </div>
+</div>
+
+<input type="file" id="fileRestore" accept=".json,application/json" hidden>
+<input type="file" id="fileImport" accept=".csv" multiple hidden>
+
+<dialog id="dlgRep">
+  <div class="dh">批次取代（只改中文）</div>
+  <div class="db">
+    <label>要找的字<input type="text" id="repFrom" placeholder="例：混亂迷霧"></label>
+    <label>換成<input type="text" id="repTo" placeholder="例：混沌之霧"></label>
+    <label class="chk"><input type="checkbox" id="repAll"> 套用到全部 16 個檔案（不勾 = 只在目前的搜尋／篩選結果裡）</label>
+    <div class="prev" id="repPrev">輸入要找的字，這裡會預覽。</div>
+  </div>
+  <div class="df">
+    <button class="btn" id="repCancel">取消</button>
+    <button class="btn pri" id="repGo" disabled>取代</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+/* ───── 檔案清單（順序＝左側顯示順序） ───── */
+const FILES=[
+  ["translationsItem","物品"],["translationsAttributes","屬性詞綴"],["translationsRelic","聖物"],
+  ["translationsEther","乙太天賦"],["translationsTalent","天賦技能"],["translationsSubTalent","副天賦"],
+  ["translationsEnemy","怪物"],["translationsZone","地圖區域"],["translationsQuest","任務"],
+  ["translationsQuestItems","任務道具"],["translationsNpc","NPC 對話"],["translationsMain","介面主選單"],
+  ["translationsOptions","設定選單"],["translationsShop","商城"],["translationsMarket","市場"],
+  ["translationsBloodPact","血契"]
+];
+const DIR="hs-lang/";
+const LS_KEY="hsLangEdits_v1";
+const PAGE=200;
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DB={};          // name -> parsed file
+let EDITS=loadEdits(); // name -> {id: zh}
+let cur=FILES[0][0], shown=PAGE, lastList=[];
+
+function loadEdits(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{}}catch(e){return {}}}
+function saveEdits(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify(EDITS))}
+  catch(e){toast("⚠ 存檔失敗：瀏覽器不允許儲存，請先匯出備份")}
+}
+function toast(t){const el=$("#toast");el.textContent=t;el.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("on"),2600)}
+
+/* ───── CSV 解析：| 分隔，支援 "..." 跨行欄位，記下中文欄在原文中的位置 ───── */
+function parse(name,text){
+  const recs=[]; let p=0; const L=text.length;
+  while(p<L){
+    const fields=[]; let done=false;
+    while(!done){
+      let s=p, e;
+      if(text[p]==='"'){
+        // 引號欄位：找「後面接 | 或換行或結尾」的那個引號
+        let q=p+1, found=-1;
+        while(q<L){
+          const i=text.indexOf('"',q); if(i<0)break;
+          const n=text[i+1];
+          if(n===undefined||n==="|"||n==="\n"||n==="\r"){found=i;break}
+          q=i+1;
+        }
+        if(found>=0){e=found+1}else{e=scan(p)}
+      }else e=scan(p);
+      fields.push([s,e]); p=e;
+      if(p>=L){done=true}
+      else if(text[p]==="|"){p++}
+      else{ if(text[p]==="\r")p++; if(text[p]==="\n")p++; done=true }
+    }
+    recs.push({fields,end:fields[fields.length-1][1]});
+  }
+  function scan(i){while(i<L){const c=text[i];if(c==="|"||c==="\n"||c==="\r")return i;i++}return i}
+
+  const get=(r,i)=>r.fields[i]?text.slice(r.fields[i][0],r.fields[i][1]):"";
+  const hdr=recs[0].fields.map((f,i)=>text.slice(f[0],f[1]).replace(/[\[\]]/g,"").trim().toLowerCase());
+  // 標題列沒寫欄名的檔（例如血契）用遊戲的固定順序：代碼|en|fi|pt|ru|zh|ja…
+  const at=(k,d)=>{const i=hdr.indexOf(k);return i>=0?i:d};
+  const zhI=at("zh",5), enI=at("en",1), jaI=at("ja",6);
+  const rows=[], seen={};
+  let sec=get(recs[0],0).trim();
+  for(let ri=1;ri<recs.length;ri++){
+    const r=recs[ri], key=get(r,0).trim();
+    if(!key)continue;
+    const en=get(r,enI);
+    if(/^\[.*\]$/.test(key) && !en.trim()){sec=key;continue}
+    const n=(seen[key]=(seen[key]||0)+1);
+    rows.push({id:key+"#"+n,key,en,zh:get(r,zhI),ja:jaI>=0?get(r,jaI):"",sec,rec:r});
+  }
+  const secs=[...new Set(rows.map(r=>r.sec))];
+  return {name,text,recs,rows,zhI,secs,newIds:null,enChanged:null,
+          byId:Object.fromEntries(rows.map(r=>[r.id,r]))};
+}
+
+/* ───── 匯出：只把中文欄換掉，其餘原文照抄 ───── */
+function build(f){
+  const ed=EDITS[f.name]||{};
+  const reps=[];
+  for(const r of f.rows){
+    const v=ed[r.id]; if(v===undefined||v===r.zh)continue;
+    const fd=r.rec.fields[f.zhI];
+    if(fd) reps.push([fd[0],fd[1],v]);
+    else{ // 這列欄位不夠，補到中文欄
+      const lack=f.zhI-r.rec.fields.length+1;
+      reps.push([r.rec.end,r.rec.end,"|".repeat(lack)+v]);
+    }
+  }
+  reps.sort((a,b)=>b[0]-a[0]);
+  let t=f.text;
+  for(const [s,e,v] of reps) t=t.slice(0,s)+v+t.slice(e);
+  return t;
+}
+function blobOf(text){return new Blob([new TextEncoder().encode(text)],{type:"text/csv;charset=utf-8"})}
+function download(blob,fn){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000)}
+function stamp(){const d=new Date(),z=n=>String(n).padStart(2,"0");return `${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}`}
+async function zipFiles(names,label){
+  if(!window.JSZip){toast("zip 元件沒載入（沒網路？），改成一個一個下載");names.forEach(n=>download(blobOf(build(DB[n])),n+".csv"));return}
+  const z=new JSZip();
+  names.forEach(n=>z.file(n+".csv",new TextEncoder().encode(build(DB[n]))));
+  download(await z.generateAsync({type:"blob"}),`英雄圍城翻譯_${label}_${stamp()}.zip`);
+}
+function editedCount(n){const f=DB[n],ed=EDITS[n];if(!f||!ed)return 0;let c=0;for(const id in ed){const r=f.byId[id];if(r&&ed[id]!==r.zh)c++}return c}
+function changedFiles(){return FILES.map(x=>x[0]).filter(n=>editedCount(n)>0)}
+
+/* 修改跟原文一樣了（例如網站已更新）就自動清掉 */
+function prune(){
+  for(const n in EDITS){
+    const f=DB[n]; if(!f)continue;
+    for(const id in EDITS[n]){const r=f.byId[id]; if(r && EDITS[n][id]===r.zh) delete EDITS[n][id]}
+    if(!Object.keys(EDITS[n]).length) delete EDITS[n];
+  }
+  saveEdits();
+}
+
+/* ───── 遊戲標籤 ───── */
+const TAG_RE=/\[[A-Za-z_]+(?:,[^\]\[|]*)?\]/g;
+function tagSig(s){return (s.match(TAG_RE)||[]).map(t=>t.toLowerCase()).sort().join(" ")}
+function tagBad(r,v){const a=tagSig(r.en),b=tagSig(v);return a!==b && v.trim()!==""}
+function render(s){
+  if(!$("#preview").checked) return esc(s);
+  let out="",open=0,last=0;
+  s.replace(TAG_RE,(m,i)=>{
+    out+=esc(s.slice(last,i)); last=i+m.length;
+    const t=m.slice(1,-1).toLowerCase();
+    if(t==="nl"){out+='<span class="tag">↵</span><br>'}
+    else if(t==="c_reset"){while(open){out+="</span>";open--}}
+    else if(/^c_/.test(t)){out+=`<span class="${esc(t)}">`;open++}
+    else out+=`<span class="tag">${esc(t)}</span>`;
+    return m;
+  });
+  out+=esc(s.slice(last)); while(open){out+="</span>";open--}
+  return out;
+}
+
+/* ───── 篩選與畫面 ───── */
+function valOf(f,r){const ed=EDITS[f.name];return ed&&ed[r.id]!==undefined?ed[r.id]:r.zh}
+function list(){
+  const q=$("#q").value.trim().toLowerCase(), flt=$("#flt").value, sec=$("#sec").value;
+  const names=$("#scope").value==="all"&&q?FILES.map(x=>x[0]):[cur];
+  const out=[];
+  for(const n of names){
+    const f=DB[n]; if(!f)continue;
+    for(const r of f.rows){
+      if(sec && names.length===1 && r.sec!==sec)continue;
+      const v=valOf(f,r);
+      if(flt==="untr" && v.trim()!=="")continue;
+      if(flt==="same" && !(v.trim()&&v.trim()===r.en.trim()))continue;
+      if(flt==="tags" && !tagBad(r,v))continue;
+      if(flt==="edited" && !(EDITS[n]&&EDITS[n][r.id]!==undefined&&EDITS[n][r.id]!==r.zh))continue;
+      if(flt==="new" && !(f.newIds&&(f.newIds.has(r.id)||f.enChanged.has(r.id))))continue;
+      if(q && !(r.key.toLowerCase().includes(q)||r.en.toLowerCase().includes(q)||v.toLowerCase().includes(q)||r.zh.toLowerCase().includes(q)))continue;
+      out.push([f,r]);
+    }
+  }
+  return out;
+}
+function draw(keepPage){
+  if(!keepPage)shown=PAGE;
+  lastList=list();
+  const multi=$("#scope").value==="all"&&$("#q").value.trim();
+  const showJa=$("#showJa").checked;
+  const box=$("#rows"); let h="", lastSec=null;
+  for(const [f,r] of lastList.slice(0,shown)){
+    if(!multi && r.sec!==lastSec){h+=`<div class="sec">${esc(r.sec)}</div>`;lastSec=r.sec}
+    h+=rowHtml(f,r,multi,showJa);
+  }
+  box.innerHTML=h||`<div class="empty-state">沒有符合的條目</div>`;
+  $("#more").hidden=lastList.length<=shown;
+  $("#tally").innerHTML=`<b>${lastList.length.toLocaleString()}</b> 筆` + (lastList.length>shown?`，顯示前 ${shown}`:"");
+  updStat();
+}
+function rowHtml(f,r,multi,showJa){
+  const v=valOf(f,r), edited=EDITS[f.name]&&EDITS[f.name][r.id]!==undefined&&EDITS[f.name][r.id]!==r.zh;
+  const isNew=f.newIds&&f.newIds.has(r.id), enCh=f.enChanged&&f.enChanged.has(r.id);
+  const flags=[];
+  if(!v.trim())flags.push('<span class="flag w">未翻譯</span>');
+  if(tagBad(r,v))flags.push('<span class="flag w">標籤不符</span>');
+  if(edited)flags.push('<span class="flag e">已修改</span>');
+  if(isNew)flags.push('<span class="flag n">新條目</span>');
+  if(enCh)flags.push('<span class="flag n">英文有變</span>');
+  const fname=FILES.find(x=>x[0]===f.name)[1];
+  return `<div class="row${edited?" edited":""}${isNew||enCh?" isnew":""}" data-f="${esc(f.name)}" data-id="${esc(r.id)}">
+    <div><div class="k">${multi?`<span class="fn">${esc(fname)}</span> · `:""}${esc(r.key)}</div>
+      <div class="en">${render(r.en)}</div>${showJa&&r.ja.trim()?`<div class="ja">${esc(r.ja)}</div>`:""}</div>
+    <div><div class="zh${v.trim()?"":" empty"}" tabindex="0" title="點一下修改">${v.trim()?render(v):"（空白，點此翻譯）"}</div>
+      ${edited?`<div class="orig">${esc(r.zh)||"（原本空白）"}</div>`:""}
+      ${flags.length?`<div class="flags">${flags.join("")}</div>`:""}</div>
+    <div class="act">${edited?'<button class="btn sm" data-a="undo">還原</button>':""}
+      <button class="btn sm" data-a="copy" title="把英文複製進中文">英→中</button></div>
+  </div>`;
+}
+function updStat(){
+  let tot=0;FILES.forEach(([n])=>tot+=editedCount(n));
+  $("#stat").innerHTML=`已修改 <b>${tot}</b> 條`;
+  drawFiles();
+}
+function drawFiles(){
+  $("#files").innerHTML=FILES.map(([n,zh])=>{
+    const f=DB[n], c=editedCount(n);
+    return `<button class="fbtn" data-n="${n}" aria-current="${n===cur}"><span class="nm">${zh}<span class="en">${n.replace("translations","")}</span></span>
+      ${c?`<span class="ed">${c}</span>`:""}<span class="n">${f?f.rows.length:"…"}</span></button>`;
+  }).join("");
+  $("#mfile").innerHTML=FILES.map(([n,zh])=>`<option value="${n}"${n===cur?" selected":""}>${zh}（${n.replace("translations","")}）${editedCount(n)?" ✎"+editedCount(n):""}</option>`).join("");
+}
+function drawSecs(){
+  const f=DB[cur]; const s=$("#sec");
+  s.innerHTML='<option value="">所有分類</option>'+(f?f.secs.filter(Boolean).map(x=>`<option>${esc(x)}</option>`).join(""):"");
+}
+function pick(n){cur=n;$("#sec").value="";drawSecs();draw();window.scrollTo({top:0})}
+
+/* ───── 編輯 ───── */
+function setVal(fname,id,v){
+  const f=DB[fname], r=f.byId[id];
+  v=v.replace(/\r?\n/g,"[nl]");
+  if(v.includes("|")){v=v.replace(/\|/g,"｜");toast("「|」會弄壞檔案，已自動換成全形「｜」")}
+  EDITS[fname]=EDITS[fname]||{};
+  if(v===r.zh) delete EDITS[fname][id]; else EDITS[fname][id]=v;
+  if(!Object.keys(EDITS[fname]).length) delete EDITS[fname];
+  saveEdits();
+}
+function openEditor(cell){
+  const row=cell.closest(".row"), fname=row.dataset.f, id=row.dataset.id;
+  const f=DB[fname], r=f.byId[id], v=valOf(f,r);
+  const wrap=cell.parentElement;
+  const ta=document.createElement("textarea"); ta.className="ed"; ta.value=v;
+  const hint=document.createElement("div"); hint.className="hint"; hint.textContent="Enter 儲存 · Esc 取消 · Shift+Enter 插入 [nl] 換行";
+  cell.replaceWith(ta); ta.after(hint); ta.focus(); ta.setSelectionRange(v.length,v.length);
+  let closed=false;
+  const finish=save=>{ if(closed)return; closed=true;
+    if(save && ta.value!==v){setVal(fname,id,ta.value)}
+    const y=window.scrollY; draw(true); window.scrollTo(0,y); };
+  ta.addEventListener("keydown",e=>{
+    if(e.key==="Enter"&&e.shiftKey){e.preventDefault();const s=ta.selectionStart;ta.setRangeText("[nl]",s,ta.selectionEnd,"end")}
+    else if(e.key==="Enter"&&!e.isComposing){e.preventDefault();finish(true)}
+    else if(e.key==="Escape"){e.preventDefault();finish(false)}
+  });
+  ta.addEventListener("blur",()=>finish(true));
+}
+$("#rows").addEventListener("click",e=>{
+  const z=e.target.closest(".zh"); if(z){openEditor(z);return}
+  const b=e.target.closest("button[data-a]"); if(!b)return;
+  const row=b.closest(".row"), fname=row.dataset.f, id=row.dataset.id, r=DB[fname].byId[id];
+  if(b.dataset.a==="undo"){setVal(fname,id,r.zh);toast("已還原")}
+  if(b.dataset.a==="copy"){setVal(fname,id,r.en)}
+  const y=window.scrollY; draw(true); window.scrollTo(0,y);
+});
+$("#rows").addEventListener("keydown",e=>{const z=e.target.closest(".zh");if(z&&e.key==="Enter"){e.preventDefault();openEditor(z)}});
+
+/* ───── 工具列 ───── */
+let qT; $("#q").addEventListener("input",()=>{clearTimeout(qT);qT=setTimeout(()=>draw(),180)});
+["#scope","#flt","#sec","#showJa","#preview"].forEach(s=>$(s).addEventListener("change",()=>draw()));
+$("#files").addEventListener("click",e=>{const b=e.target.closest(".fbtn");if(b)pick(b.dataset.n)});
+$("#mfile").addEventListener("change",e=>pick(e.target.value));
+$("#more").addEventListener("click",()=>{shown+=PAGE;draw(true)});
+
+$("#btnExportChanged").onclick=()=>{const c=changedFiles();if(!c.length){toast("還沒有任何修改");return}zipFiles(c,"改過的"+c.length+"個檔")};
+$("#btnExportFile").onclick=()=>download(blobOf(build(DB[cur])),cur+".csv");
+$("#btnExportAll").onclick=()=>zipFiles(FILES.map(x=>x[0]).filter(n=>DB[n]),"全部");
+$("#btnBackup").onclick=()=>download(new Blob([JSON.stringify(EDITS,null,1)],{type:"application/json"}),`英雄圍城翻譯_修改備份_${stamp()}.json`);
+$("#btnRestore").onclick=()=>$("#fileRestore").click();
+$("#fileRestore").onchange=async e=>{
+  const fl=e.target.files[0]; if(!fl)return;
+  try{const o=JSON.parse(await fl.text());let c=0;
+    for(const n in o){EDITS[n]=EDITS[n]||{};for(const id in o[n]){EDITS[n][id]=o[n][id];c++}}
+    prune();draw();toast(`已匯入 ${c} 條修改`)}catch(err){toast("備份檔格式不對")}
+  e.target.value="";
+};
+$("#btnClear").onclick=()=>{
+  const tot=FILES.reduce((s,[n])=>s+editedCount(n),0);
+  if(!tot){toast("沒有修改可以清除");return}
+  if(confirm(`確定清除全部 ${tot} 條修改？建議先按「備份修改」。`)){EDITS={};saveEdits();draw()}
+};
+/* 匯入新版官方 CSV：換掉原文，你的修改依代碼套回去，新條目會標藍 */
+$("#btnImport").onclick=()=>$("#fileImport").click();
+$("#fileImport").onchange=async e=>{
+  const msgs=[];
+  for(const fl of e.target.files){
+    const m=fl.name.match(/translations[A-Za-z]+/); const n=m&&FILES.find(x=>x[0]===m[0])?m[0]:null;
+    if(!n){msgs.push(fl.name+"：認不得");continue}
+    const old=DB[n], nf=parse(n,await fl.text());
+    nf.newIds=new Set(nf.rows.filter(r=>!old||!old.byId[r.id]).map(r=>r.id));
+    nf.enChanged=new Set(nf.rows.filter(r=>old&&old.byId[r.id]&&old.byId[r.id].en!==r.en).map(r=>r.id));
+    DB[n]=nf;
+    msgs.push(`${n}：新條目 ${nf.newIds.size}、英文有變 ${nf.enChanged.size}`);
+  }
+  e.target.value=""; prune(); drawSecs(); $("#flt").value="new"; draw();
+  alert("已匯入（只在這次開啟有效，記得匯出後放進 hs-lang 資料夾）：\n\n"+msgs.join("\n"));
+};
+
+/* 批次取代 */
+const dlg=$("#dlgRep");
+function repTargets(){
+  const from=$("#repFrom").value; if(!from)return [];
+  const src=$("#repAll").checked?FILES.flatMap(([n])=>DB[n]?DB[n].rows.map(r=>[DB[n],r]):[]):lastList;
+  return src.filter(([f,r])=>valOf(f,r).includes(from));
+}
+function repPrev(){
+  const from=$("#repFrom").value,to=$("#repTo").value,t=repTargets();
+  $("#repGo").disabled=!t.length;
+  $("#repPrev").innerHTML=from?(t.length?`共 <b>${t.length}</b> 條會被改：`+t.slice(0,30).map(([f,r])=>`<div>${esc(valOf(f,r))} → ${esc(valOf(f,r).split(from).join(to))}</div>`).join("")+(t.length>30?"<div>…</div>":""):"找不到"):"輸入要找的字，這裡會預覽。";
+}
+$("#btnRep").onclick=()=>{repPrev();dlg.showModal();$("#repFrom").focus()};
+["#repFrom","#repTo"].forEach(s=>$(s).addEventListener("input",repPrev));
+$("#repAll").addEventListener("change",repPrev);
+$("#repCancel").onclick=()=>dlg.close();
+$("#repGo").onclick=()=>{
+  const from=$("#repFrom").value,to=$("#repTo").value,t=repTargets();
+  t.forEach(([f,r])=>setVal(f.name,r.id,valOf(f,r).split(from).join(to)));
+  dlg.close(); draw(true); toast(`已取代 ${t.length} 條`);
+};
+
+/* ───── 載入 ───── */
+(async function init(){
+  drawFiles();
+  let fail=0;
+  await Promise.all(FILES.map(async([n])=>{
+    try{const res=await fetch(DIR+n+".csv",{cache:"no-cache"});if(!res.ok)throw 0;DB[n]=parse(n,await res.text())}
+    catch(e){fail++}
+  }));
+  if(fail===FILES.length){
+    $("#rows").innerHTML=`<div class="empty-state">讀不到 hs-lang 資料夾裡的 CSV。<br>
+      如果你是直接雙擊打開這個 html，請改用網站開啟：<br><a href="https://silencesky5.github.io/poe-tool/hs-lang.html">silencesky5.github.io/poe-tool/hs-lang.html</a><br><br>
+      或按「匯入新版官方 CSV…」手動選檔。</div>`;
+    $("#stat").textContent="未載入";return;
+  }
+  if(fail)toast(`有 ${fail} 個檔案沒載入`);
+  prune(); drawSecs(); draw();
+})();
+window.addEventListener("beforeunload",e=>{ /* 修改是即時存的，這裡不擋 */ });
+</script>
+</body>
+</html>

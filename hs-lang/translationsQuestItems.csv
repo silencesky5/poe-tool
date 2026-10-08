@@ -1,0 +1,105 @@
+|en|[fi]|pt|ru|zh|ja|ko|de|fr|sp|pl
+|||||||||||
+quest_bodyPart|Body Part|Runko-osa|Parte de Corpo|Часть тела|身體部位|体の一部|신체 부위|Körperteil|Morceaux de corps
+quest_blackHole|Black Hole|Musta aukko|Buraco Negro|Черная дыра|黑洞|ブラックホール|블랙홀|Schwarzes Loch|Trou noir
+quest_coffeeBeans|Coffee Beans|Kahvipavut|Grãos de Café|Кофейные зерна|咖啡豆|コーヒー豆|커피 콩|Kaffeebohnen|Grains de café
+quest_coffeeBrick|Brick|Tiili|Tijolo|Кирпич|磚塊|レンガ|벽돌|Ziegel|Brique
+quest_corruptedStatue|Corrupted Statue|Korruptoitunut patsas|Estátua Corrompida|Поврежденная статуя|腐化的雕像|汚染された像|부패한 동상|Verdorbene Statue|Statue corrompue
+quest_cogVines|Cogwheel Vines|Hammaspyörän viiniköynnökset|Vinhas de Engrenagem|Зубчатые лозы|齒輪藤蔓|歯車の蔓|톱니바퀴 덩굴|Zahnradreben|Engrenage entravé
+quest_hotWater|Hot Water|Kuuma vesi|Água Quente|Горячая вода|熱水|お湯|뜨거운 물|heißes Wasser|Eau chaude
+quest_treasureMark|Marked Spot|Merkitty paikka|Lugar Marcado|Отмеченное место|標記地點|印のついた場所|표시된 장소|Markierter Ort|Emplacement marqué
+quest_civilian|Civilian|Siviili|Civil|Гражданский|平民|民間人|민간인|Zivilist|Citoyen
+quest_book|Spellbook|Spellbook|Livro de Feitiços|Книга заклинаний|法術書|呪文書|주문서|Zauberbuch|Livre de sorts
+quest_essence|Soul Essence|Soul Essence|Essência da Alma|Сущность души|靈魂精華|魂のエッセンス|소울 에센스|Seelenessenz|Essence d'âme
+quest_portalEnemy|Unstable Portal|Epävakaa portaali|Portal Instável|Нестабильный портал|不穩定傳送門|不安定なポータル|불안정한 포탈|Instabiles Portal|Portail instable
+quest_portalDemonic|Demonic Portal|Demoninen portaali|Portal Demoníaco|Демонический портал|惡魔傳送門|悪魔のポータル|데모닉 포탈|Dämonisches Portal|Portail démoniaque
+quest_boat|Boat|Vene|Barco|Лодка|船隻|ボート|배|Boot|Bateau
+quest_braggiteOre|Braggite Ore|Braggite malmi|Minério de Braggite|Браггитовая руда|布拉格礦|ブラギット鉱石|프래깃 광석|Braggite-Erz|Minerai de braggite
+quest_essenceOfGods|Essence of Gods|Essence of Gods|Essência dos Deuses|Сущность богов|神之精華|神のエッセンス|신들의 에센스|Essenz der Götter|Essence des dieux
+quest_bossGemstone|Satanic Gemstone|Saatanallinen jalokivi|Gema Satânica|Сатанинский драгоценный камень|撒旦寶石|悪魔の宝石|사탄의 보석|Satanischer Edelstein|Pierre précieuse satanique
+quest_cartWheel|Cartwheel|Kärrynpyörä|Roda de Carrinho|Колесо телеги|車輪|側転|수레바퀴|Wagenrad|Roue de chariot
+quest_cartWheelAttach|Cartwheel Attach|Kärryn pyörän kiinnitys|Anexador de Roda de Carrinho|Прикрепить колесо тележки|車輪配件|側転の取り付け具|수레바퀴 부착물|Wagenrad befestigen|Attache de la roue de chariot
+quest_nagaScale|Naga Scale|Nagan asteikko|Escama de Naga|Чешуя наги|娜迦鳞片|ナーガの鱗|나가의 비늘|Naga-Skala|Écaille de naga
+quest_deliciousHogMeat|Hog Meat|Sian liha|Carne de Porco|Свинина|豬肉|豚肉|돼지고기|Schweinefleisch|Viande de porc
+quest_deliciousHogMeatCooked|Cooked Hog Meat|Keitetty sianliha|Carne de Porco Cozida|Приготовленное мясо свиньи|烹飪豬肉|調理済みの豚肉|요리된 돼지고기|Gekochtes Schweinefleisch|Viande de porc cuite
+quest_gjollWater|Gjöll River Water|Gjöll-joen vesi |Água do Rio Gjöll|Вода реки Гьёлль|吉爾河水 |ギョル川の水 |욜 강의 물|Wasser des Flusses Gjöll|Eau de la rivière Gjöll
+quest_doomWeed|Doom Weed|Tuomion Heinä|Erva da Desgraça|Роковая трава|厄運雜草|破滅の雑草|파멸의 풀|Doom Weed|Herbe du Destin
+quest_corruptedDirt|Corrupted Dirt|Vioittunut lika|Terra Corrompida|Испорченная грязь|腐敗泥土|汚染された土|부패한 흙|Verdorbener Schmutz|Sol corrompu
+quest_corruptedDirtCollect|Corrupted Dirt Collected|Korruptoitunut lika kerätty|Terra Corrompida Coletada|Собрана испорченная грязь|收集腐蝕的污垢|汚染された土の収集|수집된 부패한 흙|Verdorbener Schmutz gesammelt|Sol corrompu collecté
+quest_corruptedDirtPotion|Corrupted Potion|Vioittunut juoma|Poção Corrompida|Испорченное зелье|腐蝕的藥劑|汚染されたポーション|부패한 물약|Verdorbener Trank|Potion corrompue
+quest_tiredVikingPotion|Viking’s Flask|Vikingin pullo|Frasco do Viking|Настойка викинга|維京人的藥劑瓶|バイキングのフラスコ|바이킹 플라스크|Wikingerflasche|Flacon de Viking
+quest_goldenWarriorStatue|Golden Warrior Statue|Kultaisen soturin patsas|Estátua do Guerreiro Dourado|Статуя Золотого Воина|黃金戰士雕像|黄金の戦士の像|황금 워리어 동상|Goldene Kriegerstatue|Statue de Guerrier Doré
+quest_nagaTempleAmulet|Naga Amulet|Naga Amuletti|Amuleto de Naga|Амулет Наги|娜迦護身符|ナーガの護符|나가 어뮬렛|Naga-Amulett|Amulette Naga
+quest_niflhelSkull|Possessed Skull|Valtuutettu kallo|Caveira Possuída|Одержимый череп|被附身的頭骨|憑依された頭蓋骨|사악한 두개골|Besessener Schädel|Crâne Possédé
+quest_rainbowFragment|Rainbow Fragment|Sateenkaaren fragmentti|Fragmento de Arco-íris|Радужный фрагмент|彩虹碎片|虹のかけら|무지개 조각|Regenbogenfragment|Fragment d'Arc-en-ciel
+quest_pumpkinIngredient|Crimson Pumpkin|Crimson Pumpkin|Abóbora Carmesim|Багровая тыква|深紅色南瓜|深紅のカボチャ|진홍색 호박|Purpurner Kürbis|Citrouille Écarlate
+quest_maggotStewCauldron|Maggot Stew Cauldron|Maggot Stew Pata|Caldeirão de Ensopado de Larvas|Котел с рагу из личинок|蛆蟲燉肉坩堝|ウジのシチュー鍋|벌래 스튜 가마솥|Maden-Eintopfkessel |Chaudron de Ragoût d'Asticots
+quest_maggotCorpse|Maggot Carcass|Maggot Carcass|Carcaça de Larva|Туша личинки|蛆蟲屍體|ウジの死骸|구더기 시체|Madenkadaver|Carcasse d'Asticots
+quest_spellbookAhriman|Murder of Crows|Varisten murha|Murder of Crows|Убийство ворон|Ahriman的魔法書|カラスの群れ|까마귀 떼|Mord der Krähen|Meurtre de Corbeaux
+quest_herbPouch|Herb Pouch|Yrttipussi|Bolsa de Ervas|Травяной мешочек|藥草袋|ハーブポーチ|허브 주머니|Kräuterbeutel|Pochette d'Herbes
+quest_carnageTrack|Carnage Track|Carnage Track|Rastros de Carnificina|Карнаж Трек|屠戮者足跡|大虐殺の足跡|대량 학살의 흔적|Massaker-Strecke|Piste du Carnage
+quest_carnagesPelt|Carnage’s Pelt|Carnagen Pelt|Pele de Carnificina|Шкура Карнажа|屠戮者毛皮|大虐殺の毛皮|대량 학살자의 가죽|Carnages Pelz|Peau du Carnage
+quest_whipJasper|Jasper’s Whip|Jasperin piiska|Chicote de Jasper|Кнут Джаспера|Jasper的鞭子|ジャスパーの鞭|재스퍼의 채찍|Jaspers Peitsche|Fouet de Jasper
+quest_mapJasper|Pyramid Map|Pyramidi kartta|Mapa da Pirâmide|Карта пирамиды|金字塔地圖|ピラミッドの地図|피라미드 지도|Pyramidenkarte|Carte de la Pyramide
+quest_staffAnubis|Staff of Anubis|Anubiksen henkilökunta|Cajado de Anúbis|Посох Анубиса|阿努比斯之杖|アヌビスの杖|아누비스 지팡이|Stab des Anubis|Bâton d'Anubis
+quest_sturdyBamboo|Sturdy Bamboo|Tukeva bambu|Bamboo Robusto|Прочный бамбук|堅固竹子|丈夫な竹|튼튼한 대나무|Robuster Bambus|Bambou Robuste
+quest_spiderweb|Spiderweb|Hämähäkinverkko|Teia de Aranha|Паутина|蜘蛛網|クモの巣|거미줄|Spinnennetz|Toile d'Araignée
+quest_metalHook|Metal Hook|Metallinen koukku|Gancho de Metal|Металлический Крюк|金屬鉤|金属フック|금속 훅|Metallhaken|Crochet en Métal
+quest_eternalChalice|Eternal Chalice|Ikuinen malja|Cálice Eterno|Вечная Чаша|永恆聖杯|永遠の聖杯|영원한 성배|Ewiger Kelch|Calice Éternel
+quest_soulOfTheDamned|Soul of the Damned|Soul of the Damned|Alma dos Condenados|Душа Проклятого|詛咒之魂|呪われた者の魂|저주받은 영혼|Seele der Verdammten|Âme du Damné
+quest_ginseng|Ginseng|Ginseng|Ginseng|Женьшень|人參|高麗人参|인삼|Ginseng|Ginseng
+quest_dill|Dill|Tilli|Dill|Укроп|霜蒔蘿|ディル|딜|Dill|Aneth
+quest_loska|Loska|Loska|Loska|Лоска|洛斯卡|ロスカ|로스카|Loska|Loska
+quest_vermRoot|Vermroot|Vermroot|Vermroot|Кореньверма|蠕蟲根|バームルート|벌래 뿌리|Vermroot|Vermroot
+quest_fanglen|Fanglen|Fanglen|Fanglen|Фэнглен|方格倫|ファングレン|팡글렌|Fanglen|Fanglen
+quest_devilsGabbage|Devils Gabbage|Devils Gabbage|Repolho-do-Diabo|Дьявольский Габбадж|惡魔高麗菜|悪魔のガベッジ|악마의 양배추|Teufelsgabage|Gabbage du Diable
+quest_toyBear|Toy Bear|Lelukarhu|Urso de Brinquedo|Игрушечный медведь|玩具熊|おもちゃのクマ|곰 장난감|Spielzeugbär|Ours en Peluche
+quest_muspelheimCrown|Surtur’s Crown|Surturin kruunu|Coroa de Surtur|Корона Суртура|蘇爾特王冠|スルトの王冠|서르투르의 왕관|Surturs Krone|Couronne de Surtur
+quest_surturChainPile|Iron Chain|Rautaketju|Corrente de Ferro|Железная цепь|鐵鍊|鉄の鎖|철사 더미|Eisenkette|Chaîne de Fer
+quest_esseceOfDead|Essence of Undead|Essence of Undead|Essência dos Mortos-vivos|Сущность нежити|亡靈精華|アンデッドのエッセンス|언데드 정수|Essenz der Untoten|Essence de Mort-Vivant
+quest_lostManual|Lost Manual|Kadonnut käsikirja|Manual Perdido|Потерянное руководство|遺失的手冊|失われたマニュアル|잃어버린 메뉴얼|Verlorenes Handbuch|Manuel Perdu
+quest_wildBerry|Wild Berry|Villimarja|Fruta Silvestre|Лесная ягода|野生莓果|ワイルドベリー|야생 열매|Wilde Beere|Baie Sauvage
+quest_wildBerryBush|Wild Berry Bush|Villimarjapensas|Arbusto de Fruta Silvestre|Куст лесной ягоды|野生莓果叢|ワイルドベリーの茂み|야생 열매 덤불|Wilder Beerenstrauch|Buisson de Baies Sauvages
+quest_glitchingObject|Glitching Object|Kiihtyvä objekti|Objeto com Falha|Сбойный объект|故障的物體|グリッチオブジェクト|오류있는 객체|Glitching-Objekt|Objet Buggy
+quest_soulCocoon|Soul Cocoon|Soul Cocoon|Casulo de Alma|Кокон души|靈魂繭|ソウル繭|영혼의 고치|Seelenkokon|Cocon d'Âme
+quest_anitas_amulet|Anita’s Amulet|Anitan amuletti|Amuleto de Anita|Амулет Аниты|Anita的護身符|アニタのお守り|아니타의 어뮬렛|Anitas Amulett|Amulette d'Anita
+quest_njals_head|Njal’s head|Njalin pää|Cabeça de Njal|Голова Ньяла|Njal的頭|ニャールの頭|Njal’s 머리|Njals Kopf|Tête de Njal
+quest_securityBeacon|Broken Security Beacon|Rikkinäinen turvamajakka|Farol de Segurança Quebrado|Сломанный маяк безопасности|損壞的安全信標|壊れたセキュリティビーコン|고장난 보안 비콘|Defektes Sicherheitssignal|Sécurité Brisée Balise
+quest_securityBeacon_fixed|Security Beacon|Turvamajakka|Farol de Segurança|Маяк безопасности|安全信標|セキュリティビーコン|보안 비콘|Sicherheitssignal|Balise de sécurité
+quest_securityBeaconController|Security System Main Control Unit|Turvajärjestelmän pääohjausyksikkö|Unidade de Controle Principal do Sistema de Segurança|Главный блок управления системой безопасности|安全系統主控制單元|セキュリティシステム主制御装置|보안 시스템의 주요 제어장치|Hauptsteuereinheit des Sicherheitssystems|Unité de contrôle principale du système de sécurité
+quest_iceCrack|Ice Crack|Jäähalkeama|Rachadura de Gelo|Ледяная трещина|冰裂縫|氷の割れ目|얼음 균열|Eisriss|Crack de glace
+quest_iceEncasedBeer|Beer encased in ice|Olut jäissä|Cerveja Geladinha|Пиво, заключённое во льду|冰鎮啤酒|氷に包まれたビール|얼음으로 둘러쌓인 맥주|Bier in Eis gehüllt|Bière enrobée de glace
+quest_explosives|Explosives|Räjähteet|Explosivos|Взрывчатые вещества|爆炸物|爆薬|폭발물|Sprengstoffe|Explosifs
+quest_place_explosives|Place explosives|Aseta räjähteet|Colocar explosivos|Установить взрывчатые вещества|放置爆炸物|爆薬を設置する|폭발물 배치|Sprengstoff platzieren|Placement d'explosifs
+quest_bigboom2000|Big Boom 2000B|Big Boom 2000B|Big Boom 2000B|Большой бум 2000B|大炸彈2000B|ビッグブーム2000B|빅 붐 2000B|Big Boom 2000B|Big Boom 2000B
+quest_false_prophet|Luthor|Luthor|Luthor|Лютор|Luthor|ルーサー|루터|Luthor|Luthor
+quest_workbench|Work Bench|Työpenkki|Bancada de Trabalho|Рабочий стол|工作台|作業台|작업대|Werkbank|Établi
+quest_miningEquipment|Mining Equipment|Kaivoslaitteet|Equipamento de Mineração|Горнодобывающее оборудование|採礦設備|採掘装置|채굴 장비|Bergbauausrüstung|Équipement minier
+quest_valhallaRiverBeacon|Gate Beacon|Portin Merkkivalo|Farol do Portão |Маяк ворот |大門燈塔 |ゲートビーコン |게이트 비콘|Tor-Leuchtfeuer |Balise de porte 
+quest_tridentShard|Trident Shard|||Фрагмент трезубца|三叉戟碎片||삼지창 파편|||Fragmento de tridente|
+|||||||||||
+quest_halloweenDustFeederTooth|Dust Feeder Tooth|Pölynsyöttölaitteen hammas|Dente de Alimentador de Poeira|Зуб подачи пыли|廢品動物牙齒|ダストフィーダー歯|먼지 먹이 이빨|Staubförderzahn|Dent d'alimentation en poussière
+quest_halloweenGhostSkull|Ghost Skull|Ghost Skull|Caveira Fantasma|Призрачный череп|幽靈顱骨|ゴーストスカル|유령 해골|Geisterschädel|Crâne fantôme
+quest_halloweenMaggotSlime|Maggot’s Slime|Maggot's Slime|Lodo de Larva|Слизь личинки|蛆蟲黏液|マゴットのスライム|벌래 슬라임|Madenschleim|La bave de l'asticot
+quest_halloweenMummyBandages|Mummy Wrappings|Muumikääreet|Embrulhos de Múmia|Обертывания для мумий|木乃伊繃帶|ミイラの包帯|미라의 붕대|Mumienwickel|Emballages de momie
+quest_halloweenPumpkinJuice|Pumpkin Juice|Kurpitsan mehu|Suco de Abóbora|Тыквенный сок|南瓜汁|かぼちゃジュース|호박 주스|Kürbissaft|Jus de citrouille
+quest_halloweenRatEar|Rat Ear|Rotan korva|Orelha de Rato|Крысиное ухо|老鼠耳朵|ネズミの耳|쥐의 귀|Rattenohr|Oreille de rat
+quest_halloweenSpellBook|Spell Book|Loitsukirja|Livro de Feitiços|Книга заклинаний|法術書|魔法の本|주문서|Zauberbuch|Livre de sorts
+quest_halloweenSpiderLeg|Spider Leg|Hämähäkin jalka|Perna de Aranha|Нога паука|蜘蛛腿|スパイダーレッグ|거미 다리|Spinnenbein|Patte d'araignée
+quest_halloweenChickenFeather|Chicken Feather|Kanan sulka|Pena de Galinha|Куриное Перо|雞羽毛|チキンフェザー|달기 깃털|Hühnerfeder|Plume de poulet
+quest_halloweenBone|Bone|Korkki|Osso|Кость|骨頭|キャップ|뼈|Kappe|Capuchon
+quest_halloweenCandy|Candy|karkkia|Doce|Конфеты|糖果|あめ|사탕|Süßigkeiten|bonbons
+quest_halloweenApple|Candy Apple|Karkki Apple|Maçã do Amor|Карамельное яблоко|蘋果糖|キャンディアップル|사과 사탕|Süßer Apfel|Pomme d'amour
+quest_halloweenChain1|Skeleton’s Skull|Skeletonin kallo|Crânio do Esqueleto|Череп скелета|骷髏頭骨|スケルトンの頭蓋骨|스켈레톤의 해골|Skelettschädel|Crâne de squelette
+quest_halloweenChain2|Skeleton’s Spine|Skeletonin selkäranka|Espinha do Esqueleto|Позвоночник скелета|骷髏的脊椎|骨格の背骨|스켈레톤의 척추|Wirbelsäule des Skeletts|Colonne vertébrale du squelette
+quest_halloweenChain3|Skeleton’s Right Hand|Luurankon oikea käsi|Mão Direita do Esqueleto|Правая рука скелета|骷髅的右手|スケルトンの右手|스켈레톤의 오른손|Rechte Hand des Skeletts|La main droite du squelette
+quest_halloweenChain4|Skeleton’s Left Hand|Skeletonin vasen käsi|Mão Esquerda do Esqueleto|Левая рука скелета|骷髅的左手|スケルトンの左手|스켈레톤의 왼손|Linke Hand des Skeletts|La main gauche du squelette
+quest_halloweenChain5|Skeleton’s Right Foot|Luurankon oikea jalka|Pé Direito do Esqueleto|Правая нога скелета|骷髅的右腳|スケルトンの右足|스켈레톤의 오른발|Rechter Fuß des Skeletts|Pied droit du squelette
+quest_halloweenChain6|Skeleton’s Left Foot|Luurankon vasen jalka |Pé Esquerdo do Esqueleto|Левая нога скелета|骷髅的左腳 |スケルトンの左足 |스켈레톤의 왼발|Linker Fuß des Skeletts |Le pied gauche du squelette 
+|||||||||||
+quest_xmasSnowball|Snowball|Lumipallo|Bola de Neve|Снежок|雪球|スノーボール|눈덩이|Schneeball|Boule de neige
+quest_xmasCandyCane|Candy Cane|Candy Cane|Bengala Doce|Конфета-трость|拐杖糖|キャンディケイン|사탕 지팡이|Zuckerstange|Canne à sucre
+quest_xmasLight|Christmas Light|Joulun valo|Luz de Natal|Рождественский свет|聖誕之光|クリスマスライト|크리스마스 전구|Weihnachtslicht|Lumière de Noël
+quest_book_page|Book of Soulforge page|Book of Soulforgen sivu|Página do Livro da Forja da Alma|Страница книги Soulforge|靈魂之書的書頁|ソウルフォージの書のページ|영혼 대장장이의 책페이지|Buch der Seelenschmiede-Seite|Page du Livre de Soulforge
+quest_soul_essence|Soul Essence|Soul Essence|Essência da Alma|Сущность души|靈魂精華|ソウルエッセンス|영혼 정수|Seelenessenz|Essence d'âme
+quest_warrior_soul|Soul of the Fallen Warrior|Langenneen soturin sielu |Alma do Guerreiro Caído|Душа павшего воина |墮落戰士的靈魂|倒れた戦士の魂 |죽은 워리어의 영혼|Seele des gefallenen Kriegers |Âme du guerrier déchu 

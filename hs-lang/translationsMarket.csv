@@ -1,0 +1,26 @@
+[Market FIlter]|en|fi|pt|ru|zh|ja|ko|de|fr|sp|pl
+market_filter_base_item|Base Item|Pohja|Base|Основа|基底裝備|ベース|기본 아이템|Basis-Item|Base|Base|Baza
+market_filter_stats|Stats|Statsit|Atributos|Статы|屬性|ステータス|스탯|Werte|Stats|Stats|Staty
+market_filter_active_filters|Active Filters|Suodattimet|Filtros ativos|Активные фильтры|已啟用篩選|有効フィルター|활성 필터|Aktive Filter|Filtres actifs|Filtros activos|Aktywne filtry
+market_filter_min_sockets|Min Sockets|Väh. kolot|Mín. encaixes|Мин. гнёзд|最少鑲嵌孔|最小ソケット|최소 소켓|Min. Sockel|Sockets min.|Mín. engarces|Min. gniazd
+market_filter_max_sockets|Max Sockets|Maks. kolot|Máx. encaixes|Макс. гнёзд|最多鑲嵌孔|最大ソケット|최대 소켓|Max. Sockel|Sockets max.|Máx. engarces|Maks. gniazd
+market_filter_any_skill|Any Skill|Mikä tahansa|Qualquer|Любой|任意技能|すべて|전체|Beliebig|Toutes|Todas|Wszystkie
+market_filter_any_class|Any Class|Mikä tahansa|Qualquer|Любой|任意職業|すべて|전체|Beliebig|Toutes|Todas|Wszystkie
+market_filter_any_sub_skill|Any Sub Skill|Mikä tahansa|Qualquer|Любой|任意副技能|すべて|전체|Beliebig|Toutes|Todas|Wszystkie
+market_filter_any_item_type|Any Item Type|Mikä tahansa|Qualquer|Любой|任意物品類型|すべて|전체|Beliebig|Tous|Todos|Wszystkie
+market_filter_item_type|Item Type|Esinetyyppi|Tipo de item|Тип предмета|物品類型|アイテム種別|아이템 종류|Item-Typ|Type d'objet|Tipo de ítem|Typ przedmiotu
+market_filter_any_weapon_type|Any Weapon Type|Mikä tahansa|Qualquer|Любой|任意武器類型|すべて|전체|Beliebig|Tous|Todos|Wszystkie
+market_filter_weapon_type|Weapon Type|Asetyyppi|Tipo de arma|Тип оружия|武器類型|武器種別|무기 종류|Waffentyp|Type d'arme|Tipo de arma|Typ broni
+market_filter_any_item_rarity|Any Item Rarity|Mikä tahansa|Qualquer|Любая|不限稀有度|すべて|전체|Beliebig|Toutes|Todas|Wszystkie
+market_filter_item_rarity|Item Rarity|Harvinaisuus|Raridade|Редкость|稀有度|レアリティ|등급|Seltenheit|Rareté|Rareza|Rzadkość
+market_filter_no_result|No Results|Ei tuloksia|Sem resultados|Нет результатов|查無結果|結果なし|결과 없음|Keine Ergebnisse|Aucun résultat|Sin resultados|Brak wyników
+market_filter_active_filters_plural|active filter(s)|aktiivista suodatinta|filtro(s) ativo(s)|активных фильтров|項已套用篩選|件の有効なフィルター|개의 활성 필터|aktive(r) Filter|filtre(s) actif(s)|filtro(s) activo(s)|aktywnych filtrów
+market_results_plural|result(s)|tulosta|resultado(s)|результатов|個結果|件の結果|개의 결과|Ergebnis(se)|résultat(s)|resultado(s)|wyników
+market_filter_reset_filters|Reset Filters|Nollaa|Redefinir|Сбросить|重置篩選|リセット|필터 초기화|Zurücksetzen|Réinitialiser|Restablecer|Resetuj
+market_filter_clear|Clear|Tyhjennä|Limpar|Очистить|清除|クリア|지우기|Leeren|Effacer|Borrar|Wyczyść
+market_filter_item_name|Item Name|Nimi|Nome|Название|物品名稱|アイテム名|아이템 이름|Item-Name|Nom|Nombre|Nazwa
+market_filter_hide_corrupted|Hide Corrupted|Piilota turmeltu|Ocultar corrompidos|Скрыть осквернённые|隱藏腐化|腐敗を隠す|타락 숨기기|Verderbt ausblenden|Masquer corrompus|Ocultar corruptos|Ukryj skażone
+market_filter_hide_runeword|Hide Runeword|Piilota riimusanat|Ocultar rúnicas|Скрыть рунные слова|隱藏符文之語|ルーンワードを隠す|룬어 숨기기|Runenwort ausblenden|Masquer mots runiques|Ocultar rúnicas|Ukryj runiczne słowa
+|||||||||||
+market_sell_tab_no_items|No items on sale|Ei myynnissä|Nenhum item à venda|Нет предметов на продаже|沒有販售中的物品|出品中のアイテムなし|판매 중인 아이템 없음|Keine Items im Verkauf|Aucun objet en vente|Sin objetos en venta|Brak przedmiotów na sprzedaż
+market_history_tab_no_items|No items in history|Ei historiaa|Nenhum item no histórico|Нет предметов в истории|歷史記錄無物品|履歴にアイテムなし|기록에 아이템 없음|Keine Items im Verlauf|Aucun objet dans l'historique|Sin objetos en el historial|Brak przedmiotów w historii
