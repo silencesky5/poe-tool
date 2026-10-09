@@ -25,7 +25,7 @@
 const HS_UNIT = "金幣";
 
 /* 分類的顯示順序。沒列到的排最後面。 */
-const HS_GROUPS = ["詞綴工藝材料", "礦石", "寶石", "靈魂寶石與寶球", "塔羅牌", "碎片與王材料", "鑰匙", "地下城鑰匙", "特殊消耗品"];
+const HS_GROUPS = ["詞綴工藝材料", "礦石", "寶石", "珠寶", "靈魂寶石與寶球", "塔羅牌", "碎片與王材料", "鑰匙", "地下城鑰匙", "特殊消耗品"];
 
 const HS_ITEMS = [
 
@@ -127,6 +127,23 @@ const HS_ITEMS = [
   { g:"寶石", name:"完美頭骨",           en:"Perfect Skull",                price:"", lv:"24", note:"+10% 擊中偷取生命、+8% 生命回復", icon:"Perfect_Skull_spr_0", },
   { g:"寶石", name:"嶄新頭骨",           en:"Pristine Skull",               price:"1250", lv:"38", note:"+12% 擊中偷取生命、+12% 生命回復", icon:"Pristine_Skull_spr_0", },
 
+  /* ═══ 珠寶 ═══ */
+  { g:"珠寶", name:"埃克桑珠寶",       en:"Exan Jewel",                  price:"1000", note:"", },
+  { g:"珠寶", name:"威爾頓珠寶",       en:"Wilrden Jewel",               price:"1000", note:"", },
+  { g:"珠寶", name:"沃爾康珠寶",       en:"Volcon Jewel",                price:"1500", note:"", },
+  { g:"珠寶", name:"乙太珠寶",         en:"Aether Jewel",                price:"430", note:"", },
+  { g:"珠寶", name:"赫爾蒙珠寶",       en:"Helmon Jewel",                price:"24000", note:"", },
+  { g:"珠寶", name:"瑪麗安珠寶",       en:"Mariane Jewel",               price:"7500", note:"", },
+  { g:"珠寶", name:"萊爾康珠寶",       en:"Lyrcon Jewel",                price:"7000", note:"", },
+  { g:"珠寶", name:"烈焰珠寶",         en:"Fieryzen Jewel",              price:"7000", note:"", },
+  { g:"珠寶", name:"青金石珠寶",       en:"Lapis-Lazuli Jewel",          price:"1800", note:"", },
+  { g:"珠寶", name:"萬象珠寶",         en:"Omnipearl Jewel",             price:"1200", note:"", },
+  { g:"珠寶", name:"阿加特斯珠寶",     en:"Agathetheum Jewel",           price:"777", note:"", },
+  { g:"珠寶", name:"特拉瑪爾珠寶",     en:"Tramal Jewel",                price:"2000", note:"", },
+  { g:"珠寶", name:"珍珠珠寶",         en:"Pearlescento Jewel",          price:"333", note:"", },
+  { g:"珠寶", name:"清晰珠寶",         en:"Clean Cut Jewel",             price:"2000", note:"", },
+  { g:"珠寶", name:"神話獅珠寶",       en:"Mythgonlion Jewel",           price:"7000", note:"", },
+
   /* ═══ 靈魂寶石與寶球 ═══ */
   { g:"靈魂寶石與寶球", name:"古拉格靈魂寶石",     en:"Gurag's Soulgem",              price:"85000", lv:"90", note:"+10 體力、+20% 生命回復、+40 傷害反彈", icon:"Boss_Gemstone_Gurag_spr_0", },
   { g:"靈魂寶石與寶球", name:"死神靈魂寶石",       en:"Death's Soulgem",              price:"15000", lv:"90", note:"+10 能量、+35% 魔力、+6 每秒魔力回復", icon:"Boss_Gemstone_Reaper_spr_0", },
@@ -137,10 +154,10 @@ const HS_ITEMS = [
   { g:"靈魂寶石與寶球", name:"梅維烏斯靈魂寶石",   en:"Mevius' Soulgem",              price:"3750000", lv:"90", note:"+5% 奧術傷害、+10% 奧術抗性、−5% 敵人奧術抗性", icon:"Mevius_spr_0", },
   { g:"靈魂寶石與寶球", name:"奧丁靈魂寶石",       en:"Odin's Soulgem",               price:"750000", lv:"90", note:"+5% 冰霜傷害、+10% 冰霜抗性、−5% 敵人冰霜抗性", icon:"Boss_Gemstone_Odin_spr_0", },
   { g:"靈魂寶石與寶球", name:"克蘇魯的靈魂寶石",   en:"Cthulhu's Soulgem",            price:"7000000", lv:"90", note:"+8% 所有元素抗性、+5 無視所有抗性", },
-  { g:"靈魂寶石與寶球", name:"天使寶石",           en:"Angelic Gem",                  price:"150000", lv:"100", note:"+1 所有技能", icon:"Gem_Angelic_spr_0", },
-  { g:"靈魂寶石與寶球", name:"混亂寶石",           en:"Chaos Gem",                    price:"210000", lv:"100", note:"+10% 法術技能傷害、+10 智力", icon:"Gem_Chaos_spr_0", },
-  { g:"靈魂寶石與寶球", name:"元素寶石",           en:"Elemental Gem",                price:"200000", lv:"100", note:"+10 全屬性", icon:"Gem_Elemental_spr_0", },
-  { g:"靈魂寶石與寶球", name:"月亮寶石",           en:"Moonstone Gem",                price:"200000", lv:"100", note:"+7% 攻擊速度、+7 力量、+7 敏捷", icon:"Gem_Moonstone_spr_0", },
+  { g:"靈魂寶石與寶球", name:"天使寶石",           en:"Angelic Gem",                  price:"165000", lv:"100", note:"+1 所有技能", icon:"Gem_Angelic_spr_0", },
+  { g:"靈魂寶石與寶球", name:"混亂寶石",           en:"Chaos Gem",                    price:"230000", lv:"100", note:"+10% 法術技能傷害、+10 智力", icon:"Gem_Chaos_spr_0", },
+  { g:"靈魂寶石與寶球", name:"元素寶石",           en:"Elemental Gem",                price:"170000", lv:"100", note:"+10 全屬性", icon:"Gem_Elemental_spr_0", },
+  { g:"靈魂寶石與寶球", name:"月亮寶石",           en:"Moonstone Gem",                price:"180000", lv:"100", note:"+7% 攻擊速度、+7 力量、+7 敏捷", icon:"Gem_Moonstone_spr_0", },
   { g:"靈魂寶石與寶球", name:"化身寶石",           en:"Gem of Incarnation",           price:"", lv:"100", note:"遊戲檔沒有說明文字", },
   { g:"靈魂寶石與寶球", name:"哥布林石",           en:"Goblin",                       price:"7000", lv:"100", note:"+3 戰利品數量增加", icon:"Orb_of_Loot_Goblin_spr_0", },
   { g:"靈魂寶石與寶球", name:"符文熔爐石",         en:"Runeforge",                    price:"1750", lv:"100", note:"+7 符文掉落機率提高", icon:"Orb_of_Runeforge_spr_0", },
