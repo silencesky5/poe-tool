@@ -44,11 +44,11 @@ body{background:radial-gradient(1100px 520px at 18% -10%,#1C1C1A 0%,transparent 
 #shell .tab:focus-visible{outline:2px solid #57A8A0;outline-offset:2px}
 #shell hr{border:none;border-top:1px solid #2B2A28;margin:16px 0 0}
 [hidden]{display:none!important}
-#tab-drops,#tab-filter,#tab-beast,#tab-tali,#tab-scarab,#tab-strat,#tab-chart,#tab-hero{max-width:1300px;margin:0 auto;padding:0 18px}
+#tab-drops,#tab-filter,#tab-beast,#tab-tali,#tab-scarab,#tab-strat,#tab-craft,#tab-chart,#tab-hero{max-width:1300px;margin:0 auto;padding:0 18px}
 /* 滿版：左右不留白，寬螢幕一行能塞更多卡片 */
 body.wide #shell{max-width:none}
 body.wide #tab-drops,body.wide #tab-filter,body.wide #tab-beast,body.wide #tab-tali,
-body.wide #tab-scarab,body.wide #tab-strat,body.wide #tab-chart,body.wide #tab-hero,
+body.wide #tab-scarab,body.wide #tab-strat,body.wide #tab-craft,body.wide #tab-chart,body.wide #tab-hero,
 body.wide #tab-drops .wrap{max-width:none}
 #tab-drops *{box-sizing:border-box}
 #tab-drops,#tab-drops .wrap{max-width:1240px;margin:0 auto;padding:26px 20px 70px}
@@ -999,6 +999,33 @@ body .gbtns .pri:hover{background:#DD8B36}
 @media(max-width:760px){#tab-strat .sdlg{flex-direction:column;gap:12px}
 #tab-strat .sbig{width:72px;height:72px}
 #tab-strat .sshot{max-width:84vw;max-height:52vh}}
+
+/* ===== 製裝方法（建置中） ===== */
+#tab-craft .kwrap{padding:22px 0 70px;display:flex;flex-direction:column;gap:26px}
+#tab-craft .khero{background:linear-gradient(135deg,rgba(199,124,46,.13),transparent 62%),var(--card-hi);
+    border:1px solid var(--edge-hi);border-left:4px solid var(--accent);
+    border-radius:8px;padding:26px 30px}
+#tab-craft .ktitle{font-family:var(--serif);font-size:30px;font-weight:700;letter-spacing:.04em;
+    color:var(--bone);margin-bottom:12px;line-height:1.3}
+#tab-craft .kline{font-size:15px;line-height:1.85;color:var(--muted)}
+#tab-craft .kwip{border:1px dashed var(--edge-hi);border-radius:8px;padding:56px 24px;
+    text-align:center;color:var(--muted);font-size:15px;line-height:1.9;background:var(--card)}
+#tab-craft .kwip b{display:block;font-family:var(--serif);font-size:24px;font-weight:700;
+    color:var(--accent);letter-spacing:.3em;margin-bottom:6px}
+@media(max-width:640px){#tab-craft .khero{padding:20px 18px}
+  #tab-craft .ktitle{font-size:24px}}
+
+/* ===== 英雄圍城 子分頁：資料／翻譯編輯 ===== */
+#tab-hero .hsubtabs{display:flex;gap:8px;margin:22px 0 0}
+#tab-hero .hsubtab{background:#1D1D1B;border:1px solid #46443F;color:#B6B1A9;font-family:var(--sans);
+  font-size:13.5px;font-weight:500;padding:7px 18px;border-radius:99px;cursor:pointer;transition:all .15s}
+#tab-hero .hsubtab:hover{border-color:#67645C;color:#fff;background:#262624}
+#tab-hero .hsubtab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);
+  color:#0F0F0E;box-shadow:0 0 16px rgba(199,124,46,.3)}
+#tab-hero .hsubtab:focus-visible{outline:2px solid #57A8A0;outline-offset:2px}
+#tab-hero .hsubtabs + .hwrap{margin-top:14px}
+#tab-hero .hlang{margin:14px 0 24px;border:1px solid var(--edge-hi);border-radius:10px;overflow:hidden}
+#tab-hero .hlang iframe{display:block;width:100%;height:80vh;border:0;background:#fff}
 </style>
 </head>
 <body>
@@ -1006,15 +1033,15 @@ body .gbtns .pri:hover{background:#DD8B36}
   <div class="brand">
     <h1>PoE <b>工具箱</b></h1>
     <div class="tabs" role="tablist">
-      <button class="tab" id="t-drops"  role="tab" aria-selected="true"  aria-controls="tab-drops">掉落查詢器</button>
+      <button class="tab" id="t-drops"  role="tab" aria-selected="true"  aria-controls="tab-drops">Boss列表</button>
+      <button class="tab" id="t-beast"  role="tab" aria-selected="false" aria-controls="tab-beast">野獸列表</button>
+      <button class="tab" id="t-strat"  role="tab" aria-selected="false" aria-controls="tab-strat">刷圖策略</button>
+      <button class="tab" id="t-craft"  role="tab" aria-selected="false" aria-controls="tab-craft">製裝方法</button>
+      <button class="tab" id="t-hero"   role="tab" aria-selected="false" aria-controls="tab-hero">英雄圍城</button>
       <button class="tab" id="t-filter" role="tab" aria-selected="false" aria-controls="tab-filter">物品過濾器</button>
-      <button class="tab" id="t-beast"  role="tab" aria-selected="false" aria-controls="tab-beast">野獸查詢器</button>
       <button class="tab" id="t-tali"   role="tab" aria-selected="false" aria-controls="tab-tali">魔符查詢器</button>
       <button class="tab" id="t-scarab" role="tab" aria-selected="false" aria-controls="tab-scarab">聖甲蟲</button>
-      <button class="tab" id="t-strat"  role="tab" aria-selected="false" aria-controls="tab-strat">刷圖策略</button>
       <button class="tab" id="t-chart"  role="tab" aria-selected="false" aria-controls="tab-chart">3.29 海圖</button>
-      <button class="tab" id="t-hero"   role="tab" aria-selected="false" aria-controls="tab-hero">英雄圍城</button>
-      <a class="tab" id="t-hslang" href="hs-lang.html" style="text-decoration:none" title="編輯英雄圍城繁中翻譯包">英雄圍城翻譯 ↗</a>
     </div>
   </div>
   <hr>
@@ -1224,8 +1251,22 @@ body .gbtns .pri:hover{background:#DD8B36}
 <div class="sveil" id="sveil"><div class="ssheet" id="ssheet"></div></div>
 </div>
 
+<div id="tab-craft" role="tabpanel" hidden>
+<div class="kwrap">
+  <header class="khero">
+    <div class="ktitle">製裝方法</div>
+    <div class="kline">各種裝備的製作流程、材料與注意事項。</div>
+  </header>
+  <div class="kwip"><b>建置中</b>內容整理好之後會放在這裡。</div>
+</div>
+</div>
+
 <div id="tab-hero" role="tabpanel" hidden>
-<div class="hwrap">
+<div class="hsubtabs" role="tablist">
+  <button class="hsubtab" id="hs-t-data" role="tab" aria-selected="true" aria-controls="hs-pane-data">資料</button>
+  <button class="hsubtab" id="hs-t-lang" role="tab" aria-selected="false" aria-controls="hs-pane-lang">翻譯編輯</button>
+</div>
+<div class="hwrap" id="hs-pane-data" role="tabpanel">
   <header class="hhero">
     <div class="hhtitle">英雄圍城 物價表</div>
     <div class="hhsub" id="hhsub"></div>
@@ -1248,6 +1289,9 @@ body .gbtns .pri:hover{background:#DD8B36}
     <main class="hmain" id="hmain"></main>
   </div>
   <div class="htip" id="htip"></div>
+</div>
+<div class="hlang" id="hs-pane-lang" role="tabpanel" hidden>
+  <iframe id="hs-lang-frame" title="英雄圍城 翻譯編輯"></iframe>
 </div>
 </div>
 
@@ -1272,16 +1316,23 @@ body .gbtns .pri:hover{background:#DD8B36}
 (function(){
   /* ── 要隱藏哪些分頁 ───────────────────────────────
      把名字從下面這個清單刪掉，那個分頁就會重新出現。
-       drops  掉落查詢器        filter 物品過濾器
-       beast  野獸查詢器        tali   魔符查詢器
-       scarab 聖甲蟲            strat  刷圖策略
+       drops  Boss列表          beast  野獸列表
+       strat  刷圖策略          craft  製裝方法
+       hs     英雄圍城          filter 物品過濾器
+       tali   魔符查詢器        scarab 聖甲蟲
+       chart  3.29 海圖
      程式和資料都還在，只是不顯示而已。
      全部都顯示 → 寫成 const HIDE=[];                      */
-  const HIDE=[];
+  const HIDE=["filter","tali","scarab","chart"];
 
-  const ALL=[["t-drops","tab-drops"],["t-beast","tab-beast"],["t-chart","tab-chart"],["t-hero","tab-hero"],["t-filter","tab-filter"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-strat","tab-strat"]];
-  const key=p=>p.replace("tab-","");
+  const ALL=[["t-drops","tab-drops"],["t-beast","tab-beast"],["t-strat","tab-strat"],["t-craft","tab-craft"],["t-hero","tab-hero"],["t-filter","tab-filter"],["t-tali","tab-tali"],["t-scarab","tab-scarab"],["t-chart","tab-chart"]];
+  /* 網址 #名稱：預設是 tab- 後面那段；英雄圍城用 #hs（舊網址 #hero 也能開） */
+  const KEYS={"tab-hero":"hs"};
+  const OLD={"hero":"hs"};
+  const key=p=>KEYS[p]||p.replace("tab-","");
   const tabs=ALL.filter(([b,p])=>!HIDE.includes(key(p)));
+  /* 子分頁網址：#hs-lang → 英雄圍城的「翻譯編輯」 */
+  const SUBS={"hs-lang":["tab-hero","lang"]};
 
   /* 被藏起來的：按鈕和內容都收掉 */
   ALL.forEach(([b,p])=>{
@@ -1296,21 +1347,68 @@ body .gbtns .pri:hover{background:#DD8B36}
     if(bar) bar.hidden=true;
   }
 
-  function go(id){
+  /* 英雄圍城的子分頁：資料（原本內容）／翻譯編輯（嵌入 hs-lang.html） */
+  const hero=(function(){
+    const panes={data:document.getElementById("hs-pane-data"), lang:document.getElementById("hs-pane-lang")};
+    const btns={data:document.getElementById("hs-t-data"), lang:document.getElementById("hs-t-lang")};
+    const frame=document.getElementById("hs-lang-frame");
+    if(!panes.data||!panes.lang) return {show(){}};
+    /* 高度填滿可視區域 */
+    function fit(){
+      if(panes.lang.hidden) return;
+      const top=frame.getBoundingClientRect().top+window.scrollY;
+      frame.style.height=Math.max(420,window.innerHeight-top-16)+"px";
+    }
+    window.addEventListener("resize",fit);
+    /* hs-lang.html 自己的「← 回工具箱」：嵌在這裡時改成切回「資料」，避免工具箱套在框框裡 */
+    frame.addEventListener("load",()=>{
+      try{
+        if(!/hs-lang\.html$/.test(frame.contentWindow.location.pathname)){
+          frame.src="hs-lang.html";
+          go("tab-hero","data");
+          return;
+        }
+        frame.contentDocument.querySelectorAll('a[href="index.html"]').forEach(a=>
+          a.addEventListener("click",e=>{ e.preventDefault(); go("tab-hero","data"); }));
+      }catch(e){}
+    });
+    btns.data.onclick=()=>go("tab-hero","data");
+    btns.lang.onclick=()=>go("tab-hero","lang");
+    return {show(which){
+      for(const k in panes){
+        panes[k].hidden=k!==which;
+        btns[k].setAttribute("aria-selected",k===which);
+      }
+      if(which==="lang"){
+        if(!frame.getAttribute("src")) frame.src="hs-lang.html";
+        fit();
+      }
+    }};
+  })();
+
+  function go(id,sub){
     tabs.forEach(([b,p])=>{
       const on=p===id;
       document.getElementById(b).setAttribute("aria-selected",on);
       document.getElementById(p).hidden=!on;
     });
-    try{ location.hash = key(id); }catch(e){}
+    if(id==="tab-hero") hero.show(sub||"data");
+    const subKey=sub&&Object.keys(SUBS).find(k=>SUBS[k][0]===id&&SUBS[k][1]===sub);
+    const h=subKey||key(id);
+    try{ if(location.hash.slice(1)!==h) location.hash = h; }catch(e){}
   }
   tabs.forEach(([b,p])=>document.getElementById(b).onclick=()=>go(p));
 
-  if(tabs.length){
-    const h=location.hash.slice(1);
+  /* 依網址 #名稱 切換；網址改變時也跟著切換 */
+  function fromHash(){
+    let h=location.hash.slice(1);
+    h=OLD[h]||h;
+    if(SUBS[h]&&tabs.some(t=>t[1]===SUBS[h][0])) return go(SUBS[h][0],SUBS[h][1]);
     const want=tabs.find(([b,p])=>key(p)===h);
     go(want ? want[1] : tabs[0][1]);
   }
+  window.addEventListener("hashchange",fromHash);
+  if(tabs.length) fromHash();
 })();
 </script>
 <script>
