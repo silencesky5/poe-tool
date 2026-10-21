@@ -146,13 +146,13 @@ function save(){
     try{ doc=(await St.load())||{}; }catch(e){}
     doc=merged(doc);
     St.save(doc);
-  },300);
+  },100);   // 本機很快就存；上傳雲端由 CraftStorage 等停止操作 5 秒後再合併
 }
-/* 關頁前還沒存的：直接用上一次讀到的存檔合併後存（不能再等非同步） */
-window.addEventListener("pagehide",()=>{
+/* 離開頁面前（CraftStorage 要補同步）：還沒交出去的改動，用目前最新的整份存檔合併後馬上存 */
+window.addEventListener("craftstorage:beforeflush",e=>{
   if(!saveTimer||!St||!S.ready) return;
   clearTimeout(saveTimer); saveTimer=null;
-  doc=merged(doc); St.save(doc);
+  doc=merged(e.detail&&e.detail.current||doc); St.save(doc);
 });
 /* 使用者在衝突視窗選了「用雲端的」：整份換掉 */
 /* 切換中／EN：重畫格子（圖示的替代文字）和說明框 */

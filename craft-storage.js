@@ -1,7 +1,7 @@
 /* 製裝模擬器的存檔。模擬器只透過這支存取資料，不要直接碰 localStorage 或 Worker。
 
    CraftStorage.load(opts)    → Promise<data | null>（opts.refresh = 去雲端拿最新的）
-   CraftStorage.save(data)    → 立刻存一份在這台電腦；登入時 2 秒沒有新改動才上傳雲端
+   CraftStorage.save(data)    → 立刻存一份在這台電腦；登入時停止操作 5 秒後才合併上傳一次，離開頁面前再補一次
    CraftStorage.status()      → { loggedIn, user, sync, notice, localAvailable }
    CraftStorage.login()       → 前往 Discord 登入
    CraftStorage.logout()      → Promise
@@ -12,6 +12,10 @@
      CraftStorage.save({ ...cur, v: 2, inventory, tabs, … });         // 製裝台：倉庫和背包
    load() 回傳這台目前的版本、不連雲端，所以另一台電腦改過時，下次存檔會跳出衝突視窗讓使用者選；
    要拿雲端最新的用 load({ refresh: true })。
+
+   同步狀態 sync：local（沒登入）／pending（有改動、等 5 秒）／syncing（正在送出）／synced／error。
+   離開頁面前會先發出 "craftstorage:beforeflush"：還有改動沒交給 save() 的，要在這個事件裡
+   用 e.detail.current（目前最新的整份存檔）合併後，同步呼叫 save()。
 
    狀態改變時會發出 window 事件 "craftstorage:status"（detail = status()）；
    選了「用雲端的」存檔時會發出 "craftstorage:data"（detail = 新的 data），畫面要重新顯示。
@@ -26,7 +30,7 @@ const API = "https://poe-tool-auth.poe-tool-auth.workers.dev";
 const KEY = "poeCraftStash";          // { data }
 const META = "poeCraftStashMeta";    // { uid, base, dirty }：雲端版本與是否有還沒上傳的改動
 const AUTH = "poeCraftAuth";         // 登入 token
-const DEBOUNCE_MS = 2000;
+const DEBOUNCE_MS = 5000;            // 停止操作 5 秒後才上傳（KV 免費方案每天只能寫 1,000 次）
 const KEEPALIVE_MAX = 60 * 1024;     // 關閉頁面時用 keepalive 送出的上限
 
 /* ── localStorage：一律包 try/catch，不能用時只提示，不讓頁面壞掉 ── */
@@ -166,19 +170,20 @@ async function load(opts){
   }
 }
 
-/* ── 4. 存檔：本機立刻存；雲端等 2 秒沒有新改動才上傳 ── */
+/* ── 4. 存檔：本機立刻存；雲端等停止操作 5 秒後才合併上傳一次 ── */
 function save(data){
   if(!writeLocal(data) && !user) emit(); // 本機存不了：讓畫面顯示提示
   if(!user) return;
   cache = data;
   pending = data;
   setMeta({ dirty: true });
-  setSync("syncing");
+  if(!flushing && sync !== "pending") setSync("pending");   // 「同步中」只在真的送出時顯示
   clearTimeout(timer);
   timer = setTimeout(flush, DEBOUNCE_MS);
 }
 
-async function flush(){
+/* opts.keepalive：離開頁面時用，頁面關掉後請求也會送完（資料太大就不用） */
+async function flush(opts){
   clearTimeout(timer); timer = null;
   if(flushing) { await flushing; if(pending === undefined) return; }
   if(!user || pending === undefined) return;
@@ -186,15 +191,17 @@ async function flush(){
   flushing = (async () => {
     try{
       setSync("syncing");
+      const body = JSON.stringify({ data, baseUpdatedAt: meta().base });
       const res = await call("/stash", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, baseUpdatedAt: meta().base }),
+        body,
+        keepalive: !!(opts && opts.keepalive) && body.length <= KEEPALIVE_MAX,
       });
       if(res.ok){
         const { updatedAt } = await res.json();
         setMeta({ base: updatedAt, dirty: pending !== undefined });
-        setSync(pending === undefined ? "synced" : "syncing", null);
+        setSync(pending === undefined ? "synced" : "pending", null);
       }else if(res.status === 409){
         const cloud = await res.json();
         await resolveConflict(data, cloud);
@@ -268,19 +275,31 @@ function askConflict(when){
   });
 }
 
-/* ── 6. 關閉頁面前：還沒上傳的改動用 keepalive 送出（本機已經有一份，下次開頁也會補傳） ── */
-function flushOnExit(){
+/* ── 6. 離開頁面前補同步一次（切到別的分頁、縮小視窗、關閉或重新整理）
+   先發 beforeflush 讓製裝台、模擬器把還沒交出的改動交給 save()，再用 keepalive 送出。
+   送不出去也沒關係：本機已經有一份並標記「還沒上傳」，下次開頁會補傳。 ── */
+function beforeFlush(){
+  // detail.current：目前最新的整份存檔（每次讀都是最新的，前一個處理者剛存的也會反映）
+  const detail = { get current(){ return cache !== undefined ? cache : readLocal(); } };
+  try{ window.dispatchEvent(new CustomEvent("craftstorage:beforeflush", { detail })); }catch(e){}
+}
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState !== "hidden") return;
+  beforeFlush();
+  if(user && pending !== undefined) flush({ keepalive: true });
+});
+window.addEventListener("pagehide", () => {
+  beforeFlush();
   if(!user || pending === undefined) return;
+  if(!flushing){ flush({ keepalive: true }); return; }
+  // 前一次上傳還在路上：最新的改動直接用 keepalive 補送（成功與否下次開頁都會核對）
   const body = JSON.stringify({ data: pending, baseUpdatedAt: meta().base });
   if(body.length > KEEPALIVE_MAX) return;
   try{
-    fetch(API + "/stash", {
-      method: "PUT", keepalive: true, body,
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-    });
+    fetch(API + "/stash", { method: "PUT", keepalive: true, body,
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token } });
   }catch(e){}
-}
-window.addEventListener("pagehide", flushOnExit);
+});
 window.addEventListener("online", () => { if(user && meta().dirty){ if(pending === undefined) pending = readLocal(); flush(); } });
 
 /* ── 7. 登入／登出 ── */

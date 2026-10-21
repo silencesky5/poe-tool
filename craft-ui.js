@@ -68,11 +68,19 @@ function savePrices(){
   if(!St) return;
   clearTimeout(priceTimer);
   priceTimer=setTimeout(async()=>{
+    priceTimer=null;
     try{ saved=(await St.load())||saved; }catch(e){}
     saved={...saved,prices:{...S.prices}};
     St.save(saved);
   },400);
 }
+/* 離開頁面前（CraftStorage 要補同步）：還沒存的價格，用目前最新的整份存檔合併後馬上存 */
+window.addEventListener("craftstorage:beforeflush",e=>{
+  if(!priceTimer||!St) return;
+  clearTimeout(priceTimer); priceTimer=null;
+  saved={...((e.detail&&e.detail.current)||saved),prices:{...S.prices}};
+  St.save(saved);
+});
 /* 使用者在衝突視窗選了「用雲端的」：整份換掉 */
 window.addEventListener("craftstorage:data",e=>{
   saved=e.detail||{};

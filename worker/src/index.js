@@ -283,11 +283,12 @@ const me = guard(async (request, env) => {
 
 // ───────────── /stash ─────────────
 
+// 存檔放在 D1 的 stash 表（schema.sql）；KV 只留登出版本號
 async function readStash(env, id) {
-  const raw = await env.CRAFT_STASH.get(`stash:${id}`);
-  if (!raw) return { data: null, updatedAt: 0 };
+  const row = await env.CRAFT_DB.prepare('SELECT data, updated_at FROM stash WHERE discord_id = ?1').bind(id).first();
+  if (!row) return { data: null, updatedAt: 0 };
   try {
-    return JSON.parse(raw);
+    return { data: JSON.parse(row.data), updatedAt: row.updated_at };
   } catch {
     return { data: null, updatedAt: 0 };
   }
@@ -320,10 +321,22 @@ const putStash = guard(async (request, env) => {
   if (!body || !('data' in body)) return json({ error: 'missing_data' }, 400);
   const base = Number(body.baseUpdatedAt) || 0;
 
-  const current = await readStash(env, user.sub);
-  if (current.updatedAt > base) return json({ error: 'conflict', ...current }, 409);
+  // 一條 SQL 完成「檢查版本＋寫入」：雲端版本沒有比 base 新才寫（寫 1 筆），否則什麼都不寫
+  const res = await env.CRAFT_DB.prepare(
+    `INSERT INTO stash (discord_id, data, updated_at) VALUES (?1, ?2, ?3)
+     ON CONFLICT (discord_id) DO UPDATE SET
+       data = excluded.data,
+       updated_at = MAX(excluded.updated_at, stash.updated_at + 1)
+     WHERE stash.updated_at <= ?4
+     RETURNING updated_at`,
+  )
+    .bind(user.sub, JSON.stringify(body.data), Date.now(), base)
+    .run();
 
-  const updatedAt = Math.max(Date.now(), current.updatedAt + 1);
-  await env.CRAFT_STASH.put(`stash:${user.sub}`, JSON.stringify({ data: body.data, updatedAt }));
-  return json({ updatedAt });
+  const saved = res.results && res.results[0];
+  if (!saved) {
+    // 另一台電腦有比較新的存檔：把雲端那份傳回去讓使用者選
+    return json({ error: 'conflict', ...(await readStash(env, user.sub)) }, 409);
+  }
+  return json({ updatedAt: saved.updated_at, rowsWritten: res.meta && res.meta.rows_written });
 });

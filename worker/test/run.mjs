@@ -1,6 +1,6 @@
 // 本機測試：用 wrangler dev 跑 Worker，Discord API 換成本機假伺服器，不需要真的密鑰
 // 用法：npm test（在 worker 資料夾）
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { createHmac, randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import { writeFileSync, rmSync, mkdtempSync } from 'node:fs';
@@ -15,7 +15,7 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const SITE = 'http://localhost:8765';
 const SESSION_SECRET = randomBytes(32).toString('hex'); // 測試用，跑完就丟
 const DEV_VARS = path.join(ROOT, '.dev.vars');
-const STATE_DIR = mkdtempSync(path.join(tmpdir(), 'poe-auth-test-')); // 每次測試用全新的 KV
+const STATE_DIR = mkdtempSync(path.join(tmpdir(), 'poe-auth-test-')); // 每次測試用全新的 KV 和 D1
 
 // ── 假的 Discord API ──
 const USERS = {
@@ -100,6 +100,8 @@ async function main() {
   );
   await new Promise((r) => mock.listen(MOCK_PORT, '127.0.0.1', r));
 
+  // 本機 D1 先建表（和線上一樣用 schema.sql）
+  execFileSync(process.execPath, [path.join(ROOT, 'node_modules/wrangler/bin/wrangler.js'), 'd1', 'execute', 'CRAFT_DB', '--local', '--persist-to', STATE_DIR, '--file', path.join(ROOT, 'schema.sql')], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, CI: '1', WRANGLER_SEND_METRICS: 'false' } });
   const wrangler = spawn(process.execPath, [path.join(ROOT, 'node_modules/wrangler/bin/wrangler.js'), 'dev', '--port', String(PORT), '--ip', '127.0.0.1', '--persist-to', STATE_DIR], {
     cwd: ROOT,
     env: { ...process.env, WRANGLER_SEND_METRICS: 'false', CI: '1' },
@@ -162,16 +164,20 @@ async function main() {
     let s = await (await api('/stash', { token })).json();
     check('沒有資料時回傳空的', s.data === null && s.updatedAt === 0);
     r = await put(token, { text: '測試123' }, 0);
-    const t1 = (await r.json()).updatedAt;
+    const p1 = await r.json(), t1 = p1.updatedAt;
     check('PUT 成功並回傳 updatedAt', r.status === 200 && t1 > 0);
+    check('第一次存檔（新增）D1 rows_written = 1', p1.rowsWritten === 1, `（實際 ${p1.rowsWritten}）`);
     s = await (await api('/stash', { token })).json();
     check('GET 讀回剛存的資料', s.data?.text === '測試123' && s.updatedAt === t1);
     r = await put(token, { text: 'AAA' }, t1);
-    const t2 = (await r.json()).updatedAt;
+    const p2 = await r.json(), t2 = p2.updatedAt;
     check('用最新的 baseUpdatedAt 存檔成功', r.status === 200 && t2 > t1);
+    check('之後的存檔（更新）D1 rows_written = 1', p2.rowsWritten === 1, `（實際 ${p2.rowsWritten}）`);
     r = await put(token, { text: 'BBB' }, t1);
     const conflict = await r.json();
     check('用舊的 baseUpdatedAt → 409 並附上雲端那份', r.status === 409 && conflict.data?.text === 'AAA' && conflict.updatedAt === t2);
+    s = await (await api('/stash', { token })).json();
+    check('409 時雲端資料沒有被改到', s.data?.text === 'AAA' && s.updatedAt === t2);
     r = await put(token, { text: 'BBB' }, conflict.updatedAt);
     check('選「用這台的」後重送成功', r.status === 200);
     r = await put(token, { blob: 'x'.repeat(512 * 1024) }, 0);

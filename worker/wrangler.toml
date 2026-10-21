@@ -13,7 +13,13 @@ SITE_ORIGIN = "https://silencesky5.github.io"
 SITE_PATH = "/poe-tool/"
 REQUIRED_ROLE_ID = ""                       # 留空＝伺服器成員都可以；之後可填身分組 ID
 
-# 每個人的倉庫：stash:<discord id>；登出版本號：ver:<discord id>
+# 製裝存檔：D1 的 stash 表（schema.sql）
+[[d1_databases]]
+binding = "CRAFT_DB"
+database_name = "poe-tool-craft"
+database_id = "dba4a272-5663-4af0-a1dc-c75ebf85443d"
+
+# KV：登出版本號 ver:<discord id>。舊的存檔 stash:<discord id> 已搬到 D1，暫時保留不刪。
 [[kv_namespaces]]
 binding = "CRAFT_STASH"
 id = "fc1cc83b5b354c37b5aab4565ee30dd1"

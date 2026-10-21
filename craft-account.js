@@ -21,7 +21,7 @@ const NOTICE = {
   too_large: "倉庫太大（超過 512 KB），雲端存不下，只存在這台電腦",
   rate_limited: "存檔太頻繁，1 分鐘後會自動再上傳",
 };
-const SYNC = { synced: "已同步", syncing: "同步中…", error: "同步失敗", local: "存在這台電腦" };
+const SYNC = { synced: "已同步", pending: "待同步", syncing: "同步中…", error: "同步失敗", local: "存在這台電腦" };
 
 function render(st){
   let html = "";
