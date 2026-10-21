@@ -14,10 +14,25 @@ const GROUP_ZH={weapon:"武器",armour:"護甲",jewellery:"飾品"};
 const pct=x=>x>=10?x.toFixed(1)+"%":x>=1?x.toFixed(2)+"%":x.toFixed(3)+"%";
 const num=x=>Number.isInteger(x)?x.toLocaleString():x.toLocaleString(undefined,{maximumFractionDigits:1});
 
-/* 同名底材（例如三種 Two-Stone Ring）用固有詞綴區分 */
+/* 詞綴語言（index.html 的 window.CraftLang；中文沒有翻譯的會自動顯示英文） */
+const L=()=>window.CraftLang?window.CraftLang.get():"zh";
+/* 同名底材（例如三種雙玉戒指）用固有詞綴區分 */
 const nameCount={};
 E.bases.forEach(b=>nameCount[b.n]=(nameCount[b.n]||0)+1);
-const baseLabel=b=>nameCount[b.n]>1&&b.imp.length?b.n+"（"+b.imp.join("、")+"）":b.n;
+const baseLabel=(b,lang)=>{
+  lang=lang||L();
+  const n=E.baseName(b.i,lang);
+  return nameCount[b.n]>1&&b.imp.length?n+"（"+E.implicitLines(b.i,lang).join("、")+"）":n;
+};
+/* 搜尋用：中文、英文都放進去 */
+const baseHay=b=>(baseLabel(b,"zh")+"\n"+baseLabel(b,"en")).toLowerCase();
+const modHay=new Map();
+const modSearch=mi=>{
+  let s=modHay.get(mi);
+  if(s===undefined){ const m=E.mods[mi]; s=(E.modRange(mi,"zh").join("\n")+"\n"+m.tx+"\n"+m.n).toLowerCase(); modHay.set(mi,s); }
+  return s;
+};
+const modText=mi=>E.modRange(mi,L());   // 範圍文字（目前語言）
 
 const S={
   cls:"Helmet", b:-1, lv:86, item:null, hist:[], msg:null,
@@ -148,7 +163,7 @@ const clsSel=$("kcls"), bq=$("kbq"), bl=$("kbases"), lvr=$("klvr"), lvn=$("klvn"
 function basesOfClass(){ return E.bases.filter(b=>b.c===S.cls); }
 function drawBases(){
   const q=bq.value.trim().toLowerCase();
-  const list=basesOfClass().filter(b=>!q||baseLabel(b).toLowerCase().includes(q));
+  const list=basesOfClass().filter(b=>!q||baseHay(b).includes(q));
   bl.innerHTML=list.map(b=>`<button class="kbase" role="option" data-b="${b.i}" aria-selected="${b.i===S.b}">
     <span>${esc(baseLabel(b))}</span><em>${b.lv}</em></button>`).join("")||`<div class="khint">找不到符合的底材。</div>`;
   /* 選中的底材捲到看得到的地方（只捲清單，不捲整頁） */
@@ -181,6 +196,7 @@ function setBase(b){
 /* ── 中間：物品卡 ── */
 function itemName(it){
   const b=E.bases[it.b];
+  if(L()==="zh") return [E.baseName(it.b,"zh")];   // 中文：只顯示底材名稱
   if(it.r===E.MAGIC){
     const p=it.mods.find(x=>E.mods[x.m].pre), s=it.mods.find(x=>!E.mods[x.m].pre);
     return [(p?E.mods[p.m].n+" ":"")+b.n+(s?" "+E.mods[s.m].n:"")];
@@ -193,16 +209,16 @@ function drawItem(){
   const mods=it.mods.slice().sort((x,y)=>(E.mods[y.m].pre-E.mods[x.m].pre));
   const rows=mods.map(x=>{
     const m=E.mods[x.m], t=E.tierOf(it.b,x.m);
-    const tip=`${m.n}（${m.pre?"前綴":"後綴"}，T${t}／共 ${E.tierCount(it.b,x.m)} 階）\n範圍：${m.tx.replace(/\n/g," / ")}\n需求等級 ${m.lv}・群組 ${m.gr.join(", ")}`;
+    const tip=`${m.n}（${m.pre?"前綴":"後綴"}，T${t}／共 ${E.tierCount(it.b,x.m)} 階）\n範圍：${modText(x.m).join(" / ")}${L()==="zh"?"\n英文："+E.render(x.m,x.v,"en").join(" / "):""}\n需求等級 ${m.lv}・群組 ${m.gr.join(", ")}`;
     return `<div class="kmod" title="${esc(tip)}"><span class="ktag ${m.pre?"p":"s"}">${m.pre?"前":"後"} T${t}</span>
-      <span class="ktxt">${E.render(x.m,x.v).map(esc).join("<br>")}</span></div>`;
+      <span class="ktxt">${E.render(x.m,x.v,L()).map(esc).join("<br>")}</span></div>`;
   }).join("");
   const name=itemName(it);
   $("kitem").innerHTML=`<div class="kcard r${it.r}">
     <div class="kname">${name.map(esc).join("<br>")}</div>
     <div class="kbody">
       <div class="kmeta">${esc(D.classes[b.c].zh)}・${CE.RARITY_ZH[it.r]}・物品等級 ${it.lv}</div>
-      ${b.imp.length?`<div class="kimp">${b.imp.map(t=>esc(t).replace(/\n/g,"<br>")).join("<br>")}</div><div class="ksep"></div>`:""}
+      ${b.imp.length?`<div class="kimp">${E.implicitLines(it.b,L()).map(esc).join("<br>")}</div><div class="ksep"></div>`:""}
       ${rows||`<div class="kempty">沒有詞綴</div>`}
       ${it.r?`<div class="kcnt">前綴 ${c.p}/${max}・後綴 ${c.s}/${max}</div>`:""}
     </div></div>`;
@@ -276,7 +292,7 @@ function drawPool(){
   }else{
     rows=PV.rows.map(r=>({m:r.m,w:r.w,pct:r.pct,pre:r.pre,tierText:"T"+r.tier,maxTier:r.tier}));
   }
-  if(q) rows=rows.filter(r=>E.mods[r.m].tx.toLowerCase().includes(q)||E.mods[r.m].n.toLowerCase().includes(q));
+  if(q) rows=rows.filter(r=>modSearch(r.m).includes(q));
   const maxPct={p:0,s:0};
   rows.forEach(r=>{ const k=r.pre?"p":"s"; if(r.pct>maxPct[k]) maxPct[k]=r.pct; });
   const table=list=>list.length?`<table><thead><tr><th class="c"><span class="sr">目標</span></th><th>Tier</th><th>詞綴</th><th class="n">等級</th><th class="n">權重</th><th class="n">機率</th></tr></thead><tbody>`+
@@ -285,7 +301,7 @@ function drawPool(){
       const bar=r.pct/(maxPct[r.pre?"p":"s"]||1)*100;
       return `<tr class="${t?"on":""}"><td class="c"><input type="checkbox" data-m="${r.m}" data-t="${r.maxTier}" ${t?"checked":""} aria-label="加到目標"></td>
         <td class="t">${r.tierText}</td>
-        <td><div class="ptx">${esc(m.tx).replace(/\n/g,"<br>")}</div><div class="pn">${esc(m.n)}${r.n>1?`・${r.n} 階`:""}</div></td>
+        <td><div class="ptx">${modText(r.m).map(esc).join("<br>")}</div><div class="pn">${esc(m.n)}${r.n>1?`・${r.n} 階`:""}</div></td>
         <td class="n">${S.poolMerge?"":m.lv}</td><td class="n">${num(r.w)}</td>
         <td class="n pc"><span style="--w:${bar.toFixed(1)}%">${pct(r.pct)}</span></td></tr>`;
     }).join("")+`</tbody></table>`:`<div class="khint">沒有符合的詞綴。</div>`;
@@ -305,7 +321,7 @@ $("kpool").addEventListener("change",e=>{
   /* 勾一列＝這類詞綴、這個 tier 以上都算中；取消勾選＝整類拿掉 */
   if(x.checked){
     if(t) t.maxTier=+x.dataset.t;
-    else S.targets.push({ty:m.ty,g:m.g,tx:m.tx,maxTier:+x.dataset.t});
+    else S.targets.push({ty:m.ty,g:m.g,mi:m.i,maxTier:+x.dataset.t});
   }else if(t) S.targets.splice(S.targets.indexOf(t),1);
   drawPool();
 });
@@ -318,7 +334,7 @@ function drawTargets(){
     const tiers=fam?[...new Set(fam.rows.map(r=>r.tier))].sort((a,b)=>a-b):[];
     if(fam&&!tiers.includes(t.maxTier)&&t.maxTier<tiers[tiers.length-1]) tiers.push(t.maxTier), tiers.sort((a,b)=>a-b);
     const opts=tiers.map(n=>`<option value="${n}" ${n===t.maxTier?"selected":""}>T${n}${n===1?"":" 以上"}</option>`).join("");
-    const txt=fam?E.mods[fam.best.m].tx:t.tx;
+    const txt=modText(fam?fam.best.m:t.mi).join("\n");
     return `<div class="ktarget"><span class="ktag ${t.g}">${t.g==="p"?"前":"後"}</span>
       <span class="ktt">${esc(txt).replace(/\n/g," / ")}${fam?"":`<em>（這個底材／物品等級不會出現）</em>`}</span>
       ${fam?`<select data-i="${i}" aria-label="最低 tier">${opts}</select>`:""}
@@ -372,7 +388,7 @@ function run(){
   if(!o.targets.length){ showRunErr("還沒有設定目標詞綴。"); return; }
   const err=E.feasible(o);
   if(err){ showRunErr(err); return; }
-  const meta={o,base:baseLabel(E.bases[S.b]),method:CE.METHODS.find(m=>m.k===S.method),
+  const meta={o,method:CE.METHODS.find(m=>m.k===S.method),
     targets:S.targets.map(t=>({...t})),t0:performance.now()};
   S.running=true; S.progress=0; drawProgress();
   const done=results=>{
@@ -419,8 +435,8 @@ function drawResults(){
   const {meta,sum}=R, uses=meta.method.uses;
   const need=E.needCount(meta.o);
   const cond=meta.o.mode==="all"?"全部都要":`至少 ${need} 條`;
-  let h=`<div class="kctx">${esc(meta.base)}・物品等級 ${meta.o.lv}・${esc(meta.method.zh)}・${cond}・${num(sum.n)} 次（${(meta.ms/1000).toFixed(1)} 秒）<br>`+
-    meta.targets.map(t=>`<span class="ktag ${t.g}">${t.g==="p"?"前":"後"} T${t.maxTier}${t.maxTier>1?"+":""}</span> ${esc(t.tx.split("\n")[0])}`).join("<br>")+`</div>`;
+  let h=`<div class="kctx">${esc(baseLabel(E.bases[meta.o.b]))}・物品等級 ${meta.o.lv}・${esc(meta.method.zh)}・${cond}・${num(sum.n)} 次（${(meta.ms/1000).toFixed(1)} 秒）<br>`+
+    meta.targets.map(t=>`<span class="ktag ${t.g}">${t.g==="p"?"前":"後"} T${t.maxTier}${t.maxTier>1?"+":""}</span> ${esc(modText(t.mi)[0])}`).join("<br>")+`</div>`;
   h+=`<div class="krate"><b>${(sum.rate*100).toFixed(1)}%</b> 成功（${num(sum.success)} / ${num(sum.n)}）${sum.rate<1?`<small>沒成功的是重抽超過 ${num(meta.o.limit)} 次</small>`:""}</div>`;
   if(sum.success){
     h+=`<table class="kres"><thead><tr><th>通貨</th><th class="n">平均</th><th class="n">中位數</th><th class="n">90% 以內</th></tr></thead><tbody>`+
@@ -437,6 +453,9 @@ function drawResults(){
   }
   $("kres").innerHTML=h;
 }
+
+/* 切換中／EN：重畫所有有詞綴或底材名稱的地方 */
+window.addEventListener("craftlang",()=>{ drawBases(); drawPool(); drawItem(); drawResults(); });
 
 /* ── 開始 ── */
 lvr.value=lvn.value=S.lv;

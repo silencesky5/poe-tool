@@ -26,9 +26,18 @@ const GROUP_ZH={weapon:"武器",armour:"護甲",jewellery:"飾品"};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+/* 詞綴語言（index.html 的 window.CraftLang；中文沒有翻譯的會自動顯示英文） */
+const L=()=>window.CraftLang?window.CraftLang.get():"zh";
 const nameCount={};
 E.bases.forEach(b=>nameCount[b.n]=(nameCount[b.n]||0)+1);
-const baseLabel=b=>nameCount[b.n]>1&&b.imp.length?b.n+"（"+b.imp.join("、")+"）":b.n;
+/* 同名底材（例如三種雙玉戒指）用固有詞綴區分 */
+const baseLabel=(b,lang)=>{
+  lang=lang||L();
+  const n=E.baseName(b.i,lang);
+  return nameCount[b.n]>1&&b.imp.length?n+"（"+E.implicitLines(b.i,lang).join("、")+"）":n;
+};
+/* 搜尋：中文、英文都找得到 */
+const baseHay=b=>(baseLabel(b,"zh")+"\n"+baseLabel(b,"en")).toLowerCase();
 const sizeOf=item=>{ const b=E.bases[item.b]; return {w:b.w||1,h:b.h||1}; };
 
 /* ── 狀態 ── */
@@ -138,6 +147,8 @@ window.addEventListener("pagehide",()=>{
   doc=merged(doc); St.save(doc);
 });
 /* 使用者在衝突視窗選了「用雲端的」：整份換掉 */
+/* 切換中／EN：重畫格子（圖示的替代文字）和說明框 */
+window.addEventListener("craftlang",()=>{ if(S.ready){ drawAll(); refreshTip(); } });
 window.addEventListener("craftstorage:data",e=>{
   dropHeld(true);
   fromSave(e.detail);
@@ -201,7 +212,7 @@ root.addEventListener("error",e=>{
   box.className="kb-noimg"; box.textContent=im.dataset.label;
   im.replaceWith(box);
 },true);
-const itemIcon=item=>{ const b=E.bases[item.b]; return iconHTML(IMG+"items/"+b.ic,b.n); };
+const itemIcon=item=>{ const b=E.bases[item.b]; return iconHTML(IMG+"items/"+b.ic,E.baseName(item.b,L())); };
 const curIcon=k=>iconHTML(IMG+"items/"+((D.curIcons||{})[k]||k+".png"),CE.CUR[k].zh);
 
 /* ── 畫面 ── */
@@ -325,6 +336,7 @@ function flash(text,good){
 /* ── 說明框（之後換成仿遊戲版本時，只要換掉這兩個函式） ── */
 function itemName(it){
   const b=E.bases[it.b];
+  if(L()==="zh") return [E.baseName(it.b,"zh")];   // 中文：只顯示底材名稱，不組魔法／稀有物品的名字
   if(it.r===E.MAGIC){
     const p=it.mods.find(x=>E.mods[x.m].pre), s=it.mods.find(x=>!E.mods[x.m].pre);
     return [(p?E.mods[p.m].n+" ":"")+b.n+(s?" "+E.mods[s.m].n:"")];
@@ -335,17 +347,21 @@ function itemName(it){
 function itemTooltipHTML(it,detail){
   const b=E.bases[it.b], c=E.counts(it), max=E.maxSide(it);
   const mods=it.mods.slice().sort((x,y)=>(E.mods[y.m].pre-E.mods[x.m].pre));
+  const lang=L(), zh=lang==="zh";
+  /* 按住 Alt：中文底下用小字灰色附英文原文，方便對照英文攻略 */
+  const lines=(zl,el)=>zl.map((t,i)=>`<div>${esc(t)}${detail&&zh&&el[i]&&el[i]!==t?`<div class="ken">${esc(el[i])}</div>`:""}</div>`).join("");
   const rows=mods.map(x=>{
     const m=E.mods[x.m], t=E.tierOf(it.b,x.m);
-    const big=detail?`<div class="kbig">${esc(m.n)}・${m.pre?"前綴":"後綴"} T${t}／共 ${E.tierCount(it.b,x.m)} 階・範圍 ${esc(m.tx).replace(/\n/g," / ")}</div>`:"";
+    const big=detail?`<div class="kbig">${esc(m.n)}・${m.pre?"前綴":"後綴"} T${t}／共 ${E.tierCount(it.b,x.m)} 階・範圍 ${esc(E.modRange(x.m,lang).join(" / "))}</div>`:"";
     return `<div class="kmod"><span class="ktag ${m.pre?"p":"s"}">${m.pre?"前":"後"} T${t}</span>
-      <span class="ktxt">${E.render(x.m,x.v).map(esc).join("<br>")}${big}</span></div>`;
+      <span class="ktxt">${lines(E.render(x.m,x.v,lang),E.render(x.m,x.v,"en"))}${big}</span></div>`;
   }).join("");
+  const imp=lines(E.implicitLines(it.b,lang),E.implicitLines(it.b,"en"));
   return `<div class="kcard r${it.r}">
     <div class="kname">${itemName(it).map(esc).join("<br>")}</div>
     <div class="kbody">
-      <div class="kmeta">${esc(D.classes[b.c].zh)}・${CE.RARITY_ZH[it.r]}・物品等級 ${it.lv}${detail?"":"　<small>（按住 Alt 看範圍）</small>"}</div>
-      ${b.imp.length?`<div class="kimp">${b.imp.map(t=>esc(t).replace(/\n/g,"<br>")).join("<br>")}</div><div class="ksep"></div>`:""}
+      <div class="kmeta">${esc(D.classes[b.c].zh)}・${CE.RARITY_ZH[it.r]}・物品等級 ${it.lv}${detail?"":`　<small>（按住 Alt 看範圍${L()==="zh"?"和英文原文":""}）</small>`}</div>
+      ${b.imp.length?`<div class="kimp">${imp}</div><div class="ksep"></div>`:""}
       ${rows||`<div class="kempty">沒有詞綴</div>`}
       ${it.r?`<div class="kcnt">前綴 ${c.p}/${max}・後綴 ${c.s}/${max}</div>`:""}
     </div></div>`;
@@ -677,7 +693,7 @@ function openVendor(){
   if(V.b<0||E.bases[V.b].c!==V.cls){ const l=ofClass(); V.b=l[l.length-1].i; }
   function drawBases(){
     const s=q.value.trim().toLowerCase();
-    const l=ofClass().filter(b=>!s||baseLabel(b).toLowerCase().includes(s));
+    const l=ofClass().filter(b=>!s||baseHay(b).includes(s));
     list.innerHTML=l.map(b=>`<button class="kbase" role="option" data-b="${b.i}" aria-selected="${b.i===V.b}">
       <span>${esc(baseLabel(b))}</span><em>${b.w}×${b.h}・${b.lv}</em></button>`).join("")||`<div class="khint">找不到符合的底材。</div>`;
     const on=list.querySelector('[aria-selected="true"]');

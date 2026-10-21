@@ -8,6 +8,7 @@
 資料來源：RePoE fork（PoE1）https://repoe-fork.github.io/
 只保留第一版會用到的內容：武器、護甲、飾品的一般底材，以及能出現在這些底材上的
 item 前綴 / 後綴。詳細說明見 tools/README-craft.md。
+另外下載繁中版的 stat_translations.json、base_items.json，加上詞綴中文模板和底材中文名（英文保留）。
 
 圖示：底材和 10 顆通貨的官方圖下載到 img/craft/items/（網站只讀本地檔）。
     已經下載過的檔案會跳過；--no-icons 不下載圖示。
@@ -17,11 +18,15 @@ import argparse
 import json
 import os
 import sys
+import urllib.parse
 import urllib.request
 from datetime import date
 
 BASE_URL = "https://repoe-fork.github.io/"
 FILES = ["mods.json", "base_items.json", "stat_translations.json", "version.txt"]
+# 遊戲繁中版匯出的資料（結構和英文版一樣）：詞綴的中文模板、底材中文名
+ZH_DIR = "Traditional Chinese/"
+ZH_FILES = ["stat_translations.json", "base_items.json"]
 ICON_URL = "https://web.poecdn.com/image/"
 ICON_MAX_MB = 30  # 超過就停下來，不要默默塞一大堆圖進網站
 
@@ -91,11 +96,18 @@ def fetch(src):
         return src
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "_repoe_cache")
     os.makedirs(out, exist_ok=True)
-    for f in FILES:
-        print("下載", BASE_URL + f)
-        with urllib.request.urlopen(BASE_URL + f) as r, open(os.path.join(out, f), "wb") as w:
+    jobs = [(f, f) for f in FILES] + [(ZH_DIR + f, zh_name(f)) for f in ZH_FILES]
+    for remote, local in jobs:
+        url = BASE_URL + urllib.parse.quote(remote)
+        print("下載", url)
+        with urllib.request.urlopen(url) as r, open(os.path.join(out, local), "wb") as w:
             w.write(r.read())
     return out
+
+
+def zh_name(f):
+    """繁中檔案在本機的檔名：stat_translations.json → zh_stat_translations.json"""
+    return "zh_" + f
 
 
 def load(src, name):
@@ -158,6 +170,9 @@ def main():
     mods = load(src, "mods.json")
     bases_raw = load(src, "base_items.json")
     trans = load(src, "stat_translations.json")
+    zh_trans = load(src, zh_name("stat_translations.json"))
+    zh_bases = load(src, zh_name("base_items.json"))
+    zh_by_ids = {tuple(e["ids"]): e.get("Traditional Chinese") for e in zh_trans}
 
     # ── 底材 ──
     bases = []
@@ -197,27 +212,32 @@ def main():
             tag_list.append(t)
         return tag_idx[t]
 
-    # 隱含詞綴（底材固有）的文字
-    def implicit_text(iid):
-        m = mods.get(iid)
-        return m["text"] if m and m.get("text") else None
+    # 隱含詞綴（底材固有）的文字；中文版用 stats 的範圍在網頁上套中文模板
+    def implicit_mods(b):
+        return [mods[i] for i in b["implicits"] if i in mods and mods[i].get("text")]
 
     # 存檔裡的物品用底材「編號」記錄：順序不能變，新欄位只能往後加
-    out_bases, icon_jobs = [], {}
+    out_bases, icon_jobs, missing_base = [], {}, []
     for bid, b in bases:
         dds = (b.get("visual_identity") or {}).get("dds_file") or ""
         ic = icon_name(dds) if dds else ""
         if ic:
             icon_jobs[ic] = dds
+        imps = implicit_mods(b)
+        zh_n = (zh_bases.get(bid) or {}).get("name")
+        if not zh_n or zh_n == b["name"]:
+            missing_base.append(b["name"])
         out_bases.append({
             "n": b["name"],
             "c": b["item_class"],
             "lv": b["drop_level"],
             "t": [T(t) for t in b["tags"]],
-            "imp": [x for x in (implicit_text(i) for i in b["implicits"]) if x],
+            "imp": [m["text"] for m in imps],
             "w": b.get("inventory_width") or 1,   # 佔格大小
             "h": b.get("inventory_height") or 1,
             "ic": ic,                             # img/craft/items/ 底下的圖檔名
+            "nz": zh_n or b["name"],              # 繁中名稱（沒有就用英文）
+            "is": [[[s["id"], s["min"], s["max"]] for s in m["stats"]] for m in imps],  # 固有詞綴的數值範圍
         })
 
     # 通貨圖示
@@ -232,24 +252,36 @@ def main():
 
     # ── 詞綴文字（只留用得到的 stat id）──
     used_stats = {s["id"] for m in keep.values() for s in m["stats"]}
+    used_stats |= {s[0] for b in out_bases for st in b["is"] for s in st}
     out_trans, stat_to_tr, unknown = [], {}, set()
-    for e in trans:
-        if e.get("hidden") or not (set(e["ids"]) & used_stats):
-            continue
-        variants = []
-        for v in e["English"]:
+    missing_zh = []   # 有英文、沒有中文的 stat id
+
+    def variants_of(vs):
+        out = []
+        for v in vs:
             for hs in v["index_handlers"]:
                 for h in hs:
                     if h not in KNOWN_HANDLERS:
                         unknown.add(h)
-            variants.append({
+            out.append({
                 "c": [[c.get("min"), c.get("max"), 1 if c.get("negated") else 0] for c in v["condition"]],
                 "f": v["format"],
                 "h": v["index_handlers"],
                 "s": v["string"],
             })
+        return out
+
+    for e in trans:
+        if e.get("hidden") or not (set(e["ids"]) & used_stats):
+            continue
+        entry = {"ids": e["ids"], "v": variants_of(e["English"])}
+        zh = zh_by_ids.get(tuple(e["ids"]))
+        if zh:
+            entry["z"] = variants_of(zh)   # 中文模板：選哪一條、數值怎麼換算都和英文一樣
+        else:
+            missing_zh.extend(sorted(set(e["ids"]) & used_stats))
         idx = len(out_trans)
-        out_trans.append({"ids": e["ids"], "v": variants})
+        out_trans.append(entry)
         for sid in e["ids"]:
             stat_to_tr.setdefault(sid, idx)
 
@@ -292,6 +324,10 @@ def main():
           f"輸出 {os.path.abspath(a.out)}（{size/1024/1024:.2f} MB）")
     if unknown:
         print("警告：有未實作的數值換算 →", sorted(unknown))
+    print(f"繁中：用到的 stat {len(used_stats)} 條，沒有中文 {len(missing_zh)} 條（會顯示英文）"
+          + ("" if not missing_zh else "，前 20 個：" + ", ".join(missing_zh[:20])))
+    print(f"繁中：底材 {len(out_bases)} 個，沒有中文名 {len(missing_base)} 個"
+          + ("" if not missing_base else "：" + ", ".join(missing_base[:20])))
     if size > 3 * 1024 * 1024:
         print("錯誤：超過 3 MB")
         sys.exit(1)

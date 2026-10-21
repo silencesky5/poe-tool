@@ -27,6 +27,18 @@ node tools/test_craft_engine.js
 
 - **RePoE**（PoE1）：https://github.com/lvlvllvlvllvlvl/RePoE ，資料網址 https://repoe-fork.github.io/
   - 用到 `mods.json`、`base_items.json`、`stat_translations.json`、`version.txt`
+  - 繁中：`Traditional Chinese/stat_translations.json`（詞綴中文模板）、`Traditional Chinese/base_items.json`（底材中文名），
+    下載後存成 `_repoe_cache/zh_*.json`
+
+## 中文顯示
+
+- `craft-data.js` 英文、中文都有：每筆詞綴文字的 `v` 是英文模板、`z` 是中文模板；底材的 `n` 英文名、`nz` 中文名、`is` 固有詞綴的數值範圍。
+- 中文和英文用同一套規則選模板、換算數值（condition、format、index_handlers），只是換成中文字串。
+  範圍文字（例如「+(115-129) 最大生命」）也是用模板組出來的；英文範圍直接用 RePoE 的 `text`。
+- 某條沒有中文就顯示英文。build 腳本最後會印出缺中文的數量和前 20 個 id（3.29.3.3：0 條）。
+- 「中／EN」切換在製裝方法分頁右上角，存在 localStorage（`poe-craft-lang`），程式在 index.html 的載入程式（`window.CraftLang`，切換時發出 `craftlang` 事件）。
+- 中文模式不組魔法／稀有物品的名稱，說明框標題只顯示底材中文名。按住 Alt 時，中文詞綴底下用灰色小字附英文原文。
+- 存檔只記底材、詞綴的編號，跟語言無關；加中文欄位時沒有改動編號順序。
   - 目前資料的遊戲版本：**3.29.3.3**（2026-10-21 下載，伺服器最後更新 2026-10-19）
   - 授權：程式碼 MIT（Copyright (c) 2016 brather1ng）。匯出的遊戲資料版權屬 Grinding Gear Games，需遵守其使用條款。
 - **Kalandralang**：https://github.com/doomeer/kalandralang ，MIT（Copyright (c) 2022 DooMeeR）

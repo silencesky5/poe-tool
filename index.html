@@ -1188,6 +1188,16 @@ body .gbtns .pri:hover{background:#DD8B36}
   font-size:12.5px;padding:5px 12px;border-radius:99px;cursor:pointer}
 #tab-craft .kauth-out:hover{color:#fff;border-color:#67645C}
 #tab-craft .kauth-msg{font-size:12.5px;line-height:1.6;color:#E0A86A;max-width:300px}
+/* 中／EN 切換（程式在檔案最後的載入程式：window.CraftLang） */
+#tab-craft .khero-side{flex:0 1 300px;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+#tab-craft .khero-side .kauth{flex:none;width:100%}
+#tab-craft .klang{display:inline-flex;border:1px solid var(--edge-hi);border-radius:99px;overflow:hidden}
+#tab-craft .klang button{background:#1D1D1B;border:0;color:#A6A199;font-family:var(--sans);font-size:12.5px;
+  font-weight:600;padding:5px 13px;cursor:pointer;transition:all .15s}
+#tab-craft .klang button+button{border-left:1px solid var(--edge-hi)}
+#tab-craft .klang button:hover{color:#fff;background:#262624}
+#tab-craft .klang button[aria-pressed="true"]{background:var(--accent);color:#0F0F0E}
+@media(max-width:640px){#tab-craft .khero-side{align-items:flex-start;flex-basis:100%}}
 @media(max-width:640px){#tab-craft .kauth{align-items:flex-start;text-align:left;flex-basis:100%}
   #tab-craft .kauth-who{align-items:flex-start}}
 </style>
@@ -1423,7 +1433,12 @@ body .gbtns .pri:hover{background:#DD8B36}
     <div class="ktitle">製裝方法</div>
     <div class="kline">PoE1 通貨（Currency）製裝模擬器：選底材（Base Type）和物品等級（Item Level），按通貨看結果；也可以設定目標詞綴，模擬上千次，看平均要用幾顆通貨。</div>
     </div>
-    <div class="kauth" id="kauth" aria-live="polite"></div>
+    <div class="khero-side">
+      <div class="klang" role="group" aria-label="詞綴語言">
+        <button type="button" data-lang="zh" aria-pressed="true">中</button><button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+      <div class="kauth" id="kauth" aria-live="polite"></div>
+    </div>
   </header>
   <div class="ksubtabs" role="tablist">
     <button class="ksubtab" id="k-t-bench" role="tab" aria-selected="true" aria-controls="k-pane-bench">製裝台</button>
@@ -4244,6 +4259,24 @@ if(typeof SCARABS==="undefined"){
 (function(){
   const panel=document.getElementById("tab-craft");
   if(!panel) return;
+  /* 詞綴語言：預設中文；選擇存在 localStorage。改了會發出 window 事件 "craftlang"，製裝台和模擬器各自重畫 */
+  const LANG_KEY="poe-craft-lang";
+  let lang="zh";
+  try{ if(localStorage.getItem(LANG_KEY)==="en") lang="en"; }catch(e){}
+  const langBtns=panel.querySelectorAll(".klang button");
+  const drawLang=()=>langBtns.forEach(b=>b.setAttribute("aria-pressed",b.dataset.lang===lang));
+  window.CraftLang={
+    get:()=>lang,
+    set(l){
+      l=l==="en"?"en":"zh";
+      if(l===lang) return;
+      lang=l; drawLang();
+      try{ localStorage.setItem(LANG_KEY,l); }catch(e){}
+      window.dispatchEvent(new CustomEvent("craftlang",{detail:l}));
+    },
+  };
+  langBtns.forEach(b=>b.onclick=()=>window.CraftLang.set(b.dataset.lang));
+  drawLang();
   const subs={bench:["k-t-bench","k-pane-bench"],sim:["k-t-sim","k-pane-sim"],notes:["k-t-notes","k-pane-notes"]};
   Object.keys(subs).forEach(k=>document.getElementById(subs[k][0]).onclick=()=>{
     Object.keys(subs).forEach(j=>{

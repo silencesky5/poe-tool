@@ -268,31 +268,59 @@ function create(D){
     const ok=(mn===null||mn===undefined||v>=mn)&&(mx===null||mx===undefined||v<=mx);
     return neg?!ok:ok;
   }
-  function render(mi,vals){
-    const m=mods[mi];
-    if(!vals) return m.tx.split("\n");
-    const map={};
-    m.st.forEach((s,i)=>map[s[0]]=vals[i]);
+  /* stats：[[stat id, 最小, 最大]]（已經骰好的數值就是最小＝最大）。lang："zh" 用繁中模板，其他用英文。
+     某條沒有中文模板就用英文那條；有 stat 完全沒有翻譯回傳 null（呼叫的地方改用 RePoE 的英文文字）。 */
+  function statLines(stats,lang){
+    const lo={}, hi={};
+    for(const [id,a,b] of stats){ lo[id]=a; hi[id]=b; }
     const seen=new Set(), lines=[];
-    for(const [sid] of m.st){
+    for(const [sid] of stats){
       const ti=D.statTr[sid];
-      if(ti===undefined) return m.tx.split("\n");
+      if(ti===undefined){
+        if(!lo[sid]&&!hi[sid]) continue;   // 例如 dummy_stat_display_nothing：數值 0、本來就不顯示
+        return null;
+      }
       if(seen.has(ti)) continue;
       seen.add(ti);
       const e=D.trans[ti];
-      const vs=e.ids.map(id=>map[id]!==undefined?map[id]:0);
-      const v=e.v.find(x=>x.c.every((c,k)=>condOk(c,vs[k])));
+      const vl=e.ids.map(id=>lo[id]!==undefined?lo[id]:0), vh=e.ids.map(id=>hi[id]!==undefined?hi[id]:0);
+      const list=lang==="zh"&&e.z?e.z:e.v;
+      const ok=vs=>x=>x.c.every((c,k)=>condOk(c,vs[k]));
+      const v=list.find(ok(vh))||list.find(ok(vl));
       if(!v) continue;
       lines.push(v.s.replace(/\{(\d+)\}/g,(_,k)=>{
         k=+k;
-        let x=vs[k];
-        for(const h of (v.h[k]||[])) if(HANDLERS[h]) x=HANDLERS[h](x);
         const f=v.f[k];
         if(f==="ignore") return "";
-        return (f==="+#"&&x>0?"+":"")+fmtNum(x);
+        let a=vl[k], b=vh[k];
+        for(const h of (v.h[k]||[])) if(HANDLERS[h]){ a=HANDLERS[h](a); b=HANDLERS[h](b); }
+        if(a>b){ const t=a; a=b; b=t; }
+        const sign=f==="+#"&&b>0?"+":"";
+        return sign+(a===b?fmtNum(a):"("+fmtNum(a)+"-"+fmtNum(b)+")");
       }));
     }
-    return lines.length?lines:m.tx.split("\n");
+    return lines;
+  }
+  /* 詞綴文字。vals 省略就是範圍文字（英文直接用 RePoE 的 text） */
+  function render(mi,vals,lang){
+    const m=mods[mi];
+    if(!vals) return modRange(mi,lang);
+    const l=statLines(m.st.map((s,i)=>[s[0],vals[i],vals[i]]),lang);
+    return l&&l.length?l:m.tx.split("\n");
+  }
+  function modRange(mi,lang){
+    const m=mods[mi];
+    if(lang==="zh"){ const l=statLines(m.st,"zh"); if(l&&l.length) return l; }
+    return m.tx.split("\n");
+  }
+  /* 底材名稱、固有詞綴（範圍文字） */
+  function baseName(b,lang){ const x=bases[b]; return lang==="zh"&&x.nz?x.nz:x.n; }
+  function implicitLines(b,lang){
+    const x=bases[b];
+    return x.imp.flatMap((t,i)=>{
+      if(lang==="zh"&&x.is&&x.is[i]){ const l=statLines(x.is[i],"zh"); if(l&&l.length) return l; }
+      return t.split("\n");
+    });
   }
 
   /* ── 詞綴池檢視：只看底材＋物品等級（空白物品），前綴、後綴分開算機率 ── */
@@ -405,7 +433,7 @@ function create(D){
   return {
     data:D, bases, mods, modById, tagId, NORMAL, MAGIC, RARE,
     make, clone, check, apply, applyMut, pool, poolView, counts, maxSide, tagSet, weightOf,
-    tierOf, tierCount, render, feasible, runOne, summarize, costStats, isDone, needCount,
+    tierOf, tierCount, render, modRange, baseName, implicitLines, feasible, runOne, summarize, costStats, isDone, needCount,
   };
 }
 
