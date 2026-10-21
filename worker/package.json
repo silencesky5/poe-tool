@@ -1,0 +1,13 @@
+{
+  "name": "poe-tool-auth",
+  "private": true,
+  "description": "PoE 工具箱：Discord 登入與雲端倉庫（Cloudflare Worker）",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node test/run.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.3"
+  }
+}

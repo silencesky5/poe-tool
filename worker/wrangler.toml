@@ -1,0 +1,25 @@
+# PoE 工具箱：Discord 登入＋雲端倉庫
+# 密鑰一律用 wrangler secret put，不要寫進這個檔案：
+#   DISCORD_CLIENT_SECRET  Discord 應用程式的 OAuth2 Client Secret
+#   SESSION_SECRET         登入 token 的簽章密鑰（隨機 32 bytes 以上）
+name = "poe-tool-auth"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+DISCORD_CLIENT_ID = "1561438923300016258"   # 公會 Bot 的應用程式 ID（公開資訊）
+GUILD_ID = "841242336012271616"             # RKSA 公會伺服器
+SITE_ORIGIN = "https://silencesky5.github.io"
+SITE_PATH = "/poe-tool/"
+REQUIRED_ROLE_ID = ""                       # 留空＝伺服器成員都可以；之後可填身分組 ID
+
+# 每個人的倉庫：stash:<discord id>；登出版本號：ver:<discord id>
+[[kv_namespaces]]
+binding = "CRAFT_STASH"
+id = "fc1cc83b5b354c37b5aab4565ee30dd1"
+
+# 每人每分鐘最多 30 次 PUT
+[[ratelimits]]
+name = "PUT_LIMITER"
+namespace_id = "1001"
+simple = { limit = 30, period = 60 }
