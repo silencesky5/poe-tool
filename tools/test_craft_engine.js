@@ -65,7 +65,7 @@ for(const b of [helm,ring,bow]){
     const gs=it.mods.flatMap(x=>E.mods[x.m].gr);
     if(new Set(gs).size!==gs.length) dup++;
   }
-  ok(dup===0,"蛻變→增幅→富豪→崇高×3→剝離→崇高 3000 次，沒有同 group 詞綴");
+  ok(dup===0,"蛻變→增幅→富豪→崇高×3→無效→崇高 3000 次，沒有同 group 詞綴");
 }
 
 // 5. 權重為 0 的詞綴在 10,000 次模擬中一次都不出現

@@ -11,12 +11,20 @@ const E=CE.create(D);
 
 /* ── 設定 ── */
 const COLS=12, ROWS=12, UNDO_MAX=50, FLASH_MS=2000;
-/* 通貨放在「一般」背景的第幾格（stash_layouts.json 的 i，由上到下、由左到右） */
-const CURRENCY_SLOT={transmute:0,alt:1,aug:2,regal:3,alch:4,chaos:5,exalt:6,divine:7,annul:8,scour:9};
-/* 通貨頁的三個子分頁；位置以 1254×1254 的背景計算，蓋掉背景上原本畫的按鈕 */
+/* 通貨放在「一般」頁的第幾格（stash_layouts.json 裡 CURRENCY_PAGE 那張背景的 i，由上到下、由左到右） */
+const CURRENCY_PAGE="stash_page_A";
+const CURRENCY_SLOT={transmute:10,alt:11,annul:12,exalt:14,regal:16,alch:17,chaos:18,aug:23,divine:29,scour:35};
+/* 擺設用的通貨：模擬器還不支援，只放圖示（右鍵拿不起來）。
+   某顆做成可用時，把它從這裡搬到 CURRENCY_SLOT（並在 craft-engine.js 的 CURRENCIES 加上規則）。
+   機會石、瓦爾寶珠：Kalandralang 沒有實作，規則先不做。 */
+const DECOR_SLOT={scrollfrag:0,wisdom:1,portal:2,whetstone:6,scrap:7,bauble:8,gcp:9,chance:13,mirror:15,
+  blessed:19,transshard:20,altshard:21,chaosshard:22,mirrorshard:24,exaltshard:26,alchshard:27,regalshard:28,
+  annulshard:30,jeweller:31,fusing:32,chrom:33,sacred:36,deck:37,vaal:38,fracture:39,fractureshard:40,
+  binding:41,regret:43,unmaking:44};
+/* 通貨頁的三個子分頁；按鈕在每一頁都放在同一個相對位置（以 1254 寬計算） */
 const CUR_SUBS=[
-  {k:"general",zh:"一般",bg:"stash_currency_general",box:[150,14,418,75]},
-  {k:"atlas",zh:"輿圖",bg:"stash_page_A",box:[483,14,752,75]},
+  {k:"general",zh:"一般",bg:CURRENCY_PAGE,box:[150,14,418,75]},
+  {k:"atlas",zh:"輿圖",bg:"stash_currency_general",box:[483,14,752,75]},
   {k:"league",zh:"聯盟",bg:"stash_page_B",box:[818,14,1086,75]},
 ];
 const TAB_COLORS=["#7a1f1f","#7a4a1f","#6b6a1f","#2f6b2f","#1f6b66","#1f4f7a","#4a2f7a","#6b1f5a","#3a3a3a"];
@@ -245,11 +253,17 @@ function drawCurrencyPage(){
     return `<button class="kb-sub" data-sub="${s.k}" style="left:${pct(x0,1254)};top:${pct(y0,1254)};width:${pct(x1-x0,1254)};height:${pct(y1-y0,1254)};background-image:url(${IMG}subtab_${s.k===sub.k?"selected":"normal"}.webp)">${s.zh}</button>`;
   }).join("");
   if(sub.k==="general"&&L){
+    const at=sl=>`left:${pct(sl.x,W)};top:${pct(sl.y,H)};width:${pct(sl.w,W)};height:${pct(sl.h,H)}`;
     for(const c of CE.CURRENCIES){
       const sl=L.slots.find(s=>s.i===CURRENCY_SLOT[c.k]); if(!sl) continue;
       const held=S.held&&S.held.kind==="cur"&&S.held.k===c.k;
-      h+=`<div class="kb-slot${held?" held":""}" data-cur="${c.k}" style="left:${pct(sl.x,W)};top:${pct(sl.y,H)};width:${pct(sl.w,W)};height:${pct(sl.h,H)}">
+      h+=`<div class="kb-slot${held?" held":""}" data-cur="${c.k}" style="${at(sl)}">
         ${curIcon(c.k)}${S.used[c.k]?`<span class="kb-n">${S.used[c.k]}</span>`:""}</div>`;
+    }
+    for(const [k,i] of Object.entries(DECOR_SLOT)){
+      const sl=L.slots.find(s=>s.i===i), d=(D.decor||{})[k];
+      if(!sl||!d||CE.CUR[k]) continue;
+      h+=`<div class="kb-slot kb-decor" data-decor="${k}" style="${at(sl)}">${iconHTML(IMG+"items/"+d.ic,d.zh)}</div>`;
     }
   }
   h+=`</div>`;
@@ -366,6 +380,10 @@ function itemTooltipHTML(it,detail){
       ${it.r?`<div class="kcnt">前綴 ${c.p}/${max}・後綴 ${c.s}/${max}</div>`:""}
     </div></div>`;
 }
+function decorTooltipHTML(k){
+  const d=(D.decor||{})[k]||{zh:k,en:""};
+  return `<div class="kb-curtip"><b>${esc(d.zh)}</b><em>${esc(d.en)}</em><em>模擬器尚未支援</em></div>`;
+}
 function currencyTooltipHTML(k){
   const c=CE.CUR[k];
   return `<div class="kb-curtip"><b>${esc(c.zh)}</b><em>${esc(c.en)}</em>${esc(c.desc)}
@@ -388,6 +406,7 @@ function placeTip(){
 function refreshTip(){
   if(!tipTarget){ hideTip(); return; }
   if(tipTarget.cur) showTip(currencyTooltipHTML(tipTarget.cur));
+  else if(tipTarget.decor) showTip(decorTooltipHTML(tipTarget.decor));
   else{
     const e=findEntry(tipTarget.cid,tipTarget.id);
     if(e) showTip(itemTooltipHTML(e.item,altDown)); else hideTip();
@@ -507,7 +526,8 @@ document.addEventListener("mousemove",ev=>{
   // 說明框
   const slot=ev.target.closest&&ev.target.closest(".kb-slot");
   if(slot&&root.contains(slot)){
-    if(!tipTarget||tipTarget.cur!==slot.dataset.cur){ tipTarget={cur:slot.dataset.cur}; refreshTip(); } else placeTip();
+    const k=slot.dataset.cur||slot.dataset.decor, kind=slot.dataset.cur?"cur":"decor";
+    if(!tipTarget||tipTarget[kind]!==k){ tipTarget={[kind]:k}; refreshTip(); } else placeTip();
     return;
   }
   if(g){
@@ -521,6 +541,8 @@ document.addEventListener("mousemove",ev=>{
 });
 /* 製裝台自己處理完的右鍵不再往上傳（處理時格子會重畫，下面 document 那層會誤判成「點在外面」） */
 root.addEventListener("contextmenu",ev=>{
+  const decor=ev.target.closest(".kb-decor");
+  if(decor){ ev.preventDefault(); ev.stopPropagation(); flash("模擬器尚未支援"); return; }   // 擺設：拿不起來
   const slot=ev.target.closest(".kb-slot");
   if(slot){ ev.preventDefault(); ev.stopPropagation(); pickCurrency(slot.dataset.cur); refreshTip(); return; }
   if(S.held){ ev.preventDefault(); ev.stopPropagation(); if(S.held.kind==="cur") dropHeld(); }
@@ -543,6 +565,7 @@ root.addEventListener("click",ev=>{
   if(t.closest("#kb-zero")){ S.used={}; drawCurrencyPage(); save(); flash("已歸零",true); return; }
   if(t.closest("#kb-undo")){ undo(); return; }
   if(t.closest("#kb-vendor")){ openVendor(); return; }
+  if(t.closest(".kb-decor")){ flash("模擬器尚未支援"); return; }
   if(t.closest(".kb-slot")){ flash("按右鍵拿起通貨"); return; }
   if(t.closest("#kb-discard")){ discardHeld(); return; }
   const g=gridOf(t);

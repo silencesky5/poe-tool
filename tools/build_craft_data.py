@@ -44,6 +44,41 @@ CURRENCY_BASES = {
     "scour": "Metadata/Items/Currency/CurrencyConvertToNormal",
 }
 
+# 製裝台通貨頁的擺設（模擬器還不支援，只放圖示）。
+# 之後某顆做成可用時，把它搬到上面的 CURRENCY_BASES，並在 craft-bench.js 從 DECOR_SLOT 搬到 CURRENCY_SLOT。
+# 機會石、瓦爾寶珠：Kalandralang 沒有實作，規則先不做。
+DECOR_BASES = {
+    "scrollfrag": "Metadata/Items/Currency/CurrencyIdentificationShard",
+    "wisdom": "Metadata/Items/Currency/CurrencyIdentification",
+    "portal": "Metadata/Items/Currency/CurrencyPortal",
+    "whetstone": "Metadata/Items/Currency/CurrencyWeaponQuality",
+    "scrap": "Metadata/Items/Currency/CurrencyArmourQuality",
+    "bauble": "Metadata/Items/Currency/CurrencyFlaskQuality",
+    "gcp": "Metadata/Items/Currency/CurrencyGemQuality",
+    "chance": "Metadata/Items/Currency/CurrencyUpgradeRandomly",
+    "mirror": "Metadata/Items/Currency/CurrencyDuplicate",
+    "blessed": "Metadata/Items/Currency/CurrencyRerollImplicit",
+    "transshard": "Metadata/Items/Currency/CurrencyUpgradeToMagicShard",
+    "altshard": "Metadata/Items/Currency/CurrencyRerollMagicShard",
+    "chaosshard": "Metadata/Items/Currency/CurrencyRerollRareShard",
+    "mirrorshard": "Metadata/Items/Currency/CurrencyDuplicateShard",
+    "exaltshard": "Metadata/Items/Currency/CurrencyAddModToRareShard",
+    "alchshard": "Metadata/Items/Currency/CurrencyUpgradeToRareShard",
+    "regalshard": "Metadata/Items/Currency/CurrencyUpgradeMagicToRareShard",
+    "annulshard": "Metadata/Items/Currency/CurrencyRemoveModShard",
+    "jeweller": "Metadata/Items/Currency/CurrencyRerollSocketNumbers",
+    "fusing": "Metadata/Items/Currency/CurrencyRerollSocketLinks",
+    "chrom": "Metadata/Items/Currency/CurrencyRerollSocketColours",
+    "sacred": "Metadata/Items/Currency/CurrencyRerollDefences",
+    "deck": "Metadata/Items/DivinationCards/DivinationCardDeck",
+    "vaal": "Metadata/Items/Currency/CurrencyCorrupt",
+    "fracture": "Metadata/Items/Currency/CurrencyFractureRare",
+    "fractureshard": "Metadata/Items/Currency/CurrencyFractureRareShard",
+    "binding": "Metadata/Items/Currency/CurrencyUpgradeToRareAndSetSockets",
+    "regret": "Metadata/Items/Currency/CurrencyPassiveRefund",
+    "unmaking": "Metadata/Items/Currency/CurrencyAtlasPassiveRefund",
+}
+
 # 物品類別 → (大類, 中文)
 CLASSES = {
     # 武器
@@ -250,6 +285,17 @@ def main():
         cur_icons[k] = icon_name(dds)
         icon_jobs[cur_icons[k]] = dds
 
+    # 擺設用通貨：英文名、繁中名、圖示
+    decor = {}
+    for k, bid in DECOR_BASES.items():
+        b = bases_raw.get(bid)
+        dds = ((b or {}).get("visual_identity") or {}).get("dds_file")
+        if not b or not dds:
+            print("警告：找不到擺設通貨", k, bid)
+            continue
+        decor[k] = {"en": b["name"], "zh": (zh_bases.get(bid) or {}).get("name") or b["name"], "ic": icon_name(dds)}
+        icon_jobs[decor[k]["ic"]] = dds
+
     # ── 詞綴文字（只留用得到的 stat id）──
     used_stats = {s["id"] for m in keep.values() for s in m["stats"]}
     used_stats |= {s[0] for b in out_bases for st in b["is"] for s in st}
@@ -310,6 +356,7 @@ def main():
         "tags": tag_list,
         "bases": out_bases,
         "curIcons": cur_icons,
+        "decor": decor,
         "mods": out_mods,
         "trans": out_trans,
         "statTr": stat_to_tr,

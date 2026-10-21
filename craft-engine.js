@@ -24,7 +24,7 @@ const CURRENCIES=[
   {k:"alch",      zh:"點金石", en:"Orb of Alchemy",       desc:"普通 → 稀有，隨機 4～6 條詞綴（機率 8 : 3 : 1）"},
   {k:"chaos",     zh:"混沌石", en:"Chaos Orb",            desc:"稀有物品重抽，隨機 4～6 條詞綴（機率 8 : 3 : 1）"},
   {k:"exalt",     zh:"崇高石", en:"Exalted Orb",          desc:"稀有物品加 1 條詞綴"},
-  {k:"annul",     zh:"剝離石", en:"Orb of Annulment",     desc:"隨機拿掉 1 條詞綴（稀有度不變）"},
+  {k:"annul",     zh:"無效石", en:"Orb of Annulment",     desc:"隨機拿掉 1 條詞綴（稀有度不變）"},
   {k:"scour",     zh:"重鑄石", en:"Orb of Scouring",      desc:"清空所有詞綴，變回普通"},
   {k:"divine",    zh:"神聖石", en:"Divine Orb",           desc:"重骰所有詞綴的數值，詞綴本身不變"},
 ];

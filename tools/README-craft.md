@@ -57,10 +57,20 @@ node tools/test_craft_engine.js
   再乘上 `generation_weights`（百分比，取整數）。物品的 tag ＝ 底材 tag ＋ 身上詞綴的 `adds_tags`（例如 has_attack_mod）。
 - 已有同 `groups` 的前後綴就排除；前後綴上限魔法各 1、稀有各 3。
 - 詞綴數：蛻變／改造 1～2 條（50 : 50）；點金／混沌 4～6 條（8 : 3 : 1）；池子空了就停。
-- 增幅、崇高、富豪各加 1 條；剝離隨機拿掉 1 條（稀有度不變）；重鑄清空並變回普通；神聖重骰所有數值。
+- 增幅、崇高、富豪各加 1 條；無效石隨機拿掉 1 條（稀有度不變）；重鑄清空並變回普通；神聖重骰所有數值。
 - Tier：同一個 mod `type`、能出現在這個底材上的詞綴（不看物品等級），依需求等級由高到低、同等級再比數值總和，第一個是 T1。
-- 和 Kalandralang 不同的地方：重鑄普通物品、神聖／剝離沒有詞綴的物品會被拒絕並顯示原因（Kalandralang 是不做事）。
+- 和 Kalandralang 不同的地方：重鑄普通物品、神聖／無效石用在沒有詞綴的物品會被拒絕並顯示原因（Kalandralang 是不做事）。
 
 ## 第一版不做
 
 勢力、分裂、精髓、化石、工藝台、收穫、珠寶。
+
+**機會石（Orb of Chance）、瓦爾寶珠（Vaal Orb）**：Kalandralang（查到 2026-01-06 的 master `5a6d1fb`）兩顆都沒有實作，
+沒有可以照的規則，所以先不做。它們和其他「模擬器尚未支援」的通貨一樣，只在製裝台通貨頁當擺設（`craft-bench.js` 的 `DECOR_SLOT`）。
+
+## 製裝台通貨頁
+
+- 「一般」用 `stash_page_A` 的格子；可用的通貨在 `craft-bench.js` 的 `CURRENCY_SLOT`，擺設在 `DECOR_SLOT`（格子編號是 `stash_layouts.json` 的 `i`）。
+- 擺設的圖示和中英文名在 `build_craft_data.py` 的 `DECOR_BASES`，產生在 `craft-data.js` 的 `decor`。
+- 某顆擺設做成可用時：在 `craft-engine.js` 的 `CURRENCIES` 加規則、`build_craft_data.py` 從 `DECOR_BASES` 搬到 `CURRENCY_BASES`、
+  `craft-bench.js` 從 `DECOR_SLOT` 搬到 `CURRENCY_SLOT`。
