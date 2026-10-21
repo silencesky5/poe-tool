@@ -27,7 +27,7 @@ const S={
   prices:{},
 };
 
-/* ── 存檔：一律透過 CraftStorage（craft-storage.js）。存檔是一整個物件，和存檔測試區共用；
+/* ── 存檔：一律透過 CraftStorage（craft-storage.js）。存檔是一整個物件，和製裝台共用；
    這裡只改 prices 欄位（之後倉庫放 stash），其他欄位原樣保留。 ── */
 const St=window.CraftStorage||null;
 let saved={};            // 記憶體裡目前的整份存檔
@@ -47,7 +47,7 @@ async function loadPrices(){
   if(!pricesTouched){ S.prices={...(saved.prices||{})}; drawPrices(); drawResults(); }
   else savePrices();
 }
-/* 輸入時連續觸發，等 400 ms 沒有新輸入再存；存之前重新讀一次，免得蓋掉存檔測試區剛存的欄位 */
+/* 輸入時連續觸發，等 400 ms 沒有新輸入再存；存之前重新讀一次，免得蓋掉製裝台剛存的欄位 */
 let priceTimer=null;
 function savePrices(){
   if(!St) return;

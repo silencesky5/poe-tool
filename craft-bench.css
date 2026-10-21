@@ -1,0 +1,100 @@
+/* 製裝方法 → 製裝台（倉庫＋背包）。程式在 craft-bench.js */
+#kbench{--cell:min(40px,calc((100vw - 56px) / 12));--grid:calc(var(--cell) * 12);
+  --gold:#E3C27A;--line:#3B3226;user-select:none;-webkit-user-select:none}
+#kbench .kb{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+#kbench .kb-stash{width:calc(var(--grid) + 12px);background:#0E0D0B;border:1px solid #2E2A22;border-radius:6px;padding:0 6px 6px}
+#kbench .kb-head{display:block;width:100%;height:auto;margin:0 0 4px}
+#kbench .kb-strip{display:flex;gap:4px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:thin}
+#kbench .kb-chip{flex:none;background:#1A1814;border:1px solid #3A342A;color:#B9A985;font-size:12.5px;padding:3px 10px;
+  border-radius:3px 3px 0 0;cursor:pointer;white-space:nowrap;font-family:var(--sans)}
+#kbench .kb-chip[aria-selected="true"]{color:#F3E2B5;border-color:#8C7445;background:var(--tc,#2A231A)}
+#kbench .kb-page{position:relative;width:var(--grid);height:var(--grid)}
+
+/* 格子：grid_cell.png 平鋪（左、上有線），右、下再補一條 */
+#kbench .kb-grid{position:relative;width:var(--grid);height:var(--grid);
+  background:url(img/craft/grid_cell.png) 0 0/var(--cell) var(--cell) repeat;
+  box-shadow:inset -1px -1px 0 #4A3F30;cursor:pointer}
+#kbench .kb-item{position:absolute;display:flex;align-items:center;justify-content:center;
+  background:rgba(96,16,16,.55);box-shadow:inset 0 0 0 1px rgba(160,40,40,.35)}
+#kbench .kb-item img{max-width:100%;max-height:100%;pointer-events:none;-webkit-user-drag:none}
+#kbench .kb-item.r1{box-shadow:inset 0 0 0 1px rgba(110,110,255,.55)}
+#kbench .kb-item.r2{box-shadow:inset 0 0 0 1px rgba(230,210,90,.55)}
+#kbench .kb-noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;text-align:center;
+  background:#3A3A3A;color:#DDD;font-size:10px;line-height:1.2;padding:2px;box-sizing:border-box;overflow:hidden;word-break:break-word}
+#kbench .kb-prev{position:absolute;pointer-events:none;border:2px solid;box-sizing:border-box}
+#kbench .kb-prev.ok{background:rgba(60,170,70,.35);border-color:#4FC45A}
+#kbench .kb-prev.swap{background:rgba(220,170,40,.3);border-color:#E0B040}
+#kbench .kb-prev.bad{background:rgba(200,50,50,.35);border-color:#E05050}
+
+/* 通貨頁 */
+#kbench .kb-cur{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat}
+#kbench .kb-sub{position:absolute;display:flex;align-items:center;justify-content:center;background-size:100% 100%;
+  color:var(--gold);font-weight:700;font-family:var(--serif);font-size:calc(var(--cell) * .38);letter-spacing:.1em;
+  text-shadow:0 1px 2px #000,0 0 6px rgba(0,0,0,.8);cursor:pointer;border:0;padding:0}
+#kbench .kb-slot{position:absolute;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#kbench .kb-slot img{width:88%;height:88%;object-fit:contain;pointer-events:none;-webkit-user-drag:none}
+#kbench .kb-slot:hover{box-shadow:0 0 0 1px #C9A15A,0 0 8px rgba(201,161,90,.5)}
+#kbench .kb-slot.held{box-shadow:0 0 0 2px #F3D27A}
+#kbench .kb-n{position:absolute;top:1px;right:3px;font-size:calc(var(--cell) * .3);font-weight:700;color:#fff;
+  text-shadow:0 0 2px #000,0 0 3px #000;font-family:var(--mono);pointer-events:none}
+#kbench .kb-curbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;font-size:12.5px;color:var(--dim)}
+
+/* 分頁清單 */
+#kbench .kb-list{width:180px;flex:none;display:flex;flex-direction:column;gap:4px}
+#kbench .kb-row{display:flex;align-items:center;gap:4px;background:var(--tc,#1C1A16);border:1px solid #3A342A;border-radius:3px;
+  padding:5px 6px;cursor:pointer;color:#E6DCC4;font-size:13.5px}
+#kbench .kb-row[aria-selected="true"]{border-color:#C9A15A;box-shadow:0 0 0 1px #C9A15A inset}
+#kbench .kb-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#kbench .kb-row .cnt{font-size:11px;color:#B8AE98;font-family:var(--mono)}
+#kbench .kb-row button{background:none;border:0;color:#CFC3A6;cursor:pointer;padding:0 3px;font-size:13px;opacity:.7}
+#kbench .kb-row button:hover{opacity:1;color:#fff}
+#kbench .kb-row.drag{opacity:.4}
+#kbench .kb-row.over{box-shadow:0 -2px 0 #C9A15A}
+#kbench .kb-row .grip{cursor:grab;color:#8A7E66;font-size:12px}
+#kbench .kb-btn{background:#1D1D1B;border:1px solid #46443F;color:#E6E2DB;font-family:var(--sans);font-size:13.5px;
+  padding:6px 12px;border-radius:4px;cursor:pointer}
+#kbench .kb-btn:hover{border-color:#67645C;background:#262624}
+#kbench .kb-btn.pri{background:var(--accent);border-color:var(--accent);color:#0F0F0E;font-weight:600}
+#kbench .kb-btn:disabled{opacity:.45;cursor:default}
+
+/* 背包 */
+#kbench .kb-inv{width:calc(var(--grid) + 12px);background:#0E0D0B;border:1px solid #2E2A22;border-radius:6px;padding:6px}
+#kbench .kb-invbar{display:flex;gap:6px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+#kbench .kb-invbar .t{font-family:var(--serif);color:var(--gold);font-size:16px;letter-spacing:.1em;margin-right:auto}
+#kbench .kb-discard{margin-top:6px;height:calc(var(--cell) * 1.4);border:1px dashed #6B3A32;border-radius:4px;color:#C98A7E;
+  display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;background:rgba(80,20,15,.25)}
+#kbench .kb-discard.armed{border-style:solid;background:rgba(140,30,20,.35);color:#FFB4A6}
+#kbench .kb-hint{font-size:12px;color:var(--dim);line-height:1.7;margin-top:6px}
+@media(max-width:1180px){#kbench .kb-list{width:100%;flex-direction:row;flex-wrap:wrap}
+  #kbench .kb-list .kb-row{flex:0 1 auto}}
+
+/* 游標上的東西、提示、說明框（position:fixed，跟著滑鼠） */
+#kbench .kb-cursor{position:fixed;left:0;top:0;pointer-events:none;z-index:60;display:none;
+  filter:drop-shadow(0 4px 8px rgba(0,0,0,.7))}
+#kbench .kb-cursor img{display:block;width:100%;height:100%;object-fit:contain}
+#kbench .kb-flash{position:fixed;z-index:62;pointer-events:none;max-width:280px;background:#2A1512;border:1px solid #A0503F;
+  color:#FFD2C6;font-size:13px;line-height:1.5;padding:6px 9px;border-radius:4px;box-shadow:0 6px 18px rgba(0,0,0,.6)}
+#kbench .kb-flash.good{background:#14241A;border-color:#3F8A55;color:#C8F0D2}
+#kbench .kb-tip{position:fixed;z-index:61;pointer-events:none;width:360px;max-width:calc(100vw - 16px)}
+#kbench .kb-tip .kcard{max-width:none;margin:0}
+#kbench .kb-tip .kbig{font-size:11.5px;color:#9C988F;margin-top:2px;line-height:1.5}
+#kbench .kb-tip .kb-curtip{background:#0B0B0A;border:1px solid #3A3833;border-radius:4px;padding:10px 12px;color:var(--bone);
+  font-size:13px;line-height:1.6;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+#kbench .kb-tip .kb-curtip b{color:#E8D9A8;font-size:15px}
+#kbench .kb-tip .kb-curtip em{display:block;font-style:normal;color:#9C988F;font-size:12px}
+
+/* 頁面內的小視窗 */
+#kbench .kb-veil{position:fixed;inset:0;z-index:70;background:rgba(6,5,5,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+#kbench .kb-modal{background:#1B1B19;border:1px solid #46443F;border-left:4px solid var(--accent);border-radius:8px;
+  width:100%;max-width:420px;padding:18px 20px;color:var(--bone);box-shadow:0 16px 40px rgba(0,0,0,.6);user-select:text}
+#kbench .kb-modal h3{margin:0 0 8px;font-size:17px}
+#kbench .kb-modal p{margin:0 0 14px;color:var(--muted);font-size:14px;line-height:1.7}
+#kbench .kb-modal .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px}
+#kbench .kb-modal input[type=text]{width:100%;box-sizing:border-box}
+#kbench .kb-colors{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+#kbench .kb-colors button{width:28px;height:28px;border-radius:4px;border:2px solid transparent;cursor:pointer}
+#kbench .kb-colors button[aria-pressed="true"]{border-color:#fff}
+#kbench .kb-vendor{max-width:460px}
+#kbench .kb-vendor .kbases{max-height:240px}
+#kbench .kb-vendor .msg{min-height:20px;font-size:13px;color:#9FD3A8;margin-top:8px}
+#kbench .kb-vendor .msg.bad{color:#E79A88}

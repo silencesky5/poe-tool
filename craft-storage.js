@@ -6,12 +6,12 @@
    CraftStorage.login()       → 前往 Discord 登入
    CraftStorage.logout()      → Promise
 
-   存檔是「一整個物件」，模擬器和存檔測試區共用。各自只改自己的欄位、其他欄位原樣保留：
+   存檔是「一整個物件」，製裝台和模擬器共用。各自只改自己的欄位、其他欄位原樣保留：
      const cur = (await CraftStorage.load()) || {};
-     CraftStorage.save({ ...cur, prices });        // 模擬器：stash、prices…
-     CraftStorage.save({ ...cur, text });          // 存檔測試區：text
+     CraftStorage.save({ ...cur, prices });                          // 模擬器：通貨單價
+     CraftStorage.save({ ...cur, v: 2, inventory, tabs, … });         // 製裝台：倉庫和背包
    load() 回傳這台目前的版本、不連雲端，所以另一台電腦改過時，下次存檔會跳出衝突視窗讓使用者選；
-   要拿雲端最新的用 load({ refresh: true })（例如「讀檔」按鈕）。
+   要拿雲端最新的用 load({ refresh: true })。
 
    狀態改變時會發出 window 事件 "craftstorage:status"（detail = status()）；
    選了「用雲端的」存檔時會發出 "craftstorage:data"（detail = 新的 data），畫面要重新顯示。

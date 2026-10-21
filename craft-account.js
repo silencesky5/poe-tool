@@ -1,4 +1,4 @@
-/* 製裝方法分頁：右上角的 Discord 登入區，以及「存檔測試」子分頁（之後做正式介面時拿掉測試區）。
+/* 製裝方法分頁：右上角的 Discord 登入區。
    存取資料一律透過 craft-storage.js（window.CraftStorage）。 */
 (function(){
 "use strict";
@@ -54,36 +54,4 @@ function render(st){
 
 window.addEventListener("craftstorage:status", e => render(e.detail));
 render(S.status());
-
-/* ── 存檔測試（暫時） ── */
-const ta = document.getElementById("ktest-text");
-const saveBtn = document.getElementById("ktest-save");
-const loadBtn = document.getElementById("ktest-load");
-const line = document.getElementById("ktest-line");
-if(ta && saveBtn && loadBtn){
-  const say = t => { if(line) line.textContent = t; };
-  // 存檔跟模擬器共用：只改 text，其他欄位（模擬器的倉庫、通貨價格）原樣保留
-  saveBtn.onclick = async () => {
-    saveBtn.disabled = true;
-    const cur = await S.load();
-    const base = cur && typeof cur === "object" && !Array.isArray(cur) ? cur : {};
-    S.save({ ...base, text: ta.value });
-    saveBtn.disabled = false;
-    say(S.status().loggedIn ? "已存在這台電腦，2 秒後上傳雲端…" : "已存在這台電腦");
-  };
-  loadBtn.onclick = async () => {
-    loadBtn.disabled = true;
-    const data = await S.load({ refresh: true });
-    loadBtn.disabled = false;
-    ta.value = data && typeof data.text === "string" ? data.text : "";
-    say(data ? "已讀取" + (S.status().loggedIn ? "雲端" : "這台電腦") + "的存檔" : "沒有存檔");
-  };
-  window.addEventListener("craftstorage:data", e => {
-    ta.value = e.detail && typeof e.detail.text === "string" ? e.detail.text : "";
-    say("已改用雲端的存檔");
-  });
-  window.addEventListener("craftstorage:status", e => {
-    if(e.detail.loggedIn && e.detail.sync === "synced" && /上傳雲端/.test(line.textContent)) say("已同步到雲端");
-  });
-}
 })();

@@ -1190,17 +1190,8 @@ body .gbtns .pri:hover{background:#DD8B36}
 #tab-craft .kauth-msg{font-size:12.5px;line-height:1.6;color:#E0A86A;max-width:300px}
 @media(max-width:640px){#tab-craft .kauth{align-items:flex-start;text-align:left;flex-basis:100%}
   #tab-craft .kauth-who{align-items:flex-start}}
-/* 存檔測試（暫時，正式介面做好後拿掉） */
-#tab-craft .ktest{max-width:640px;display:flex;flex-direction:column;gap:10px}
-#tab-craft .ktest textarea{width:100%;min-height:110px;background:#161615;border:1px solid var(--edge-hi);color:var(--bone);
-  font-family:var(--sans);font-size:14px;padding:10px;border-radius:4px;resize:vertical;box-sizing:border-box}
-#tab-craft .ktest textarea:focus{border-color:var(--accent);outline:none}
-#tab-craft .ktest-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#tab-craft .ktest-btns button{background:#1D1D1B;border:1px solid #46443F;color:#E6E2DB;font-family:var(--sans);
-  font-size:14px;padding:7px 18px;border-radius:99px;cursor:pointer}
-#tab-craft .ktest-btns button:first-child{background:var(--accent);border-color:var(--accent);color:#0F0F0E;font-weight:600}
-#tab-craft .ktest-line{font-size:13px;color:var(--dim)}
 </style>
+<link rel="stylesheet" href="craft-bench.css">
 </head>
 <body>
 <div id="shell">
@@ -1435,20 +1426,13 @@ body .gbtns .pri:hover{background:#DD8B36}
     <div class="kauth" id="kauth" aria-live="polite"></div>
   </header>
   <div class="ksubtabs" role="tablist">
-    <button class="ksubtab" id="k-t-sim" role="tab" aria-selected="true" aria-controls="k-pane-sim">模擬器</button>
+    <button class="ksubtab" id="k-t-bench" role="tab" aria-selected="true" aria-controls="k-pane-bench">製裝台</button>
+    <button class="ksubtab" id="k-t-sim" role="tab" aria-selected="false" aria-controls="k-pane-sim">模擬器</button>
     <button class="ksubtab" id="k-t-notes" role="tab" aria-selected="false" aria-controls="k-pane-notes">製作筆記</button>
-    <button class="ksubtab" id="k-t-test" role="tab" aria-selected="false" aria-controls="k-pane-test">存檔測試</button>
   </div>
-  <div id="k-pane-sim" role="tabpanel"><div id="ksim"><div class="kload">載入詞綴資料中…</div></div></div>
+  <div id="k-pane-bench" role="tabpanel"><div id="kbench"><div class="kload">載入詞綴資料中…</div></div></div>
+  <div id="k-pane-sim" role="tabpanel" hidden><div id="ksim"><div class="kload">載入詞綴資料中…</div></div></div>
   <div id="k-pane-notes" role="tabpanel" hidden><div class="kwip"><b>建置中</b>內容整理好之後會放在這裡。</div></div>
-  <div id="k-pane-test" role="tabpanel" hidden>
-    <div class="kpanel ktest">
-      <div class="khint">測試登入與雲端存檔用，正式的倉庫介面做好後會拿掉。</div>
-      <textarea id="ktest-text" placeholder="打一些字，按「存檔」；換一台電腦登入後按「讀檔」"></textarea>
-      <div class="ktest-btns"><button type="button" id="ktest-save">存檔</button><button type="button" id="ktest-load">讀檔</button>
-        <span class="ktest-line" id="ktest-line"></span></div>
-    </div>
-  </div>
 </div>
 </div>
 
@@ -4260,7 +4244,7 @@ if(typeof SCARABS==="undefined"){
 (function(){
   const panel=document.getElementById("tab-craft");
   if(!panel) return;
-  const subs={sim:["k-t-sim","k-pane-sim"],notes:["k-t-notes","k-pane-notes"],test:["k-t-test","k-pane-test"]};
+  const subs={bench:["k-t-bench","k-pane-bench"],sim:["k-t-sim","k-pane-sim"],notes:["k-t-notes","k-pane-notes"]};
   Object.keys(subs).forEach(k=>document.getElementById(subs[k][0]).onclick=()=>{
     Object.keys(subs).forEach(j=>{
       document.getElementById(subs[j][0]).setAttribute("aria-selected",j===k);
@@ -4271,13 +4255,13 @@ if(typeof SCARABS==="undefined"){
   function load(){
     if(started||panel.hidden) return;
     started=true;
-    const files=["craft-data.js","craft-engine.js","craft-ui.js"];
+    const files=["craft-data.js","craft-engine.js","craft-ui.js","craft-bench.js"];
     (function next(i){
       if(i>=files.length) return;
       const s=document.createElement("script");
       s.src=files[i];
       s.onload=()=>next(i+1);
-      s.onerror=()=>{ document.getElementById("ksim").innerHTML='<div class="kload">載入失敗：'+files[i]+'，請重新整理頁面。</div>'; };
+      s.onerror=()=>{ ["ksim","kbench"].forEach(id=>{ const el=document.getElementById(id); if(el&&el.querySelector(".kload")) el.innerHTML='<div class="kload">載入失敗：'+files[i]+'，請重新整理頁面。</div>'; }); };
       document.body.appendChild(s);
     })(0);
   }

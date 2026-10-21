@@ -8,6 +8,10 @@
 資料來源：RePoE fork（PoE1）https://repoe-fork.github.io/
 只保留第一版會用到的內容：武器、護甲、飾品的一般底材，以及能出現在這些底材上的
 item 前綴 / 後綴。詳細說明見 tools/README-craft.md。
+
+圖示：底材和 10 顆通貨的官方圖下載到 img/craft/items/（網站只讀本地檔）。
+    已經下載過的檔案會跳過；--no-icons 不下載圖示。
+    網址規則：https://web.poecdn.com/image/ ＋ visual_identity.dds_file（副檔名換成 .png）。
 """
 import argparse
 import json
@@ -18,6 +22,22 @@ from datetime import date
 
 BASE_URL = "https://repoe-fork.github.io/"
 FILES = ["mods.json", "base_items.json", "stat_translations.json", "version.txt"]
+ICON_URL = "https://web.poecdn.com/image/"
+ICON_MAX_MB = 30  # 超過就停下來，不要默默塞一大堆圖進網站
+
+# 模擬器用到的 10 顆通貨（鍵值和 craft-engine.js 的 CURRENCIES 一樣）
+CURRENCY_BASES = {
+    "transmute": "Metadata/Items/Currency/CurrencyUpgradeToMagic",
+    "alt": "Metadata/Items/Currency/CurrencyRerollMagic",
+    "aug": "Metadata/Items/Currency/CurrencyAddModToMagic",
+    "regal": "Metadata/Items/Currency/CurrencyUpgradeMagicToRare",
+    "alch": "Metadata/Items/Currency/CurrencyUpgradeToRare",
+    "chaos": "Metadata/Items/Currency/CurrencyRerollRare",
+    "exalt": "Metadata/Items/Currency/CurrencyAddModToRare",
+    "divine": "Metadata/Items/Currency/CurrencyModValues",
+    "annul": "Metadata/Items/Currency/CurrencyRemoveMod",
+    "scour": "Metadata/Items/Currency/CurrencyConvertToNormal",
+}
 
 # 物品類別 → (大類, 中文)
 CLASSES = {
@@ -91,12 +111,45 @@ def first_weight(spawn_weights, tags):
     return None
 
 
+def icon_name(dds):
+    """Art/2DItems/Armours/Helmets/HelmetInt11.dds → Armours_Helmets_HelmetInt11.png"""
+    p = dds[len("Art/2DItems/"):] if dds.startswith("Art/2DItems/") else dds
+    return os.path.splitext(p)[0].replace("/", "_") + ".png"
+
+
+def download_icons(jobs, out_dir):
+    """jobs：{檔名: dds 路徑}。已存在的跳過；回傳 (成功數, 失敗清單, 總大小)。超過 ICON_MAX_MB 就停。"""
+    os.makedirs(out_dir, exist_ok=True)
+    ok, failed, total = 0, [], 0
+    for name, dds in sorted(jobs.items()):
+        path = os.path.join(out_dir, name)
+        if not os.path.exists(path):
+            url = ICON_URL + os.path.splitext(dds)[0] + ".png"
+            try:
+                with urllib.request.urlopen(url, timeout=30) as r:
+                    data = r.read()
+                if not data.startswith(b"\x89PNG"):
+                    raise ValueError("不是 PNG")
+                with open(path, "wb") as w:
+                    w.write(data)
+            except Exception as e:  # 下載失敗：網站會改畫灰色方框
+                failed.append(f"{name}（{e}）")
+                continue
+        ok += 1
+        total += os.path.getsize(path)
+        if total > ICON_MAX_MB * 1024 * 1024:
+            print(f"錯誤：圖示總大小超過 {ICON_MAX_MB} MB，先停下來（已下載 {ok} 張）")
+            sys.exit(1)
+    return ok, failed, total
+
+
 def main():
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", help="已下載 RePoE 檔案的資料夾（省略就重新下載）")
     ap.add_argument("--out", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "craft-data.js"))
+    ap.add_argument("--no-icons", action="store_true", help="不下載圖示")
     a = ap.parse_args()
 
     src = fetch(a.src)
@@ -149,15 +202,33 @@ def main():
         m = mods.get(iid)
         return m["text"] if m and m.get("text") else None
 
-    out_bases = []
+    # 存檔裡的物品用底材「編號」記錄：順序不能變，新欄位只能往後加
+    out_bases, icon_jobs = [], {}
     for bid, b in bases:
+        dds = (b.get("visual_identity") or {}).get("dds_file") or ""
+        ic = icon_name(dds) if dds else ""
+        if ic:
+            icon_jobs[ic] = dds
         out_bases.append({
             "n": b["name"],
             "c": b["item_class"],
             "lv": b["drop_level"],
             "t": [T(t) for t in b["tags"]],
             "imp": [x for x in (implicit_text(i) for i in b["implicits"]) if x],
+            "w": b.get("inventory_width") or 1,   # 佔格大小
+            "h": b.get("inventory_height") or 1,
+            "ic": ic,                             # img/craft/items/ 底下的圖檔名
         })
+
+    # 通貨圖示
+    cur_icons = {}
+    for k, bid in CURRENCY_BASES.items():
+        dds = (bases_raw.get(bid, {}).get("visual_identity") or {}).get("dds_file")
+        if not dds:
+            print("警告：找不到通貨圖示", k, bid)
+            continue
+        cur_icons[k] = icon_name(dds)
+        icon_jobs[cur_icons[k]] = dds
 
     # ── 詞綴文字（只留用得到的 stat id）──
     used_stats = {s["id"] for m in keep.values() for s in m["stats"]}
@@ -206,6 +277,7 @@ def main():
         "classes": {k: {"group": v[0], "zh": v[1]} for k, v in CLASSES.items()},
         "tags": tag_list,
         "bases": out_bases,
+        "curIcons": cur_icons,
         "mods": out_mods,
         "trans": out_trans,
         "statTr": stat_to_tr,
@@ -223,6 +295,13 @@ def main():
     if size > 3 * 1024 * 1024:
         print("錯誤：超過 3 MB")
         sys.exit(1)
+
+    if not a.no_icons:
+        icon_dir = os.path.join(os.path.dirname(os.path.abspath(a.out)), "img", "craft", "items")
+        ok, failed, total = download_icons(icon_jobs, icon_dir)
+        print(f"圖示：{ok}/{len(icon_jobs)} 張，共 {total/1024/1024:.2f} MB → {icon_dir}")
+        for f in failed:
+            print("  下載失敗（網站會用灰色方框代替）：", f)
 
 
 if __name__ == "__main__":
