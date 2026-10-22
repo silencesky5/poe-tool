@@ -133,14 +133,15 @@ function fromSave(d){
   S.active=ok&&(FIXED_TABS.includes(d.activeTab)||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
   /* 面板的裝備格（舊存檔沒有這兩個欄位＝面板關著、裝備格空著） */
   S.slot=ok&&v>=3?readEntries(d.craftSlot,v,"slot").slice(0,1).map(e=>({...e,x:0,y:0})):[];
-  S.panel=ok&&(d.benchPanel==="bench"||d.benchPanel==="harvest")?d.benchPanel:null;
+  S.panel=ok&&["bench","harvest","share"].includes(d.benchPanel)?d.benchPanel:null;
+  if(S.panel==="share"&&S.slot.length) S.panel="bench";
   if(S.slot.length&&!S.panel) S.panel="bench";
 }
 /* 存檔時：拿在游標上的裝備當作還在原位 */
 function toSave(){
   const inv=S.inv.slice(), slot=S.slot.slice(), tabs=S.tabs.map(t=>({id:t.id,name:t.name,color:t.color,items:t.items.slice()}));
   const h=S.held;
-  if(h&&h.kind==="item"){
+  if(h&&h.kind==="item"&&!h.copyOf){   // 從分享架拿起的複本還沒放下＝還沒複製，不存
     const list=h.from.cid==="inv"?inv:h.from.cid==="slot"&&!slot.length?slot:(tabs.find(t=>t.id===h.from.cid)||{}).items||inv;
     const s=sizeOf(h.e.item);
     let p=fits(list,h.from.x,h.from.y,s.w,s.h)?{x:h.from.x,y:h.from.y}:firstFit(list,s.w,s.h);
@@ -224,6 +225,7 @@ root.innerHTML=`
       <button class="kb-btn" id="kb-vendor">底材商人</button>
       <button class="kb-btn" id="kb-craftbench" aria-pressed="false" title="在背包右邊打開工藝台（再按一次關閉）">工藝台</button>
       <button class="kb-btn" id="kb-harvest" aria-pressed="false" title="在背包右邊打開園藝工藝台（豐收；再按一次關閉）">園藝</button>
+      <button class="kb-btn" id="kb-share" aria-pressed="false" title="在背包右邊打開公會分享架（再按一次關閉）">公會分享</button>
       <button class="kb-btn" id="kb-undo" title="Ctrl+Z">上一步</button></div>
     <div class="kb-grid" id="kb-inv" data-cid="inv"></div>
     <div class="kb-discard" id="kb-discard">丟棄（把裝備放進來）</div>
@@ -231,7 +233,7 @@ root.innerHTML=`
       左鍵拿起裝備、再點一格放下；Ctrl＋左鍵在背包和倉庫（面板打開時是裝備格）間快速移動；按住 Alt 看詞綴範圍；Ctrl+Z 上一步。<br>
       倉庫分頁：「＋」新增、右鍵改名或刪除、拖曳調整順序。</div>
   </section>
-  <section class="kb-side" id="kb-side" aria-label="工藝台／園藝面板" hidden></section>
+  <section class="kb-side" id="kb-side" aria-label="工藝台／園藝／公會分享面板" hidden></section>
 </div></div>
 <div class="kb-cursor" id="kb-cursor"></div>
 <div class="kb-tip" id="kb-tip" hidden></div>`;
@@ -266,8 +268,6 @@ function drawStrip(){
       title="右鍵改名或刪除・拖曳調整順序">${esc(t.name)}</button>`))
     .concat(`<button class="kb-chip kb-add" id="kb-newtab" title="新增倉庫頁" aria-label="新增倉庫頁">＋</button>`);
   $("kb-strip").innerHTML=chips.join("");
-  const on=$("kb-strip").querySelector('[aria-selected="true"]');
-  if(on) on.scrollIntoView({block:"nearest",inline:"nearest"});
 }
 function drawPage(){
   if(S.active==="currency"){ drawCurrencyPage(); return; }
@@ -385,11 +385,13 @@ function drawPanel(){
     const e=slotEntry(), common={E,item:e&&e.item,lang:L(),host:sideEl,embed:true,onClose:()=>togglePanel(S.panel)};
     if(S.panel==="bench"&&window.CraftBenchList) panelUI=CraftBenchList.open({...common,onCraft:benchCraft});
     if(S.panel==="harvest"&&window.CraftHarvest) panelUI=CraftHarvest.open({...common,used:()=>S.used,onCraft:harvestCraft});
+    if(S.panel==="share"){ buildShare(); panelUI={close(){ sideEl.innerHTML=""; },update(){ drawShare(); }}; loadShares(SH.sel); }
   }else if(panelUI){ const e=slotEntry(); panelUI.update(e&&e.item); }
   sideEl.hidden=!S.panel;
   root.querySelector(".kb").classList.toggle("paneled",!!S.panel);
   $("kb-craftbench").setAttribute("aria-pressed",S.panel==="bench");
   $("kb-harvest").setAttribute("aria-pressed",S.panel==="harvest");
+  $("kb-share").setAttribute("aria-pressed",S.panel==="share");
 }
 /* 工藝台：每做一項就扣費用、記進「上一步」、存檔 */
 function benchCraft(k){
@@ -415,13 +417,19 @@ function harvestCraft(k){
   redrawCurPage(); save(); refreshTip();
   panelUI.update(e.item,{t:"已賦予："+name+"（"+costText(cost)+"）"});
 }
-/* 按「工藝台」「園藝」：開這一個（另一個會關掉，裝備格的裝備留著）；再按一次＝關閉，裝備移回背包 */
+/* 按「工藝台」「園藝」「公會分享」：開這一個（另一個會關掉）；再按一次＝關閉。
+   工藝台↔園藝：裝備格的裝備留著；換到公會分享（沒有裝備格）或關閉：裝備移回背包 */
 function togglePanel(kind){
   if(S.panel===kind){ closePanel(); return; }
+  if(kind==="share"&&!emptySlot()) return;
   S.panel=kind; hideTip(); drawPanel(); save();
 }
-/* 關閉：裝備格的裝備放回背包；背包滿了放到暫存區（沒有就放第一個放得下的倉庫頁） */
 function closePanel(){
+  if(!emptySlot()) return;
+  S.panel=null; hideTip(); drawAll(); save();
+}
+/* 裝備格的裝備放回背包；背包滿了放到暫存區（沒有就放第一個放得下的倉庫頁）。放不下回傳 false */
+function emptySlot(){
   if(S.held&&S.held.kind==="item"&&S.held.from.cid==="slot") returnHeld();
   const e=slotEntry();
   if(e){
@@ -431,18 +439,20 @@ function closePanel(){
       const tabs=S.tabs.slice().sort((a,b)=>(b.name==="暫存區")-(a.name==="暫存區"));
       for(const t of tabs){ p=firstFit(t.items,s.w,s.h); if(p){ to=t.id; break; } }
     }
-    if(!p){ flash("背包和倉庫頁都放不下這件裝備，面板先不關"); return; }
+    if(!p){ flash("背包和倉庫頁都放不下裝備格裡的裝備，面板先不關"); return false; }
     const snap=snapshot();
     S.slot=[];
     cont(to).push({...e,x:p.x,y:p.y});
     pushUndo(snap,"關閉面板");
     if(to!=="inv") flash("背包滿了，裝備放到「"+S.tabs.find(t=>t.id===to).name+"」",true);
+    drawAll();
   }
-  S.panel=null; hideTip(); drawAll(); save();
+  return true;
 }
 /* 拿著的裝備放進裝備格（裝備格已有裝備就互換，那件到游標上） */
 function placeInSlot(){
   const h=S.held, snap=h.snap||snapshot(), old=slotEntry();
+  if(h.copyOf) countCopy(h.copyOf);
   S.slot=[{...h.e,x:0,y:0}];
   if(old){ S.held={kind:"item",e:old,from:{cid:"slot",x:0,y:0},snap:null}; pushUndo(snap,"互換裝備"); }
   else{ S.held=null; pushUndo(snap,"放進裝備格"); }
@@ -456,6 +466,271 @@ function slotClick(ev){
   if(ev.ctrlKey||ev.metaKey){ quickMove("slot",e); return; }
   pickItem("slot",e);
 }
+
+/* ── 公會分享架（右側面板）──
+   複製制：分享出去的是快照，別人只能「複製一份」到自己的背包（原件留在架上，被複製次數 +1）。
+   資料在 Worker＋D1（/shares），這裡只負責顯示和操作；權限、上限都由 Worker 檢查。
+   ・分享：拿起背包／倉庫頁的裝備點分享架（或拖過去），或在裝備上按右鍵「分享到公會」→ 輸入備註 → 分享（裝備留在原處）
+   ・複製：「複製到背包」、Ctrl＋左鍵、或從架上把裝備拖到背包／倉庫頁（拿起來的是複本，放下才算複製）
+   ・撤下：分享者本人或團隊幹部（Worker 用登入時簽在 token 裡的身分組判斷） */
+const SHELF_COLS=11;   // 分享架一列 11 格（留一格給捲軸）
+const SH={list:[],me:null,limits:{perUser:10,total:100,perWindow:3,windowSec:60},loaded:false,loading:false,err:null,
+  filter:"all",q:"",sel:null,layout:[],msg:null};
+const shApi=(p,o)=>St&&St.api?St.api(p,o):Promise.reject(new Error("沒有 CraftStorage"));
+const loggedIn=()=>!!(St&&St.status().loggedIn);
+function shareItem(sh){
+  if(!("_item" in sh)) sh._item=sh.item?E.fromStored(sh.item):null;   // 改版後讀不回來＝null
+  return sh._item;
+}
+function shareById(id){ return SH.list.find(x=>x.id===id)||null; }
+function canRemove(sh){ return !!SH.me&&(SH.me.id===sh.sharerId||SH.me.officer); }
+function shareHay(sh){
+  const it=shareItem(sh);
+  const t=[sh.sharerName,sh.note];
+  if(it){
+    t.push(baseLabel(E.bases[it.b],"zh"),baseLabel(E.bases[it.b],"en"));
+    for(const x of it.mods) t.push(E.render(x.m,x.v,"zh").join(" "),E.render(x.m,x.v,"en").join(" "),E.modName(x.m,"zh"));
+  }
+  return t.join("\n").toLowerCase();
+}
+function shareList(){
+  const q=SH.q.toLowerCase();
+  return SH.list.filter(sh=>(SH.filter!=="mine"||(SH.me&&sh.sharerId===SH.me.id))&&(!q||shareHay(sh).includes(q)));
+}
+/* 照時間（新的在前）由左到右、由上到下排進 11 欄的格子；讀不回來的佔 1 格 */
+function layoutShelf(list){
+  const out=[], used=[];
+  const free=(x,y,w,h)=>!used.some(u=>u.x<x+w&&x<u.x+u.w&&u.y<y+h&&y<u.y+u.h);
+  for(const sh of list){
+    const it=shareItem(sh), s=it?sizeOf(it):{w:1,h:1};
+    let p=null;
+    for(let y=0;!p;y++) for(let x=0;x<=SHELF_COLS-s.w;x++) if(free(x,y,s.w,s.h)){ p={x,y}; break; }
+    used.push({x:p.x,y:p.y,w:s.w,h:s.h});
+    out.push({id:sh.id,x:p.x,y:p.y,w:s.w,h:s.h,item:it,sh});
+  }
+  return out;
+}
+function fmtTime(ms){ return new Date(ms).toLocaleString("zh-TW",{hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }
+async function loadShares(sel){
+  SH.loading=true; drawShare();
+  try{
+    const r=await shApi("/shares");
+    if(!r.ok) throw new Error("shares "+r.status);
+    const d=await r.json();
+    SH.list=d.shares||[]; SH.me=d.me||null; if(d.limits) SH.limits=d.limits;
+    SH.loaded=true; SH.err=null;
+  }catch(e){ SH.err="連不上公會分享架，請稍後再試"; }
+  SH.loading=false;
+  if(sel){
+    SH.sel=sel;
+    if(SH.loaded&&!shareById(sel)) SH.msg={bad:true,t:"連結裡的這件裝備已經被撤下，或不存在了"};
+  }
+  if(SH.filter==="mine"&&!SH.me) SH.filter="all";
+  drawShare();
+  if(sel){ const el=sideEl.querySelector('.ksh-it[data-sid="'+CSS.escape(sel)+'"]'); if(el) el.scrollIntoView({block:"nearest"}); }
+}
+function buildShare(){
+  sideEl.innerHTML=`<div class="ksh" role="region" aria-label="公會分享">
+    <div class="kbl-head"><b>公會分享</b><span class="kbl-sub ksh-sub"></span>
+      <button type="button" class="ksh-ref" data-sh="refresh" title="重新整理" aria-label="重新整理">⟳</button>
+      <button type="button" class="kbl-x" data-sh="close" aria-label="關閉" title="關閉">×</button></div>
+    <div class="ksh-bar"><div class="ksh-fs" role="tablist">
+        <button type="button" role="tab" class="ksh-f" data-sh="f-all">全部</button>
+        <button type="button" role="tab" class="ksh-f" data-sh="f-mine">我的分享</button></div>
+      <input type="text" class="ksh-q" placeholder="搜尋（底材／詞綴／分享者）" autocomplete="off" aria-label="搜尋分享架"></div>
+    <div class="ksh-msg" role="status" aria-live="polite"></div>
+    <div class="ksh-scroll"><div class="ksh-grid" aria-label="分享的裝備"></div></div>
+    <div class="ksh-detail"></div>
+    <div class="ksh-acts"><button type="button" class="kb-btn pri" data-sh="copy">複製到背包</button>
+      <button type="button" class="kb-btn ksh-rm" data-sh="remove">撤下</button></div>
+    <div class="ksh-foot">複製制：架上的是分享當時的快照，複製一份到背包洗不會影響原件。
+      分享：把背包的裝備拖到架上，或在裝備上按右鍵「分享到公會」（要登入 RKSA）。複製：「複製到背包」、Ctrl＋左鍵，或把架上的裝備拖到背包。
+      每人最多 ${SH.limits.perUser} 件、全架 ${SH.limits.total} 件、1 分鐘內最多分享 ${SH.limits.perWindow} 件。</div>
+  </div>`;
+  const q=sideEl.querySelector(".ksh-q");
+  q.value=SH.q;
+  q.oninput=()=>{ SH.q=q.value.trim(); drawShare(); };
+}
+function drawShare(){
+  if(S.panel!=="share"||!sideEl.querySelector(".ksh")) return;
+  const $s=s=>sideEl.querySelector(s);
+  const list=shareList();
+  SH.layout=layoutShelf(list);
+  const rows=Math.max(6,...SH.layout.map(e=>e.y+e.h));
+  const g=$s(".ksh-grid");
+  g.style.height=`calc(var(--cell) * ${rows})`;
+  g.innerHTML=SH.layout.map(e=>{
+    const at=`left:calc(var(--cell) * ${e.x});top:calc(var(--cell) * ${e.y});width:calc(var(--cell) * ${e.w});height:calc(var(--cell) * ${e.h})`;
+    const sel=SH.sel===e.id?" sel":"";
+    return e.item?`<div class="kb-item r${e.item.r} ksh-it${sel}" data-sid="${esc(e.id)}" style="${at}">${itemIcon(e.item)}</div>`
+      :`<div class="kb-item ksh-it ksh-bad${sel}" data-sid="${esc(e.id)}" style="${at}"><span>無法讀取</span></div>`;
+  }).join("")+(SH.loading&&!SH.loaded?`<div class="ksh-empty">讀取中…</div>`:
+    !list.length?`<div class="ksh-empty">${SH.err?esc(SH.err):SH.q||SH.filter==="mine"?"沒有符合的裝備。":"分享架是空的。把背包的裝備拖到這裡就能分享。"}</div>`:"");
+  const mine=SH.me?SH.list.filter(x=>x.sharerId===SH.me.id).length:0;
+  $s(".ksh-sub").textContent=`${SH.list.length}／${SH.limits.total} 件`+(SH.me?`・你分享了 ${mine}／${SH.limits.perUser} 件`+(SH.me.officer?"・團隊幹部":""):"・未登入（只能瀏覽、複製）");
+  sideEl.querySelectorAll(".ksh-f").forEach(b=>{
+    const f=b.dataset.sh.slice(2);
+    b.setAttribute("aria-selected",SH.filter===f);
+    if(f==="mine"){ b.disabled=!SH.me; b.title=SH.me?"":"登入後才能看自己的分享"; }
+  });
+  const m=$s(".ksh-msg"); m.className="ksh-msg"+(SH.msg&&SH.msg.bad?" bad":""); m.textContent=SH.msg?SH.msg.t:(SH.err||"");
+  const sh=SH.sel&&shareById(SH.sel), it=sh&&shareItem(sh);
+  const d=$s(".ksh-detail");
+  if(!sh) d.innerHTML=`<div class="ksh-hint">點一件裝備看詳細資料。</div>`;
+  else{
+    const name=it?esc(baseLabel(E.bases[it.b]))+`<small>${CE.RARITY_ZH[it.r]}・物品等級 ${it.lv}・${it.mods.length} 條詞綴</small>`:"<span class=\"ksh-badtxt\">此版本無法讀取</span>";
+    d.innerHTML=`<div class="ksh-name">${name}</div>
+      <div class="ksh-meta">${esc(sh.sharerName)}｜${esc(fmtTime(sh.sharedAt))}｜被複製 ${sh.copies} 次</div>
+      ${sh.note?`<div class="ksh-note">備註：${esc(sh.note)}</div>`:""}
+      ${it?"":`<div class="ksh-note">分享時的資料版本 ${esc(sh.dataVersion||"不明")}，目前網站是 ${esc(D.version)}：底材或詞綴在這一版找不到，所以不能複製。</div>`}`;
+  }
+  const cp=$s('[data-sh="copy"]'), rm=$s('[data-sh="remove"]');
+  cp.disabled=!it; cp.title=!sh?"先點一件裝備":!it?"此版本無法讀取，不能複製":"";
+  rm.hidden=!(sh&&canRemove(sh));
+  rm.textContent=sh&&SH.me&&sh.sharerId!==SH.me.id?"撤下（幹部）":"撤下";
+}
+function shareAction(a){
+  if(a==="close"){ togglePanel("share"); return; }
+  if(a==="refresh"){ SH.msg=null; loadShares(SH.sel); return; }
+  if(a==="f-all"||a==="f-mine"){ SH.filter=a.slice(2); drawShare(); return; }
+  const sh=SH.sel&&shareById(SH.sel);
+  if(!sh){ SH.msg={bad:true,t:"先點一件裝備"}; drawShare(); return; }
+  if(a==="copy") copyShareToInv(sh);
+  if(a==="remove") removeShareAsk(sh);
+}
+/* 複製到背包（按鈕、Ctrl＋左鍵）：背包滿了不能複製 */
+function copyShareToInv(sh){
+  const it=shareItem(sh);
+  if(!it){ SH.msg={bad:true,t:"此版本無法讀取，不能複製"}; drawShare(); return; }
+  const s=sizeOf(it), p=firstFit(S.inv,s.w,s.h);
+  if(!p){ SH.msg={bad:true,t:"背包滿了，不能複製（先清出 "+s.w+"×"+s.h+" 格的空間）"}; drawShare(); flash("背包滿了，不能複製"); return; }
+  const snap=snapshot();
+  S.inv.push({id:uid(),x:p.x,y:p.y,item:E.clone(it)});
+  pushUndo(snap,"複製分享的裝備");
+  drawGrid(invEl,S.inv); save();
+  SH.msg={t:"已複製一份到背包"}; drawShare();
+  countCopy(sh.id);
+}
+/* 被複製次數 +1（未登入也可以）；架上那件剛好被撤下時，已經複製的照樣保留 */
+async function countCopy(id){
+  try{
+    const r=await shApi("/shares/"+encodeURIComponent(id)+"/copy",{method:"POST"});
+    if(r.status===404){ SH.list=SH.list.filter(x=>x.id!==id); SH.msg={bad:true,t:"這件剛剛被撤下了（你複製的這件會保留）"}; drawShare(); return; }
+    if(!r.ok) return;
+    const d=await r.json(), sh=shareById(id);
+    if(sh){ sh.copies=d.copies; drawShare(); }
+  }catch(e){}
+}
+function removeShareAsk(sh){
+  const it=shareItem(sh);
+  const other=SH.me&&sh.sharerId!==SH.me.id;
+  const m=modal(`<h3>撤下這件分享？</h3><p>${it?esc(baseLabel(E.bases[it.b])):"（此版本無法讀取的裝備）"}・分享者 ${esc(sh.sharerName)}<br>
+    撤下後分享架上就沒有這件了；已經複製到背包的人不受影響。${other?"<br><b>你是以團隊幹部身分撤下別人的分享。</b>":""}</p>
+    <div class="msg" role="status"></div>
+    <div class="acts"><button class="kb-btn" data-x>取消</button><button class="kb-btn pri" data-ok>撤下</button></div>`);
+  m.el.querySelector("[data-x]").onclick=m.close;
+  const ok=m.el.querySelector("[data-ok]"), msg=m.el.querySelector(".msg");
+  ok.onclick=async()=>{
+    ok.disabled=true;
+    try{
+      const r=await shApi("/shares/"+encodeURIComponent(sh.id),{method:"DELETE"});
+      if(r.ok||r.status===404){
+        SH.list=SH.list.filter(x=>x.id!==sh.id); SH.sel=null;
+        SH.msg={t:r.ok?"已撤下":"這件已經不在架上了"}; m.close(); drawShare(); return;
+      }
+      msg.className="msg bad";
+      msg.textContent=r.status===403?"只有分享者本人或團隊幹部可以撤下。":r.status===401?"登入已過期，請重新登入。":"撤下失敗，請稍後再試。";
+    }catch(e){ msg.className="msg bad"; msg.textContent="連不上分享架，請稍後再試。"; }
+    ok.disabled=false;
+  };
+}
+/* 分享：輸入備註（選填，最多 50 字）後送出；裝備留在原處 */
+function shareFlow(item){
+  if(!loggedIn()){ flash("登入 RKSA 的 Discord 才能分享（右上角「用 Discord 登入」）"); return; }
+  if(S.slot.length){ flash("工藝台／園藝的裝備格裡還有裝備，請先移回背包再分享"); return; }
+  const MAX=50;
+  const m=modal(`<h3>分享到公會</h3>
+    <div class="ksh-preview">${itemTooltipHTML(item,false)}</div>
+    <label class="klab" for="ksh-note">備註（選填，最多 ${MAX} 字）</label>
+    <input type="text" id="ksh-note" maxlength="${MAX}" placeholder="例如：洗到 T1 生命，缺一條抗性" autocomplete="off">
+    <div class="ksh-count"><span>0</span>／${MAX}</div>
+    <div class="msg" role="status" aria-live="polite"></div>
+    <p class="ksh-tip">分享的是現在這一刻的快照，之後再洗也不會改到架上那件。分享後會在 💬poe閒聊 發一則通知。</p>
+    <div class="acts"><button class="kb-btn" data-x>取消</button><button class="kb-btn pri" data-ok>分享</button></div>`,null,"kb-share");
+  const input=m.el.querySelector("#ksh-note"), cnt=m.el.querySelector(".ksh-count span"), msg=m.el.querySelector(".msg"), ok=m.el.querySelector("[data-ok]");
+  input.focus();
+  input.oninput=()=>{ cnt.textContent=[...input.value].length; };
+  m.el.querySelector("[data-x]").onclick=m.close;
+  const send=async()=>{
+    const note=input.value.trim();
+    if([...note].length>MAX){ msg.className="msg bad"; msg.textContent="備註最多 "+MAX+" 字"; return; }
+    ok.disabled=true; msg.className="msg"; msg.textContent="分享中…";
+    const mods=item.mods.slice().sort((x,y)=>(E.mods[y.m].pre-E.mods[x.m].pre));
+    const body={item:E.toStored(item),note,dataVersion:D.version,
+      text:{base:E.baseName(item.b,"zh"),lines:mods.flatMap(x=>E.render(x.m,x.v,"zh"))}};
+    try{
+      const r=await shApi("/shares",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+      const d=await r.json().catch(()=>({}));
+      if(r.status===201){
+        m.close();
+        if(S.panel!=="share") togglePanel("share");
+        SH.filter="all"; SH.q=""; const q=sideEl.querySelector(".ksh-q"); if(q) q.value="";
+        SH.msg={t:"已分享到公會分享架，💬poe閒聊 會收到通知"};
+        loadShares(d.share&&d.share.id);
+        flash("已分享到公會",true);
+        return;
+      }
+      msg.className="msg bad";
+      msg.textContent=d.error==="per_user_limit"?`你已經分享 ${d.count||d.limit} 件，請先撤下一件（每人最多 ${d.limit} 件）`
+        :d.error==="shelf_full"?`分享架已經滿了（最多 ${d.limit} 件），請等其他人撤下`
+        :d.error==="too_fast"?`分享太快了：${d.windowSec>=60?Math.round(d.windowSec/60)+" 分鐘":d.windowSec+" 秒"}內最多 ${d.limit} 件，請稍後再試`
+        :d.error==="note_too_long"?"備註最多 "+MAX+" 字"
+        :r.status===401?"登入已過期，請重新登入後再分享"
+        :"分享失敗（"+(d.error||r.status)+"），請稍後再試";
+    }catch(e){ msg.className="msg bad"; msg.textContent="連不上分享架，請稍後再試"; }
+    ok.disabled=false;
+  };
+  ok.onclick=send;
+  input.onkeydown=e=>{ if(e.key==="Enter") send(); };
+}
+/* 分享架上點一下：選中看詳細；Ctrl＋左鍵＝快速複製；拿著背包的裝備點架子＝分享 */
+function shelfClick(ev){
+  const h=S.held;
+  if(h&&h.kind==="item"){
+    if(h.copyOf){ cancelCopy(); return; }
+    const item=h.e.item;
+    returnHeld();
+    shareFlow(item);
+    return;
+  }
+  if(h&&h.kind==="cur"){ flash("架上的裝備不能直接用通貨，先複製到背包"); return; }
+  const el=ev.target.closest(".ksh-it");
+  SH.msg=null;
+  if(!el){ SH.sel=null; drawShare(); return; }
+  SH.sel=el.dataset.sid; drawShare();
+  if(ev.ctrlKey||ev.metaKey) copyShareToInv(shareById(SH.sel));
+}
+/* 從架上拿起複本（拖曳時）：放到背包或倉庫頁才算複製；放回架上、右鍵、Esc＝取消 */
+function pickShareCopy(id){
+  const sh=shareById(id), it=sh&&shareItem(sh);
+  if(!it){ flash("此版本無法讀取，不能複製"); return; }
+  SH.sel=id; drawShare();
+  S.held={kind:"item",e:{id:uid(),x:0,y:0,item:E.clone(it)},from:{cid:"shelf",x:0,y:0},copyOf:id,snap:snapshot()};
+  hideTip(); drawCursor();
+}
+function cancelCopy(){ S.held=null; clearPreviews(); drawCursor(); flash("已取消複製",true); }
+/* 連結 #craft&share=<id>：切到製裝台、打開分享架、選中這一件 */
+function openShareLink(id){
+  if(!id) return;
+  window.CRAFT_SHARE_LINK=null;
+  const t=document.getElementById("k-t-bench"); if(t&&t.getAttribute("aria-selected")!=="true") t.click();
+  if(S.panel!=="share") togglePanel("share");
+  SH.filter="all"; SH.q=""; const q=sideEl.querySelector(".ksh-q"); if(q) q.value="";
+  loadShares(id);
+  root.scrollIntoView({block:"start"});
+}
+window.addEventListener("craftsharelink",e=>{ if(S.ready) openShareLink(e.detail); });
+window.addEventListener("craftstorage:status",()=>{ if(S.ready&&S.panel==="share"&&SH.loaded&&!!SH.me!==loggedIn()) loadShares(SH.sel); });
 
 /* ── 游標上的東西 ── */
 let mouse={x:-999,y:-999};
@@ -489,7 +764,7 @@ function placement(gridEl,list,cx,cy){
   const hits=list.filter(e=>overlap(e,x,y,s.w,s.h));
   return {x,y,w:s.w,h:s.h,hits,ok:hits.length<=1};
 }
-function clearPreviews(){ root.querySelectorAll(".kb-prev").forEach(p=>p.hidden=true); root.querySelectorAll("[data-kslot].over").forEach(x=>x.classList.remove("over")); }
+function clearPreviews(){ root.querySelectorAll(".kb-prev").forEach(p=>p.hidden=true); root.querySelectorAll("[data-kslot].over,.ksh-grid.over").forEach(x=>x.classList.remove("over")); }
 function showPreview(gridEl,p){
   const el=gridEl.querySelector(".kb-prev"); if(!el) return;
   el.hidden=false;
@@ -576,7 +851,13 @@ function placeTip(){
 }
 function refreshTip(){
   if(!tipTarget){ hideTip(); return; }
-  if(tipTarget.cur) showTip(currencyTooltipHTML(tipTarget.cur));
+  if(tipTarget.shelf){
+    const sh=shareById(tipTarget.shelf), it=sh&&shareItem(sh);
+    if(!sh) hideTip();
+    else showTip((it?itemTooltipHTML(it,altDown):`<div class="kb-curtip"><b>此版本無法讀取</b><em>分享時的資料版本 ${esc(sh.dataVersion||"不明")}</em></div>`)+
+      `<div class="kb-curtip ksh-tipmeta">${esc(sh.sharerName)}・被複製 ${sh.copies} 次${sh.note?"<br>備註："+esc(sh.note):""}</div>`);
+  }
+  else if(tipTarget.cur) showTip(currencyTooltipHTML(tipTarget.cur));
   else if(tipTarget.decor) showTip(decorTooltipHTML(tipTarget.decor));
   else{
     const e=findEntry(tipTarget.cid,tipTarget.id);
@@ -614,6 +895,7 @@ function dropHeld(silent){
 /* 拿著的裝備放回原位（原位被佔就放原本那一頁的第一個空位，再不行就背包） */
 function returnHeld(){
   const h=S.held; if(!h||h.kind!=="item") return;
+  if(h.copyOf){ S.held=null; drawAll(); return; }   // 從分享架拿起的複本：放回去＝取消複製
   const s=sizeOf(h.e.item);
   let list=cont(h.from.cid)||S.inv;
   if(h.from.cid==="slot"&&(S.slot.length||!S.panel)) list=S.inv;   // 裝備格只放 1 件
@@ -655,6 +937,7 @@ function placeHeld(cid,gridEl){
   if(!p.ok){ flash("這裡放不下（會蓋到兩件以上的裝備）"); return; }
   const snap=h.snap||snapshot();
   list.push({...h.e,x:p.x,y:p.y});
+  if(h.copyOf) countCopy(h.copyOf);   // 從分享架拖過來的複本：放下才算複製
   if(p.hits.length===1){
     // 剛好只蓋到一件：互換，那件跑到游標上
     const other=p.hits[0];
@@ -663,7 +946,7 @@ function placeHeld(cid,gridEl){
     pushUndo(snap,"互換裝備");
   }else{
     S.held=null;
-    pushUndo(snap,"移動裝備");
+    pushUndo(snap,h.copyOf?"複製分享的裝備":"移動裝備");
   }
   clearPreviews();
   redrawContainer(cid); drawCursor();
@@ -671,7 +954,7 @@ function placeHeld(cid,gridEl){
 }
 function quickMove(cid,e){
   let to;
-  if(cid==="inv"&&S.panel){
+  if(cid==="inv"&&S.panel&&S.panel!=="share"){
     if(S.slot.length){ flash("裝備格已經有裝備（先把它拿出來）"); return; }
     to="slot";
   }else if(cid==="inv"){
@@ -704,12 +987,20 @@ document.addEventListener("mousemove",ev=>{
   mouse={x:ev.clientX,y:ev.clientY};
   if(!S.ready||root.offsetParent===null) return;
   moveCursor();
-  const g=gridOf(ev.target), ks=ev.target.closest&&ev.target.closest("[data-kslot]");
+  dragMove(ev);
+  const g=gridOf(ev.target), ks=ev.target.closest&&ev.target.closest("[data-kslot]"), shg=ev.target.closest&&ev.target.closest(".ksh-grid");
   if(S.held&&S.held.kind==="item"){
     clearPreviews();
     if(g){ showPreview(g,placement(g,cont(g.dataset.cid),ev.clientX,ev.clientY)); }
     if(ks) ks.classList.add("over");
+    if(shg&&!S.held.copyOf) shg.classList.add("over");   // 放開就分享
     hideTip();
+    return;
+  }
+  const shi=ev.target.closest&&ev.target.closest(".ksh-it");
+  if(shi){
+    const id=shi.dataset.sid;
+    if(!tipTarget||tipTarget.shelf!==id){ tipTarget={shelf:id}; refreshTip(); } else placeTip();
     return;
   }
   if(ks&&slotEntry()){
@@ -737,6 +1028,11 @@ document.addEventListener("mousemove",ev=>{
 root.addEventListener("contextmenu",ev=>{
   const chip=ev.target.closest(".kb-chip[data-tab]");
   if(chip){ ev.preventDefault(); ev.stopPropagation(); tabMenu(chip.dataset.tab,ev.clientX,ev.clientY); return; }
+  const ig=!S.held&&gridOf(ev.target);
+  if(ig){
+    const e=entryAt(ig,ig.dataset.cid,ev.clientX,ev.clientY);
+    if(e){ ev.preventDefault(); ev.stopPropagation(); itemMenu(ig.dataset.cid,e,ev.clientX,ev.clientY); return; }
+  }
   const decor=ev.target.closest(".kb-decor");
   if(decor){ ev.preventDefault(); ev.stopPropagation(); flash("模擬器尚未支援"); return; }   // 擺設：拿不起來
   const slot=ev.target.closest(".kb-slot");
@@ -757,9 +1053,13 @@ document.addEventListener("contextmenu",ev=>{
 });
 root.addEventListener("click",ev=>{
   if(ev.button!==0) return;
+  if(suppressClick){ suppressClick=false; return; }   // 剛拖曳完：放下已經在 mouseup 處理
   const t=ev.target;
-  // 右側面板：裝備格由這裡處理，清單裡的按鈕由 craft-benchlist.js／craft-harvest.js 自己處理
+  // 右側面板：裝備格、分享架由這裡處理，清單裡的按鈕由 craft-benchlist.js／craft-harvest.js 自己處理
   if(t.closest("[data-kslot]")){ slotClick(ev); return; }
+  if(t.closest(".ksh-grid")){ shelfClick(ev); return; }
+  const shb=t.closest("[data-sh]");
+  if(shb){ if(!shb.disabled) shareAction(shb.dataset.sh); return; }
   if(t.closest("#kb-side")) return;
   // 分頁籤、通貨子分頁
   if(t.closest("#kb-newtab")){ editTab(null); return; }
@@ -775,6 +1075,7 @@ root.addEventListener("click",ev=>{
   if(t.closest("#kb-vendor")){ openVendor(); return; }
   if(t.closest("#kb-craftbench")){ togglePanel("bench"); return; }
   if(t.closest("#kb-harvest")){ togglePanel("harvest"); return; }
+  if(t.closest("#kb-share")){ togglePanel("share"); return; }
   if(t.closest(".kb-decor")){ const k=t.closest(".kb-decor").dataset.decor||"";
     flash(/^x:HarvestSeed/.test(k)?"生命力是園藝工藝台的費用：按背包上方的「園藝」打開面板":"模擬器尚未支援",/^x:HarvestSeed/.test(k)); return; }
   if(t.closest(".kb-slot")){ flash("按右鍵拿起通貨"); return; }
@@ -880,6 +1181,62 @@ function tabMenu(id,x,y){
 }
 window.addEventListener("blur",closeMenu);
 window.addEventListener("scroll",closeMenu,true);
+/* 裝備右鍵選單：分享到公會（背包、倉庫頁的裝備） */
+function itemMenu(cid,e,x,y){
+  closeMenu(); hideTip();
+  const ok=loggedIn();
+  menuEl=document.createElement("div");
+  menuEl.className="kb-menu"; menuEl.setAttribute("role","menu");
+  menuEl.innerHTML=`<div class="kb-menu-note">${esc(baseLabel(E.bases[e.item.b]))}</div>
+    <button type="button" role="menuitem" data-m="share"${ok?"":" disabled"}>分享到公會…</button>
+    ${ok?"":`<div class="kb-menu-note">登入 RKSA 的 Discord 才能分享</div>`}`;
+  root.appendChild(menuEl);
+  const w=menuEl.offsetWidth, h=menuEl.offsetHeight;
+  menuEl.style.left=clamp(x,4,innerWidth-w-4)+"px";
+  menuEl.style.top=clamp(y,4,innerHeight-h-4)+"px";
+  menuEl.onclick=ev=>{
+    const b=ev.target.closest("button[data-m]"); if(!b||b.disabled) return;
+    closeMenu();
+    shareFlow(e.item);
+  };
+  const first=menuEl.querySelector("button:not([disabled])"); if(first) first.focus();
+  document.addEventListener("mousedown",menuOutside,true);
+  document.addEventListener("keydown",menuKey,true);
+}
+/* 拖曳裝備：按住左鍵移動超過幾個像素＝拿起來，放開的地方＝放下（背包、倉庫頁、裝備格、分享架）。
+   沒有移動就是一般的點一下（拿起／放下）。 */
+let dragStart=null, dragging=false, suppressClick=false;
+root.addEventListener("mousedown",ev=>{
+  if(ev.button!==0||S.held||ev.ctrlKey||ev.metaKey||ev.shiftKey) return;
+  const shi=ev.target.closest(".ksh-it");
+  if(shi){ dragStart={x:ev.clientX,y:ev.clientY,shelf:shi.dataset.sid}; return; }
+  const g=gridOf(ev.target);
+  const e=g&&entryAt(g,g.dataset.cid,ev.clientX,ev.clientY);
+  const ks=ev.target.closest("[data-kslot]");
+  if(e) dragStart={x:ev.clientX,y:ev.clientY,cid:g.dataset.cid,id:e.id};
+  else if(ks&&slotEntry()) dragStart={x:ev.clientX,y:ev.clientY,cid:"slot",id:slotEntry().id};
+});
+function dragMove(ev){
+  if(!dragStart||dragging) return;
+  if(!(ev.buttons&1)){ dragStart=null; return; }
+  if(Math.hypot(ev.clientX-dragStart.x,ev.clientY-dragStart.y)<6) return;
+  dragging=true;
+  if(dragStart.shelf){ pickShareCopy(dragStart.shelf); return; }
+  const e=findEntry(dragStart.cid,dragStart.id);
+  if(e) pickItem(dragStart.cid,e);
+}
+document.addEventListener("mouseup",ev=>{
+  const was=dragging;
+  dragStart=null; dragging=false;
+  if(!was||!S.held||S.held.kind!=="item") return;
+  suppressClick=true; setTimeout(()=>{ suppressClick=false; },0);
+  const t=document.elementFromPoint(ev.clientX,ev.clientY)||document.body;
+  if(!root.contains(t)) return;   // 放在製裝台外面：留在游標上
+  if(t.closest(".ksh-grid")){ shelfClick({target:t,ctrlKey:false,metaKey:false}); return; }
+  if(t.closest("[data-kslot]")){ placeInSlot(); return; }
+  const g=gridOf(t);
+  if(g) placeHeld(g.dataset.cid,g);
+});
 /* 拖曳分頁籤排序（只有一般倉庫頁可以拖；放在目標的左半邊＝插到它前面，右半邊＝後面） */
 let dragId=null;
 const stripEl=$("kb-strip");
@@ -911,6 +1268,7 @@ stripEl.addEventListener("dragend",()=>{ dragId=null; clearDrop(); drawStrip(); 
 /* ── 丟棄 ── */
 function discardHeld(){
   if(!S.held||S.held.kind!=="item"){ flash("先拿起要丟棄的裝備，再點這裡"); return; }
+  if(S.held.copyOf){ cancelCopy(); return; }
   const h=S.held, name=itemName(h.e.item).join(" ");
   $("kb-discard").classList.add("armed");
   const m=modal(`<h3>丟棄這件裝備？</h3><p>${esc(name)}（${esc(CE.RARITY_ZH[h.e.item.r])}）<br>可以用「上一步」找回來。</p>
@@ -996,6 +1354,7 @@ function openVendor(){
   S.ready=true;
   root.querySelector(".kb").style.opacity="";
   drawAll();
+  if(window.CRAFT_SHARE_LINK) openShareLink(window.CRAFT_SHARE_LINK);
   // 第一次使用（自動建立了暫存區）、或是舊格式（v2）的存檔：以新格式存一次
   if(!d||d.v!==SAVE_V||d.dataVersion!==D.version) save();
 })();

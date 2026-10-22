@@ -4,8 +4,9 @@
 #kbench .kb{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
 #kbench .kb-stash{width:calc(var(--grid) + 12px);background:#0E0D0B;border:1px solid #2E2A22;border-radius:6px;padding:0 6px 6px}
 #kbench .kb-head{display:block;width:100%;height:auto;margin:0 0 4px}
-#kbench .kb-strip{display:flex;gap:4px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:thin}
-#kbench .kb-chip{flex:none;background:#1A1814;border:1px solid #3A342A;color:#B9A985;font-size:12.5px;padding:3px 10px;
+/* 分頁列：太多時換到下一列（不要橫向捲軸）；倉庫格子在分頁列下面，會跟著往下移 */
+#kbench .kb-strip{display:flex;flex-wrap:wrap;gap:4px;padding:2px 0 6px}
+#kbench .kb-chip{flex:none;max-width:100%;overflow:hidden;text-overflow:ellipsis;background:#1A1814;border:1px solid #3A342A;color:#B9A985;font-size:12.5px;padding:3px 10px;
   border-radius:3px 3px 0 0;cursor:pointer;white-space:nowrap;font-family:var(--sans)}
 #kbench .kb-chip[aria-selected="true"]{color:#F3E2B5;border-color:#8C7445;background:var(--tc,#2A231A)}
 #kbench .kb-page{position:relative;width:var(--grid);height:var(--grid)}
@@ -58,7 +59,7 @@
 #kbench .kb-chip.drag{opacity:.4}
 #kbench .kb-chip.over-l{box-shadow:inset 3px 0 0 #E9C98A}
 #kbench .kb-chip.over-r{box-shadow:inset -3px 0 0 #E9C98A}
-#kbench .kb-add{position:sticky;right:0;color:#E9C98A;font-weight:700;padding:3px 9px;background:#221D15;box-shadow:-6px 0 6px #0E0D0B}
+#kbench .kb-add{color:#E9C98A;font-weight:700;padding:3px 9px;background:#221D15}
 #kbench .kb-add:hover{color:#fff;border-color:#8C7445}
 #kbench .kb-menu{position:fixed;z-index:75;min-width:170px;background:#1B1B19;border:1px solid #46443F;border-radius:4px;
   padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.6);display:flex;flex-direction:column}
@@ -282,3 +283,48 @@
 #tab-craft .khv-under .khv-cnt{width:92px;height:53px}
 #tab-craft .khv-under .khv-cnt .ic{width:38px;height:38px;margin-left:4px}
 #tab-craft .khv-under .khv-cnt span{font-size:13px}
+
+/* 公會分享架（craft-bench.js 的 buildShare）：和工藝台面板同一套深色底＋金色邊框，標題列沿用 bench_top 官方美術圖
+   （遊戲沒有公會倉庫專屬的美術圖：公會倉庫在遊戲裡用一般倉庫的外框，art/uiimages1.txt 裡只有公會幣、商城的圖） */
+#tab-craft .ksh{display:flex;flex-direction:column;gap:6px;color:#E6E2DB;background:linear-gradient(#17140f,#0e0c09);
+  border:1px solid #4a3f2c;box-shadow:0 0 0 2px #0a0907;border-radius:3px;padding-bottom:8px}
+#tab-craft .ksh .kbl-head{padding-right:10px}
+#tab-craft .ksh-ref{background:none;border:0;color:#BFB49E;font-size:18px;cursor:pointer;line-height:1;padding:0 4px}
+#tab-craft .ksh-ref:hover,#tab-craft .ksh .kbl-x:hover{color:#fff}
+#tab-craft .ksh-bar{display:flex;gap:8px;align-items:center;padding:0 10px;flex-wrap:wrap}
+#tab-craft .ksh-fs{display:flex;gap:4px}
+#tab-craft .ksh-f{background:#1A1814;border:1px solid #3A342A;color:#B9A985;font-size:12.5px;padding:4px 10px;border-radius:3px;cursor:pointer;font-family:var(--sans)}
+#tab-craft .ksh-f[aria-selected="true"]{color:#F3E2B5;border-color:#8C7445;background:#2A231A}
+#tab-craft .ksh-f:disabled{opacity:.45;cursor:not-allowed}
+#tab-craft .ksh-q{flex:1;min-width:140px;background:#0b0a08;border:1px solid #4a3f2c;color:#E6E2DB;padding:4px 8px;font-size:13px}
+#tab-craft .ksh-msg{min-height:18px;padding:0 10px;font-size:13px;color:#9FD3A8}
+#tab-craft .ksh-msg.bad{color:#E58A78}
+#tab-craft .ksh-scroll{margin:0 auto;width:calc(var(--cell) * 12);max-height:calc(var(--cell) * 7);overflow-y:auto;overflow-x:hidden;
+  border:1px solid #3B3226;background:#0B0A08}
+#tab-craft .ksh-grid{position:relative;width:calc(var(--cell) * 11);min-height:calc(var(--cell) * 4);
+  background:url(img/craft/grid_cell.png) 0 0/var(--cell) var(--cell) repeat;box-shadow:inset -1px -1px 0 #4A3F30;cursor:pointer}
+#tab-craft .ksh-grid.over{box-shadow:inset 0 0 0 2px #4FC45A,inset 0 0 24px rgba(79,196,90,.35)}
+#tab-craft .ksh-it.sel{outline:2px solid #F3D27A;outline-offset:-2px;z-index:1}
+#tab-craft .ksh-bad{background:#2B2B2B;box-shadow:inset 0 0 0 1px #6A6A6A;font-size:10px;line-height:1.2;color:#C9C9C9;text-align:center;padding:2px}
+#tab-craft .ksh-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;
+  color:#9C988F;font-size:13px;pointer-events:none}
+#tab-craft .ksh-detail{margin:0 10px;min-height:64px;padding:8px 10px;background:#141210;border:1px solid #3B3226;border-radius:3px;font-size:13px;line-height:1.6}
+#tab-craft .ksh-name{color:#E8D9A8;font-size:15px}
+#tab-craft .ksh-name small{display:block;color:#9C988F;font-size:12px}
+#tab-craft .ksh-badtxt{color:#E58A78}
+#tab-craft .ksh-meta{color:#C9C3B8}
+#tab-craft .ksh-note{color:#B8E2F2;word-break:break-word}
+#tab-craft .ksh-hint{color:#9C988F}
+#tab-craft .ksh-acts{display:flex;gap:8px;justify-content:flex-end;padding:0 10px}
+#tab-craft .ksh-acts .kb-btn:disabled{opacity:.45;cursor:not-allowed}
+#tab-craft .ksh-rm{border-color:#7A3A2E;color:#F0B4A6}
+#tab-craft .ksh-foot{padding:4px 10px 0;font-size:12px;color:#8C887F;line-height:1.6;border-top:1px solid #2C2A27}
+#kbench .kb-tip .ksh-tipmeta{margin-top:4px;font-size:12px}
+#kbench .kb-share{max-width:440px}
+#kbench .kb-share .ksh-preview{max-height:260px;overflow:auto;margin:6px 0 10px}
+#kbench .kb-share .ksh-preview .kcard{max-width:none;margin:0}
+#kbench .kb-share .ksh-count{text-align:right;font-size:12px;color:#9C988F;margin-top:2px}
+#kbench .kb-share .ksh-tip{font-size:12.5px;margin:8px 0 0}
+#kbench .kb-modal .msg{min-height:20px;font-size:13px;color:#9FD3A8;margin-top:6px}
+#kbench .kb-modal .msg.bad{color:#E79A88}
+#kbench .kb-menu button:disabled{opacity:.45;cursor:not-allowed}

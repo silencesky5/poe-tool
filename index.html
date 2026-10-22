@@ -1216,7 +1216,7 @@ body .gbtns .pri:hover{background:#DD8B36}
 @media(max-width:640px){#tab-craft .kauth{align-items:flex-start;text-align:left;flex-basis:100%}
   #tab-craft .kauth-who{align-items:flex-start}}
 </style>
-<link rel="stylesheet" href="craft-bench.css?v=20261022-1735">
+<link rel="stylesheet" href="craft-bench.css?v=20261023-0148">
 </head>
 <body>
 <div id="shell">
@@ -1517,8 +1517,8 @@ body .gbtns .pri:hover{background:#DD8B36}
 <script src="strats.js"></script>
 <script src="charts.js"></script>
 <script src="heroes.js"></script>
-<script src="craft-storage.js"></script>
-<script src="craft-account.js"></script>
+<script src="craft-storage.js?v=20261023-0148"></script>
+<script src="craft-account.js?v=20261023-0148"></script>
 <script>
 (function(){
   /* ── 要隱藏哪些分頁 ───────────────────────────────
@@ -1609,6 +1609,13 @@ body .gbtns .pri:hover{background:#DD8B36}
   /* 依網址 #名稱 切換；網址改變時也跟著切換 */
   function fromHash(){
     let h=location.hash.slice(1);
+    /* 公會分享的連結 #craft&share=<id>：切到製裝方法，交給製裝台打開分享架（craft-bench.js） */
+    const sh=/^craft&(.*)$/.exec(h);
+    if(sh){
+      const id=new URLSearchParams(sh[1]).get("share");
+      if(id&&/^[A-Za-z0-9_-]{6,40}$/.test(id)){ window.CRAFT_SHARE_LINK=id; window.dispatchEvent(new CustomEvent("craftsharelink",{detail:id})); }
+      h="craft";
+    }
     h=OLD[h]||h;
     if(SUBS[h]&&tabs.some(t=>t[1]===SUBS[h][0])) return go(SUBS[h][0],SUBS[h][1]);
     const want=tabs.find(([b,p])=>key(p)===h);
@@ -4304,7 +4311,7 @@ if(typeof SCARABS==="undefined"){
     if(started||panel.hidden) return;
     started=true;
     /* 製裝相關檔案加版本號：改版後瀏覽器一定抓新的（舊的程式配新的資料會出錯）。改這些檔案時記得一起改 */
-    const VER="20261022-1735";
+    const VER="20261023-0148";
     window.CRAFT_VER=VER;
     const files=["craft-data.js","craft-engine.js","craft-benchlist.js","craft-harvest.js","craft-ui.js","craft-bench.js"];
     (function next(i){

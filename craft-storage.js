@@ -5,6 +5,8 @@
    CraftStorage.status()      → { loggedIn, user, sync, notice, localAvailable }
    CraftStorage.login()       → 前往 Discord 登入
    CraftStorage.logout()      → Promise
+   CraftStorage.api(path, opts) → Promise<Response>：呼叫 Worker 的其他 API（公會分享架），登入時自動帶 token；
+                                  回 401 就當作登入過期（和存檔一樣）
 
    存檔是「一整個物件」，製裝台和模擬器共用。各自只改自己的欄位、其他欄位原樣保留：
      const cur = (await CraftStorage.load()) || {};
@@ -26,7 +28,7 @@
 (function(){
 "use strict";
 
-const API = "https://poe-tool-auth.poe-tool-auth.workers.dev";
+let API = "https://poe-tool-auth.poe-tool-auth.workers.dev";
 const KEY = "poeCraftStash";          // { data }
 const META = "poeCraftStashMeta";    // { uid, base, dirty }：雲端版本與是否有還沒上傳的改動
 const AUTH = "poeCraftAuth";         // 登入 token
@@ -46,6 +48,12 @@ const store = {
   try{ localStorage.setItem("__poeCraftProbe","1"); localStorage.removeItem("__poeCraftProbe"); }
   catch(e){ store.ok=false; }
 })();
+/* 本機測試：網頁開在 localhost 時，可以用 localStorage 的 poeCraftApi 改連本機的 wrangler dev（例如 http://127.0.0.1:8787）。
+   正式網站不會讀這個設定。 */
+if(/^(localhost|127\.0\.0\.1)$/.test(location.hostname)){
+  const local = store.get("poeCraftApi");
+  if(local && /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(local)) API = local;
+}
 
 let token = store.get(AUTH);
 let user = null;           // { id, name, avatar }
@@ -57,14 +65,16 @@ let pending = undefined;   // 還沒上傳的資料
 let cache = undefined;     // 登入時，這台目前的整份存檔（undefined = 這次開頁還沒跟雲端讀過）
 let flushing = null;
 
-/* ── 1. 登入回來：從網址取出 token 或錯誤代碼，立刻清掉 ── */
+/* ── 1. 登入回來：從網址取出 token 或錯誤代碼，立刻清掉 ──
+   公會分享的連結（#craft&share=<id>）：記在 window.CRAFT_SHARE_LINK，製裝台載入後打開分享架並選中那一件 */
 (function readHash(){
   const h = location.hash.slice(1);
   if(!/^craft&/.test(h)) return;
   const p = new URLSearchParams(h.slice("craft&".length));
-  const t = p.get("login"), err = p.get("error");
+  const t = p.get("login"), err = p.get("error"), share = p.get("share");
   if(t){ token = t; store.set(AUTH, t); freshLogin = true; notice = null; }
   if(err) notice = err;
+  if(share && /^[A-Za-z0-9_-]{6,40}$/.test(share)) window.CRAFT_SHARE_LINK = share;
   try{ history.replaceState(null, "", location.pathname + location.search + "#craft"); }catch(e){}
 })();
 
@@ -315,5 +325,15 @@ async function logout(){
   try{ await fetch(API + "/auth/logout", { method: "POST", headers: { Authorization: "Bearer " + t } }); }catch(e){}
 }
 
-window.CraftStorage = Object.freeze({ load, save, status, login, logout });
+/* ── 8. 其他 API（公會分享架）：有登入就帶 token ── */
+async function api(path, opts = {}){
+  await ready;
+  const headers = { ...(opts.headers || {}) };
+  if(token && user) headers.Authorization = "Bearer " + token;
+  const res = await fetch(API + path, { ...opts, headers });
+  if(res.status === 401 && headers.Authorization) dropLogin("expired");
+  return res;
+}
+
+window.CraftStorage = Object.freeze({ load, save, status, login, logout, api });
 })();
