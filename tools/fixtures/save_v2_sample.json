@@ -1,0 +1,367 @@
+{
+ "v": 2,
+ "inventory": [
+  {
+   "id": "a1",
+   "x": 0,
+   "y": 0,
+   "item": {
+    "b": 335,
+    "lv": 86,
+    "r": 2,
+    "mods": [
+     {
+      "m": 1058,
+      "v": [
+       13
+      ]
+     },
+     {
+      "m": 417,
+      "v": [
+       18
+      ]
+     },
+     {
+      "m": 234,
+      "v": [
+       10
+      ]
+     },
+     {
+      "m": 706,
+      "v": [
+       79
+      ]
+     },
+     {
+      "m": 348,
+      "v": [
+       81
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "a2",
+   "x": 2,
+   "y": 0,
+   "item": {
+    "b": 637,
+    "lv": 84,
+    "r": 1,
+    "mods": [
+     {
+      "m": 185,
+      "v": [
+       17
+      ]
+     },
+     {
+      "m": 361,
+      "v": [
+       39
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "a3",
+   "x": 3,
+   "y": 0,
+   "item": {
+    "b": 15,
+    "lv": 75,
+    "r": 0,
+    "mods": []
+   }
+  }
+ ],
+ "tabs": [
+  {
+   "id": "t1",
+   "name": "暫存區",
+   "color": "#7a1f1f",
+   "items": [
+    {
+     "id": "b1",
+     "x": 0,
+     "y": 0,
+     "item": {
+      "b": 435,
+      "lv": 86,
+      "r": 2,
+      "mods": [
+       {
+        "m": 345,
+        "v": [
+         34
+        ]
+       },
+       {
+        "m": 704,
+        "v": [
+         43
+        ]
+       },
+       {
+        "m": 409,
+        "v": [
+         26
+        ]
+       },
+       {
+        "m": 691,
+        "v": [
+         4
+        ]
+       },
+       {
+        "m": 236,
+        "v": [
+         19
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "b2",
+     "x": 2,
+     "y": 0,
+     "item": {
+      "b": 659,
+      "lv": 86,
+      "r": 2,
+      "mods": [
+       {
+        "m": 1056,
+        "v": [
+         27
+        ]
+       },
+       {
+        "m": 317,
+        "v": [
+         28
+        ]
+       },
+       {
+        "m": 68,
+        "v": [
+         10
+        ]
+       },
+       {
+        "m": 340,
+        "v": [
+         7
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "name": "第二頁",
+   "color": "#1f4f7a",
+   "items": [
+    {
+     "id": "c1",
+     "x": 5,
+     "y": 5,
+     "item": {
+      "b": 637,
+      "lv": 86,
+      "r": 2,
+      "mods": [
+       {
+        "m": 809,
+        "v": [
+         21
+        ]
+       },
+       {
+        "m": 21,
+        "v": [
+         2,
+         27
+        ]
+       },
+       {
+        "m": 419,
+        "v": [
+         10
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ],
+ "currencyUsed": {
+  "alch": 4,
+  "exalt": 2,
+  "transmute": 2,
+  "aug": 1,
+  "regal": 1,
+  "annul": 1
+ },
+ "activeTab": "t1",
+ "prices": {
+  "exalt": 150,
+  "divine": 200
+ },
+ "expect": {
+  "a1": {
+   "base": "Metadata/Items/Armours/Helmets/HelmetInt11",
+   "mods": [
+    [
+     "StunRecovery1",
+     [
+      13
+     ]
+    ],
+    [
+     "ItemFoundRarityIncrease3",
+     [
+      18
+     ]
+    ],
+    [
+     "FireResist1",
+     [
+      10
+     ]
+    ],
+    [
+     "LocalIncreasedEnergyShieldPercent5",
+     [
+      79
+     ]
+    ],
+    [
+     "IncreasedLife5",
+     [
+      81
+     ]
+    ]
+   ]
+  },
+  "a2": {
+   "base": "Metadata/Items/Rings/Ring12",
+   "mods": [
+    [
+     "Dexterity2",
+     [
+      17
+     ]
+    ],
+    [
+     "IncreasedMana5",
+     [
+      39
+     ]
+    ]
+   ]
+  },
+  "a3": {
+   "base": "Metadata/Items/Weapons/TwoHandWeapons/Bows/Bow16",
+   "mods": []
+  },
+  "b1": {
+   "base": "Metadata/Items/Armours/BodyArmours/BodyInt17",
+   "mods": [
+    [
+     "IncreasedLife2",
+     [
+      34
+     ]
+    ],
+    [
+     "LocalIncreasedEnergyShieldPercent3",
+     [
+      43
+     ]
+    ],
+    [
+     "Intelligence4",
+     [
+      26
+     ]
+    ],
+    [
+     "LocalIncreasedEnergyShield1",
+     [
+      4
+     ]
+    ],
+    [
+     "FireResist3",
+     [
+      19
+     ]
+    ]
+   ]
+  },
+  "b2": {
+   "base": "Metadata/Items/Belts/Belt4",
+   "mods": [
+    [
+     "StunDuration4",
+     [
+      27
+     ]
+    ],
+    [
+     "IncreasedEnergyShield8",
+     [
+      28
+     ]
+    ],
+    [
+     "BeltFlaskManaRecoveryRate1_",
+     [
+      10
+     ]
+    ],
+    [
+     "IncreasedLife0",
+     [
+      7
+     ]
+    ]
+   ]
+  },
+  "c1": {
+   "base": "Metadata/Items/Rings/Ring12",
+   "mods": [
+    [
+     "ManaRegeneration2",
+     [
+      21
+     ]
+    ],
+    [
+     "AddedLightningDamage4",
+     [
+      2,
+      27
+     ]
+    ],
+    [
+     "ItemFoundRarityIncreasePrefix1",
+     [
+      10
+     ]
+    ]
+   ]
+  }
+ },
+ "note": "測試用的 v2 存檔（自己產生的範例，不是玩家資料）；expect 是用當時的資料（3.29.3.3、1096 條詞綴）解讀的結果"
+}

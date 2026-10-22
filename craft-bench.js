@@ -27,6 +27,9 @@ const CUR_SUBS=[
   {k:"atlas",zh:"輿圖",bg:"stash_currency_general",box:[483,14,752,75]},
   {k:"league",zh:"聯盟",bg:"stash_page_B",box:[818,14,1086,75]},
 ];
+/* 精髓倉庫頁（stash_layouts.json 的 stash_page_D）：精髓依資料順序（同類型、低階到高階）放進格子，
+   位置和遊戲內的精髓倉庫不一定相同。中間的大格（遺忘的污染器皿，3.27 起已移除）留空。 */
+const ESSENCE_PAGE="stash_page_D";
 const TAB_COLORS=["#7a1f1f","#7a4a1f","#6b6a1f","#2f6b2f","#1f6b66","#1f4f7a","#4a2f7a","#6b1f5a","#3a3a3a"];
 const IMG="img/craft/";
 const GROUP_ZH={weapon:"武器",armour:"護甲",jewellery:"飾品"};
@@ -111,9 +114,9 @@ function fromSave(d){
   })):[];
   S.used={};
   if(ok&&d.currencyUsed&&typeof d.currencyUsed==="object")
-    for(const c of CE.CURRENCIES){ const n=d.currencyUsed[c.k]|0; if(n>0) S.used[c.k]=n; }
+    for(const [k,v] of Object.entries(d.currencyUsed)){ const n=v|0; if(n>0&&E.curInfo(k)) S.used[k]=n; }
   if(!S.tabs.length) S.tabs.push({id:uid(),name:"暫存區",color:TAB_COLORS[0],items:[]});
-  S.active=ok&&(d.activeTab==="currency"||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
+  S.active=ok&&(d.activeTab==="currency"||d.activeTab==="essence"||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
 }
 /* 存檔時：拿在游標上的裝備當作還在原位 */
 function toSave(){
@@ -200,6 +203,7 @@ root.innerHTML=`
   <section class="kb-inv" aria-label="背包">
     <div class="kb-invbar"><span class="t">背包</span>
       <button class="kb-btn" id="kb-vendor">底材商人</button>
+      <button class="kb-btn" id="kb-craftbench" title="點這裡，再點一件裝備，打開工藝台">工藝台</button>
       <button class="kb-btn" id="kb-undo" title="Ctrl+Z">上一步</button></div>
     <div class="kb-grid" id="kb-inv" data-cid="inv"></div>
     <div class="kb-discard" id="kb-discard">丟棄（把裝備放進來）</div>
@@ -224,7 +228,7 @@ root.addEventListener("error",e=>{
   im.replaceWith(box);
 },true);
 const itemIcon=item=>{ const b=E.bases[item.b]; return iconHTML(IMG+"items/"+b.ic,E.baseName(item.b,L())); };
-const curIcon=k=>iconHTML(IMG+"items/"+((D.curIcons||{})[k]||k+".png"),CE.CUR[k].zh);
+const curIcon=k=>{ const c=E.curInfo(k); return iconHTML(IMG+"items/"+(c.ic||k+".png"),c.zh); };
 
 /* ── 畫面 ── */
 function drawAll(){ drawStrip(); drawPage(); drawList(); drawGrid(invEl,S.inv); drawCursor(); drawUndo(); }
@@ -232,7 +236,8 @@ function drawUndo(){ $("kb-undo").disabled=!S.undo.length; }
 
 function tabStyle(t){ return t?`--tc:${t.color}`:""; }
 function drawStrip(){
-  const chips=[`<button class="kb-chip" role="tab" data-tab="currency" aria-selected="${S.active==="currency"}">通貨</button>`]
+  const chips=[`<button class="kb-chip" role="tab" data-tab="currency" aria-selected="${S.active==="currency"}">通貨</button>`,
+    `<button class="kb-chip" role="tab" data-tab="essence" aria-selected="${S.active==="essence"}">精髓</button>`]
     .concat(S.tabs.map(t=>`<button class="kb-chip" role="tab" data-tab="${esc(t.id)}" aria-selected="${S.active===t.id}" style="${tabStyle(t)}">${esc(t.name)}</button>`));
   $("kb-strip").innerHTML=chips.join("");
   const on=$("kb-strip").querySelector('[aria-selected="true"]');
@@ -240,6 +245,8 @@ function drawStrip(){
 }
 function drawPage(){
   if(S.active==="currency"){ drawCurrencyPage(); return; }
+  if(S.active==="essence"){ drawEssencePage(); return; }
+  pageEl.style.height="";
   const t=S.tabs.find(x=>x.id===S.active);
   pageEl.innerHTML=`<div class="kb-grid" id="kb-tabgrid" data-cid="${esc(t.id)}"></div>`;
   drawGrid($("kb-tabgrid"),t.items);
@@ -266,7 +273,7 @@ function drawCurrencyPage(){
     for(const [k,i] of Object.entries(DECOR_SLOT)){
       const sl=L.slots.find(s=>s.i===i), d=(D.decor||{})[k];
       if(!sl||!d||CE.CUR[k]) continue;
-      h+=`<div class="kb-slot kb-decor" data-decor="${k}" style="${at(sl)}">${iconHTML(IMG+"items/"+d.ic,d.zh)}</div>`;
+      h+=`<div class="kb-slot kb-decor" data-decor="${k}" style="${at(sl)}">${iconHTML(IMG+"items/"+d.ic,d.zh)}${S.used[k]?`<span class="kb-n">${S.used[k]}</span>`:""}</div>`;
     }
   }
   h+=`</div>`;
@@ -277,6 +284,24 @@ function drawCurrencyPage(){
   $("kb-curbar").innerHTML=sub.k==="general"
     ?`<span>右上角數字＝已經用了幾次（共 ${total} 次）</span><button class="kb-btn" id="kb-zero"${total?"":" disabled"}>歸零</button>`
     :`<span>${sub.zh}：之後會用到，目前是空的</span>`;
+}
+function drawEssencePage(){
+  const L=S.layouts&&S.layouts[ESSENCE_PAGE];
+  const W=L?L.width:1240, H=L?L.height:1269;
+  const pct=(v,t)=>(v/t*100).toFixed(3)+"%";
+  const slots=L?L.slots.filter(s=>!s.big).sort((a,b)=>a.i-b.i):[];
+  let h=`<div class="kb-cur" style="background-image:url(${IMG}${ESSENCE_PAGE}.webp)">`;
+  E.essences.forEach((e,j)=>{
+    const sl=slots[j]; if(!sl) return;
+    const held=S.held&&S.held.kind==="cur"&&S.held.k===e.k;
+    h+=`<div class="kb-slot${held?" held":""}" data-cur="${esc(e.k)}" style="left:${pct(sl.x,W)};top:${pct(sl.y,H)};width:${pct(sl.w,W)};height:${pct(sl.h,H)}">
+      ${curIcon(e.k)}${S.used[e.k]?`<span class="kb-n">${S.used[e.k]}</span>`:""}</div>`;
+  });
+  h+=`</div>`;
+  pageEl.innerHTML=h;
+  pageEl.style.height=L?`calc(var(--grid) * ${H/W})`:"";
+  const n=E.essences.reduce((a,e)=>a+(S.used[e.k]||0),0);
+  $("kb-curbar").innerHTML=`<span>精髓 ${E.essences.length} 種・右上角數字＝已經用了幾次（共 ${n} 次）・格子位置依類型和階級排列，和遊戲內不一定相同</span>`;
 }
 function drawGrid(el,list){
   const cell="var(--cell)";
@@ -289,6 +314,7 @@ function drawList(){
   const cnt=t=>t.items.length?`<span class="cnt">${t.items.length}</span>`:"";
   $("kb-list").innerHTML=
     `<div class="kb-row" data-tab="currency" aria-selected="${S.active==="currency"}"><span class="nm">通貨</span></div>`+
+    `<div class="kb-row" data-tab="essence" aria-selected="${S.active==="essence"}"><span class="nm">精髓</span></div>`+
     S.tabs.map(t=>`<div class="kb-row" data-tab="${esc(t.id)}" draggable="true" aria-selected="${S.active===t.id}" style="${tabStyle(t)}">
       <span class="grip" aria-hidden="true">⋮⋮</span><span class="nm">${esc(t.name)}</span>${cnt(t)}
       <button data-act="edit" aria-label="改名和顏色" title="改名、選顏色">✎</button>
@@ -306,6 +332,9 @@ function drawCursor(){
   if(h.kind==="cur"){
     cursorEl.innerHTML=curIcon(h.k);
     cursorEl.style.width=cursorEl.style.height=c+"px";
+  }else if(h.kind==="bench"){
+    cursorEl.innerHTML=`<span class="kb-benchcur">工藝台：點一件裝備</span>`;
+    cursorEl.style.width=cursorEl.style.height="auto";
   }else{
     const s=sizeOf(h.e.item);
     cursorEl.innerHTML=itemIcon(h.e.item);
@@ -369,8 +398,9 @@ function itemTooltipHTML(it,detail){
   const lines=(zl,el)=>zl.map((t,i)=>`<div>${esc(t)}${detail&&zh&&el[i]&&el[i]!==t?`<div class="ken">${esc(el[i])}</div>`:""}</div>`).join("");
   const rows=mods.map(x=>{
     const m=E.mods[x.m], t=E.tierOf(it.b,x.m);
-    const big=detail?`<div class="kbig">${esc(E.modName(x.m,lang))}・${m.pre?"前綴":"後綴"} T${t}／共 ${E.tierCount(it.b,x.m)} 階・範圍 ${esc(E.modRange(x.m,lang).join(" / "))}</div>`:"";
-    return `<div class="kmod"><span class="ktag ${m.pre?"p":"s"}">${m.pre?"前":"後"} T${t}</span>
+    const src=E.sourceNote(it.b,x.m);
+    const big=detail?`<div class="kbig">${esc(E.modName(x.m,lang))}・${m.pre?"前綴":"後綴"} ${src||`T${t}／共 ${E.tierCount(it.b,x.m)} 階`}・範圍 ${esc(E.modRange(x.m,lang).join(" / "))}</div>`:"";
+    return `<div class="kmod${m.d?" d"+m.d:""}${m.meta?" meta":""}"><span class="ktag ${m.pre?"p":"s"}">${E.tagLabel(it.b,x.m)}</span>
       <span class="ktxt">${lines(E.render(x.m,x.v,lang),E.render(x.m,x.v,"en"))}${big}</span></div>`;
   }).join("");
   const imp=lines(E.implicitLines(it.b,lang),E.implicitLines(it.b,"en"));
@@ -385,10 +415,10 @@ function itemTooltipHTML(it,detail){
 }
 function decorTooltipHTML(k){
   const d=(D.decor||{})[k]||{zh:k,en:""};
-  return `<div class="kb-curtip"><b>${esc(d.zh)}</b><em>${esc(d.en)}</em><em>模擬器尚未支援</em></div>`;
+  return `<div class="kb-curtip"><b>${esc(d.zh)}</b><em>${esc(d.en)}</em><em>模擬器尚未支援${S.used[k]?"・工藝台費用已用 "+S.used[k]+" 個":""}</em></div>`;
 }
 function currencyTooltipHTML(k){
-  const c=CE.CUR[k];
+  const c=E.curInfo(k);
   return `<div class="kb-curtip"><b>${esc(c.zh)}</b><em>${esc(c.en)}</em>${esc(c.desc)}
     <em>${S.held&&S.held.kind==="cur"&&S.held.k===k?"已拿在游標上":"按右鍵拿起"}・已用 ${S.used[k]||0} 次</em></div>`;
 }
@@ -421,14 +451,15 @@ function findEntry(cid,id){ const l=cont(cid); return l?l.find(e=>e.id===id):nul
 function pickCurrency(k){
   if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
   S.held={kind:"cur",k};
-  drawCursor(); if(S.active==="currency") drawCurrencyPage();
+  drawCursor(); redrawCurPage();
 }
+function redrawCurPage(){ if(S.active==="currency") drawCurrencyPage(); else if(S.active==="essence") drawEssencePage(); }
 function dropHeld(silent){
   if(!S.held) return;
   if(S.held.kind==="item") returnHeld();
   S.held=null;
   drawCursor(); clearPreviews();
-  if(S.active==="currency") drawCurrencyPage();
+  redrawCurPage();
   if(!silent) refreshTip();
 }
 /* 拿著的裝備放回原位（原位被佔就放原本那一頁的第一個空位，再不行就背包） */
@@ -444,7 +475,7 @@ function returnHeld(){
   drawAll();
 }
 function applyCurrency(cid,e,keep){
-  const k=S.held.k, c=CE.CUR[k];
+  const k=S.held.k, c=E.curInfo(k);
   const err=E.check(e.item,k);
   if(err){ flash(c.zh+"："+err.replace(/^這顆/,"")); return; }
   const snap=snapshot();
@@ -455,9 +486,25 @@ function applyCurrency(cid,e,keep){
   pushUndo(snap,c.zh);
   if(!keep){ S.held=null; drawCursor(); }
   redrawContainer(cid);
-  if(S.active==="currency") drawCurrencyPage();
+  redrawCurPage();
   tipTarget={cid,id:e.id}; refreshTip();
   save();
+}
+/* 工藝台（清單在 craft-benchlist.js）：每做一項就扣費用、記進「上一步」、存檔；清單保持開著 */
+function openCraftBench(cid,e){
+  if(!window.CraftBenchList) return;
+  hideTip();
+  const name=k=>{ const o=E.benchByKey[k]; return o.a==="remove"?"移除工藝詞綴":E.modRange(o.m,L()).join(" / "); };
+  const ui=CraftBenchList.open({E,item:e.item,lang:L(),host:root,onCraft(k){
+    const snap=snapshot();
+    const r=E.applyBench(e.item,k);
+    if(!r.ok){ ui.update(e.item,{bad:true,t:r.err}); return; }
+    e.item=r.item;
+    for(const [c,n] of Object.entries(r.cost)) S.used[c]=(S.used[c]||0)+n;
+    pushUndo(snap,"工藝台");
+    redrawContainer(cid); redrawCurPage(); save();
+    ui.update(e.item,{t:"已完成："+name(k)+"（費用 "+Object.entries(r.cost).map(([c,n])=>(E.curInfo(c)||{zh:c}).zh+" ×"+n).join("、")+"）"});
+  }});
 }
 function pickItem(cid,e){
   const list=cont(cid);
@@ -490,7 +537,7 @@ function placeHeld(cid,gridEl){
 function quickMove(cid,e){
   let to;
   if(cid==="inv"){
-    if(S.active==="currency"){ flash("先打開一個一般倉庫頁"); return; }
+    if(S.active==="currency"||S.active==="essence"){ flash("先打開一個一般倉庫頁"); return; }
     to=S.active;
   }else to="inv";
   const dst=cont(to), s=sizeOf(e.item), p=firstFit(dst,s.w,s.h);
@@ -548,11 +595,11 @@ root.addEventListener("contextmenu",ev=>{
   if(decor){ ev.preventDefault(); ev.stopPropagation(); flash("模擬器尚未支援"); return; }   // 擺設：拿不起來
   const slot=ev.target.closest(".kb-slot");
   if(slot){ ev.preventDefault(); ev.stopPropagation(); pickCurrency(slot.dataset.cur); refreshTip(); return; }
-  if(S.held){ ev.preventDefault(); ev.stopPropagation(); if(S.held.kind==="cur") dropHeld(); }
+  if(S.held){ ev.preventDefault(); ev.stopPropagation(); if(S.held.kind!=="item") dropHeld(); }
 });
 /* 拿著通貨時，在製裝台以外的地方按右鍵也是放下 */
 document.addEventListener("contextmenu",ev=>{
-  if(S.held&&S.held.kind==="cur"&&!root.contains(ev.target)){ ev.preventDefault(); dropHeld(); }
+  if(S.held&&S.held.kind!=="item"&&!root.contains(ev.target)){ ev.preventDefault(); dropHeld(); }
 });
 root.addEventListener("click",ev=>{
   if(ev.button!==0) return;
@@ -568,6 +615,10 @@ root.addEventListener("click",ev=>{
   if(t.closest("#kb-zero")){ S.used={}; drawCurrencyPage(); save(); flash("已歸零",true); return; }
   if(t.closest("#kb-undo")){ undo(); return; }
   if(t.closest("#kb-vendor")){ openVendor(); return; }
+  if(t.closest("#kb-craftbench")){
+    if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
+    S.held={kind:"bench"}; drawCursor(); redrawCurPage(); flash("點一件裝備打開工藝台（右鍵或 Esc 取消）",true); return;
+  }
   if(t.closest(".kb-decor")){ flash("模擬器尚未支援"); return; }
   if(t.closest(".kb-slot")){ flash("按右鍵拿起通貨"); return; }
   if(t.closest("#kb-discard")){ discardHeld(); return; }
@@ -578,6 +629,7 @@ root.addEventListener("click",ev=>{
   const e=entryAt(g,cid,ev.clientX,ev.clientY);
   if(!e) return;
   if(S.held&&S.held.kind==="cur"){ applyCurrency(cid,e,ev.shiftKey); return; }
+  if(S.held&&S.held.kind==="bench"){ S.held=null; drawCursor(); openCraftBench(cid,e); return; }
   if(ev.ctrlKey||ev.metaKey){ quickMove(cid,e); return; }
   pickItem(cid,e);
 });
@@ -587,7 +639,7 @@ function benchVisible(){ return root.offsetParent!==null; }
 document.addEventListener("keydown",ev=>{
   if(!S.ready||!benchVisible()) return;
   if(ev.target.closest&&ev.target.closest("input,textarea,select,[contenteditable]")) return;
-  if(root.querySelector(".kb-veil")) return;
+  if(root.querySelector(".kb-veil,.kbl-veil")) return;
   if(ev.key==="Escape"&&S.held){ ev.preventDefault(); dropHeld(); return; }
   if((ev.ctrlKey||ev.metaKey)&&!ev.shiftKey&&(ev.key==="z"||ev.key==="Z")){ ev.preventDefault(); undo(); return; }
   if(ev.key==="Alt"){ ev.preventDefault(); if(!altDown){ altDown=true; refreshTip(); } }
@@ -597,7 +649,7 @@ window.addEventListener("blur",()=>{ if(altDown){ altDown=false; refreshTip(); }
 
 /* ── 分頁 ── */
 function setActive(id){
-  if(id!=="currency"&&!S.tabs.some(t=>t.id===id)) return;
+  if(id!=="currency"&&id!=="essence"&&!S.tabs.some(t=>t.id===id)) return;
   S.active=id; hideTip();
   drawStrip(); drawPage(); drawList(); save();
 }

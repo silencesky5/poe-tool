@@ -99,3 +99,39 @@
 #kbench .kb-vendor .kbases{max-height:240px}
 #kbench .kb-vendor .msg{min-height:20px;font-size:13px;color:#9FD3A8;margin-top:8px}
 #kbench .kb-vendor .msg.bad{color:#E79A88}
+
+/* 工藝詞綴、元工藝、精髓詞綴（模擬器和製裝台的物品卡都用） */
+#tab-craft .kmod.dc .ktxt{color:#B8E2F2}
+#tab-craft .kmod.dc .ktag{border-style:dashed}
+#tab-craft .kmod.dc.meta .ktxt{color:#E8D6A0;font-style:italic}
+
+/* 工藝台清單（craft-benchlist.js） */
+#tab-craft .kbl-veil{position:fixed;inset:0;z-index:80;background:rgba(6,5,5,.72);display:flex;align-items:center;justify-content:center;padding:16px}
+#tab-craft .kbl{background:#1B1B19;border:1px solid #46443F;border-left:4px solid var(--accent);border-radius:8px;width:100%;max-width:640px;
+  max-height:min(86vh,760px);display:flex;flex-direction:column;color:var(--bone);box-shadow:0 16px 40px rgba(0,0,0,.6)}
+#tab-craft .kbl-head{display:flex;align-items:baseline;gap:10px;padding:14px 18px 6px}
+#tab-craft .kbl-head b{font-size:17px}
+#tab-craft .kbl-sub{color:var(--muted);font-size:13px;margin-right:auto}
+#tab-craft .kbl-x{background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+#tab-craft .kbl-bar{display:flex;gap:10px;align-items:center;padding:4px 18px 6px}
+#tab-craft .kbl-bar input[type=text]{flex:1}
+#tab-craft .kbl-chk{font-size:13px;color:var(--muted);white-space:nowrap;display:flex;gap:4px;align-items:center}
+#tab-craft .kbl-msg{min-height:18px;padding:0 18px;font-size:13px;color:#9FD3A8}
+#tab-craft .kbl-msg.bad{color:#E58A78}
+#tab-craft .kbl-list{overflow:auto;padding:4px 12px 8px;flex:1}
+#tab-craft .kbl-sec{font-size:12px;color:var(--gold);letter-spacing:.12em;margin:10px 6px 4px}
+#tab-craft .kbl-row{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#1D1D1B;border:1px solid #33312D;
+  color:#B8E2F2;border-radius:5px;padding:7px 10px;margin:3px 0;cursor:pointer;font:inherit;font-size:14px}
+#tab-craft .kbl-row:hover{border-color:var(--accent)}
+#tab-craft .kbl-row.meta{color:#E8D6A0}
+#tab-craft .kbl-row.off{color:#6D6A63;cursor:not-allowed}
+#tab-craft .kbl-t{flex:1;min-width:0}
+#tab-craft .kbl-t em{display:block;font-style:normal;font-size:12px;color:#D9A86C}
+#tab-craft .kbl-t em.why{color:#9C988F}
+#tab-craft .kbl-c{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:45%}
+#tab-craft .kbl-cost{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--muted);white-space:nowrap}
+#tab-craft .kbl-cost img{width:18px;height:18px}
+#tab-craft .kbl-none{color:var(--muted);padding:14px 6px;font-size:14px}
+#tab-craft .kbl-foot{padding:8px 18px 14px;font-size:12px;color:#8C887F;line-height:1.6;border-top:1px solid #2C2A27}
+@media (max-width:560px){ #tab-craft .kbl-row{flex-wrap:wrap} #tab-craft .kbl-c{max-width:100%;justify-content:flex-start} }
+#kbench .kb-benchcur{background:#1B1B19;border:1px solid var(--accent);color:var(--bone);border-radius:4px;font-size:12px;padding:2px 6px;white-space:nowrap}

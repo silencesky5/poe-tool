@@ -117,6 +117,8 @@ def diff(old, new):
         "mods_added": sorted(set(nm) - set(om)), "mods_removed": sorted(set(om) - set(nm)),
         "mods_changed": changed,
         "n_old": (len(ob), len(om)), "n_new": (len(nb), len(nm)),
+        "extra": {"精髓": (len(old.get("essences") or []), len(new.get("essences") or [])),
+                  "工藝台選項": (len(old.get("bench") or []), len(new.get("bench") or []))},
         "zh_missing": {
             "底材名稱": sum(1 for b in new["bases"] if not b.get("nz") or b["nz"] == b["n"]),
             "詞綴名稱": sum(1 for m in new["mods"] if not m.get("nz") or m["nz"] == m["n"]),
@@ -141,6 +143,7 @@ def write_report(d, old_v, new_v, path):
          f"改變 {len(d['bases_changed'])}，變動 {rb:.1%}）",
          f"- 詞綴：{d['n_old'][1]} → {d['n_new'][1]}（新增 {len(d['mods_added'])}、移除 {len(d['mods_removed'])}、"
          f"改變 {len(d['mods_changed'])}，變動 {rm:.1%}）",
+         "- " + "；".join(f"{k}：{a} → {b}" for k, (a, b) in d["extra"].items()),
          "- 缺中文：" + "、".join(f"{k} {v}" for k, v in d["zh_missing"].items()),
          f"- 變動超過 {BIG_CHANGE:.0%} 要人工確認：{'是' if max(rb, rm) > BIG_CHANGE else '否'}", "",
          "## 存檔相容", "",

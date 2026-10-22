@@ -1,5 +1,5 @@
 /* 製裝模擬器的批次模擬，在背景執行，頁面不會卡住。 */
-importScripts("craft-data.js","craft-engine.js");
+importScripts("craft-data.js"+self.location.search,"craft-engine.js"+self.location.search);   // 版本號跟著 index.html
 const E=CraftEngine.create(self.CRAFT_DATA);
 onmessage=e=>{
   const o=e.data, results=[];

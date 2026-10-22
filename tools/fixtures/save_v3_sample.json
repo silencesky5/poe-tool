@@ -1,0 +1,222 @@
+{
+ "v": 3,
+ "dataVersion": "3.29.3.3",
+ "inventory": [
+  {
+   "id": "a1",
+   "x": 0,
+   "y": 0,
+   "item": {
+    "base": "Metadata/Items/Armours/Helmets/HelmetInt11",
+    "lv": 86,
+    "r": 2,
+    "mods": [
+     {
+      "id": "StunRecovery1",
+      "v": [
+       13
+      ]
+     },
+     {
+      "id": "ItemFoundRarityIncrease3",
+      "v": [
+       18
+      ]
+     },
+     {
+      "id": "FireResist1",
+      "v": [
+       10
+      ]
+     },
+     {
+      "id": "LocalIncreasedEnergyShieldPercent5",
+      "v": [
+       79
+      ]
+     },
+     {
+      "id": "IncreasedLife5",
+      "v": [
+       81
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "a2",
+   "x": 2,
+   "y": 0,
+   "item": {
+    "base": "Metadata/Items/Rings/Ring12",
+    "lv": 84,
+    "r": 1,
+    "mods": [
+     {
+      "id": "Dexterity2",
+      "v": [
+       17
+      ]
+     },
+     {
+      "id": "IncreasedMana5",
+      "v": [
+       39
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "a3",
+   "x": 3,
+   "y": 0,
+   "item": {
+    "base": "Metadata/Items/Weapons/TwoHandWeapons/Bows/Bow16",
+    "lv": 75,
+    "r": 0,
+    "mods": []
+   }
+  }
+ ],
+ "tabs": [
+  {
+   "id": "t1",
+   "name": "暫存區",
+   "color": "#7a1f1f",
+   "items": [
+    {
+     "id": "b1",
+     "x": 0,
+     "y": 0,
+     "item": {
+      "base": "Metadata/Items/Armours/BodyArmours/BodyInt17",
+      "lv": 86,
+      "r": 2,
+      "mods": [
+       {
+        "id": "IncreasedLife2",
+        "v": [
+         34
+        ]
+       },
+       {
+        "id": "LocalIncreasedEnergyShieldPercent3",
+        "v": [
+         43
+        ]
+       },
+       {
+        "id": "Intelligence4",
+        "v": [
+         26
+        ]
+       },
+       {
+        "id": "LocalIncreasedEnergyShield1",
+        "v": [
+         4
+        ]
+       },
+       {
+        "id": "FireResist3",
+        "v": [
+         19
+        ]
+       }
+      ]
+     }
+    },
+    {
+     "id": "b2",
+     "x": 2,
+     "y": 0,
+     "item": {
+      "base": "Metadata/Items/Belts/Belt4",
+      "lv": 86,
+      "r": 2,
+      "mods": [
+       {
+        "id": "StunDuration4",
+        "v": [
+         27
+        ]
+       },
+       {
+        "id": "IncreasedEnergyShield8",
+        "v": [
+         28
+        ]
+       },
+       {
+        "id": "BeltFlaskManaRecoveryRate1_",
+        "v": [
+         10
+        ]
+       },
+       {
+        "id": "IncreasedLife0",
+        "v": [
+         7
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "t2",
+   "name": "第二頁",
+   "color": "#1f4f7a",
+   "items": [
+    {
+     "id": "c1",
+     "x": 5,
+     "y": 5,
+     "item": {
+      "base": "Metadata/Items/Rings/Ring12",
+      "lv": 86,
+      "r": 2,
+      "mods": [
+       {
+        "id": "ManaRegeneration2",
+        "v": [
+         21
+        ]
+       },
+       {
+        "id": "AddedLightningDamage4",
+        "v": [
+         2,
+         27
+        ]
+       },
+       {
+        "id": "ItemFoundRarityIncreasePrefix1",
+        "v": [
+         10
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ],
+ "currencyUsed": {
+  "alch": 4,
+  "exalt": 2,
+  "transmute": 2,
+  "aug": 1,
+  "regal": 1,
+  "annul": 1
+ },
+ "activeTab": "t1",
+ "prices": {
+  "exalt": 150,
+  "divine": 200
+ },
+ "note": "測試用的 v3 存檔（自己產生的範例）"
+}

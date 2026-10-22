@@ -24,10 +24,11 @@ import urllib.request
 from datetime import date
 
 BASE_URL = "https://repoe-fork.github.io/"
-FILES = ["mods.json", "base_items.json", "stat_translations.json", "version.txt"]
+FILES = ["mods.json", "base_items.json", "stat_translations.json", "essences.json", "crafting_bench_options.json",
+         "version.txt"]
 # 遊戲繁中版匯出的資料（結構和英文版一樣）：詞綴的中文模板、底材中文名、詞綴中文名稱
 ZH_DIR = "Traditional Chinese/"
-ZH_FILES = ["stat_translations.json", "base_items.json", "mods.json"]
+ZH_FILES = ["stat_translations.json", "base_items.json", "mods.json", "essences.json"]
 ICON_URL = "https://web.poecdn.com/image/"
 ICON_MAX_MB = 30  # 超過就停下來，不要默默塞一大堆圖進網站
 
@@ -151,6 +152,14 @@ def load(src, name):
         return json.load(f)
 
 
+def legacy_v2():
+    """存檔 v2（記編號）當時的底材、詞綴順序（tools/legacy_v2_index.json，固定不變），讀到舊存檔時用來轉成 id。"""
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "legacy_v2_index.json")
+    with open(p, encoding="utf-8") as f:
+        j = json.load(f)
+    return {"b": j["bases"], "m": j["mods"]}
+
+
 def first_weight(spawn_weights, tags):
     """依列表順序取第一個底材也有的 tag 的權重（Kalandralang 的規則）。"""
     for sw in spawn_weights:
@@ -209,6 +218,9 @@ def main():
     zh_trans = load(src, zh_name("stat_translations.json"))
     zh_bases = load(src, zh_name("base_items.json"))
     zh_mods = load(src, zh_name("mods.json"))
+    essences_raw = load(src, "essences.json")
+    bench_raw = load(src, "crafting_bench_options.json")
+    zh_essences = load(src, zh_name("essences.json"))
     zh_by_ids = {tuple(e["ids"]): e.get("Traditional Chinese") for e in zh_trans}
 
     # ── 底材 ──
@@ -239,6 +251,20 @@ def main():
                     break
         if ok:
             keep[mid] = m
+
+    # 精髓保證的詞綴：一般詞綴池抽不到的（權重 0）另外收進來，標記 d = "e"，只會從精髓出現
+    # 工藝台詞綴（domain crafted，含元工藝）：標記 d = "c"，只會從工藝台出現
+    special = {}
+    for o in bench_raw:
+        mid = (o.get("actions") or {}).get("add_explicit_mod")
+        if mid and mid in mods and set(o.get("item_classes") or []) & set(CLASSES):
+            keep[mid] = mods[mid]
+            special[mid] = "c"
+    for e in essences_raw.values():
+        for mid in (e.get("mods") or {}).values():
+            if mid and mid not in keep and mid in mods:
+                keep[mid] = mods[mid]
+                special[mid] = "e"
 
     # tag 字串集中成一張表，省空間
     tag_list, tag_idx = [], {}
@@ -354,6 +380,57 @@ def main():
             "tx": m.get("text") or "",
             "nz": zh_mn or m["name"],             # 繁中詞綴名稱（沒有就用英文）
         })
+        if mid in special:
+            out_mods[-1]["d"] = special[mid]      # 不在一般詞綴池："e" 精髓專屬、"c" 工藝台
+    mod_index = {m["id"]: i for i, m in enumerate(out_mods)}
+
+    # ── 工藝台選項：加詞綴、移除工藝詞綴、3.29 新增的重抽詞綴（規則待確認，只列出不模擬）──
+    # 插槽、連線、顏色、附魔、重骰稀有度：模擬器沒有插槽／附魔／機會石，不收。
+    cur_key = {v: k for k, v in {**CURRENCY_BASES, **DECOR_BASES}.items()}
+    out_bench, bench_cost_missing = [], set()
+    for o in bench_raw:
+        act = o.get("actions") or {}
+        cls = [c for c in (o.get("item_classes") or []) if c in CLASSES]
+        if not cls:
+            continue
+        if act.get("add_explicit_mod") in mod_index:
+            entry = {"k": act["add_explicit_mod"], "a": "add", "m": mod_index[act["add_explicit_mod"]]}
+        elif act.get("remove_crafted_mods"):
+            entry = {"k": "remove_crafted", "a": "remove"}
+        elif act.get("reroll_rare_mods"):
+            entry = {"k": "reroll_rare_" + str(act["reroll_rare_mods"]), "a": "reroll", "n": act["reroll_rare_mods"]}
+        else:
+            continue
+        cost = {}
+        for cid, n in (o.get("cost") or {}).items():
+            if cid in cur_key:
+                cost[cur_key[cid]] = n
+            else:
+                bench_cost_missing.add(cid)
+        entry.update({"c": cost, "cls": cls, "t": o.get("bench_tier")})
+        out_bench.append(entry)
+
+    # ── 精髓（遺忘的污染器皿沒有詞綴、3.27 起已移除，不收）──
+    out_ess = []
+    for eid, e in essences_raw.items():
+        emods = {c: mod_index[mid] for c, mid in (e.get("mods") or {}).items() if mid and mid in mod_index}
+        if not emods:
+            continue
+        b = bases_raw.get(eid) or {}
+        dds = (b.get("visual_identity") or {}).get("dds_file") or ""
+        ic = icon_name(dds) if dds else ""
+        if ic:
+            icon_jobs[ic] = dds
+        out_ess.append({
+            "id": eid,
+            "n": e["name"],
+            "nz": (zh_essences.get(eid) or {}).get("name") or e["name"],
+            "lv": e["level"],                                 # 1 低語 … 7 破空、8 腐化精髓、0 荒蕪精髓
+            "ilr": e.get("item_level_restriction"),           # 其他隨機詞綴的最高等級（低階精髓）
+            "corr": bool((e.get("type") or {}).get("is_corruption_only")),
+            "m": emods,                                       # 物品類別 → 保證詞綴（編號）
+            "ic": ic,
+        })
 
     data = {
         "version": version,
@@ -365,6 +442,9 @@ def main():
         "curIcons": cur_icons,
         "decor": decor,
         "mods": out_mods,
+        "essences": out_ess,
+        "bench": out_bench,
+        "v2": legacy_v2(),
         "trans": out_trans,
         "statTr": stat_to_tr,
     }
@@ -382,6 +462,10 @@ def main():
           + ("" if not missing_zh else "，前 20 個：" + ", ".join(missing_zh[:20])))
     print(f"繁中：底材 {len(out_bases)} 個，沒有中文名 {len(missing_base)} 個"
           + ("" if not missing_base else "：" + ", ".join(missing_base[:20])))
+    print(f"工藝台選項 {len(out_bench)} 個（加詞綴 {sum(1 for b in out_bench if b['a'] == 'add')}）"
+          + (f"；費用裡有不認得的通貨：{sorted(bench_cost_missing)}" if bench_cost_missing else ""))
+    print(f"精髓 {len(out_ess)} 種、精髓／工藝專屬詞綴 {len(special)} 條；沒有中文名稱的精髓 "
+          f"{sum(1 for e in out_ess if e['nz'] == e['n'])} 種")
     print(f"繁中：詞綴 {len(out_mods)} 條，沒有中文名稱 {len(missing_mod_zh)} 條"
           + ("" if not missing_mod_zh else "：" + ", ".join(missing_mod_zh[:20])))
     if size > 3 * 1024 * 1024:

@@ -77,3 +77,23 @@ node tools/test_craft_engine.js
 - 擺設的圖示和中英文名在 `build_craft_data.py` 的 `DECOR_BASES`，產生在 `craft-data.js` 的 `decor`。
 - 某顆擺設做成可用時：在 `craft-engine.js` 的 `CURRENCIES` 加規則、`build_craft_data.py` 從 `DECOR_BASES` 搬到 `CURRENCY_BASES`、
   `craft-bench.js` 從 `DECOR_SLOT` 搬到 `CURRENCY_SLOT`。
+
+## 精髓（2026-10-22 加入）
+- 資料：RePoE `essences.json`（＋繁中版）。共 105 種：低語～破空、腐化精髓 4 種、荒蕪精髓；遺忘的污染器皿沒有詞綴（3.27 起已移除），不收。
+- 普通物品 → 稀有，並保證一條詞綴；稀有物品只有咆哮以上（含腐化精髓）可以重鑄。魔法物品、有元工藝的物品都不能用。
+- 低階精髓的其他隨機詞綴有等級上限：低語 35、呢喃 45、啼泣 60、哀嚎 75（RePoE `item_level_restriction`，poewiki Essence）。
+- 詞綴條數照 Kalandralang：保證詞綴之外補到 4～6 條（8 : 3 : 1，社群推定值）。
+- 精髓專屬詞綴標記 `d: "e"`，不會出現在一般詞綴池；tier 用數值總和換算成「相當於一般詞綴的第幾階」（模擬器自己的換算）。
+- 待確認：荒蕪精髓能不能重鑄稀有物品（目前只能用在普通物品）；符文匕首、戰杖在 RePoE 沒有精髓詞綴（目前不能用）。
+
+## 工藝台＋元工藝（2026-10-22 加入）
+- 資料：RePoE `crafting_bench_options.json`。收「加詞綴」（718 個，限我們有的物品類別）、「移除工藝詞綴」、3.29 新增的「重抽 3 條／1 條詞綴」；插槽、連線、顏色、附魔、重骰稀有度不收（模擬器沒有這些）。
+- 工藝詞綴標記 `d: "c"`；元工藝用群組辨認（`ItemGenerationCannotChangePrefixes` 等）。
+- 規則：每件 1 條工藝詞綴（「可以有 3 條工藝詞綴」時最多 3 條，本身也算）；照一般詞綴規則（空位、同群組）；已有 1 條時再做＝取代，多 1 顆重鑄石。
+- 元工藝和每顆通貨的互動照 poewiki Meta-crafting mod 的對照表，測試在 `tools/test_craft_engine.js`（每一格一項）。
+- 照 Kalandralang（poewiki 沒寫，待確認）：普通物品做工藝詞綴會變魔法；工藝詞綴不看物品等級；鎖住一邊後重鑄石依剩下詞綴數決定稀有度。
+- 3.29 的「重抽 3 條／1 條詞綴」：規則待確認，只列出、不能用。
+
+## 存檔
+- v3 存 id，不受編號變動影響。v2（記編號）的舊存檔用 `tools/legacy_v2_index.json`（3.29.3.3 當時的順序，固定不改）轉換；資料多了精髓、工藝詞綴後編號已經位移，所以不能再用目前的編號解讀 v2。
+- 製裝相關檔案在 index.html 加了版本號（`VER`、`craft-bench.css?v=`），改這些檔案時要一起改，否則瀏覽器可能用舊檔。

@@ -38,6 +38,7 @@ const S={
   cls:"Helmet", b:-1, lv:86, item:null, hist:[], msg:null,
   poolQuery:"", poolMerge:false,
   targets:[], mode:"all", need:1, method:"altaug", n:10000, limit:10000,
+  ess:"", essence:"",   // 手動用的精髓、「精髓重鑄」用的精髓（"ess:" ＋ Metadata 路徑）
   running:false, progress:0, results:null,
   prices:{},
 };
@@ -110,6 +111,8 @@ root.innerHTML=`
   <aside class="kpanel kright">
     <div class="klab">通貨（Currency）</div>
     <div class="kcurs" id="kcurs"></div>
+    <div class="kessrow"><select id="kess" aria-label="選精髓"></select><button class="kcur" id="kessgo">用精髓</button></div>
+    <button class="kcur kbenchbtn" id="kbenchgo" data-tip="工藝台：加工藝詞綴、元工藝（前綴／後綴不能被改變等）、移除工藝詞綴">工藝台…</button>
     <div class="kmsg" id="kmsg" role="status" aria-live="polite"></div>
     <div class="khead"><span class="klab">操作紀錄</span>
       <span class="kbtns"><button class="kmini" id="kundo">上一步</button><button class="kmini" id="kreset">重置</button></span></div>
@@ -144,6 +147,7 @@ root.innerHTML=`
       </div>
       <div class="klab">作法</div>
       <div class="kmethods" id="kmethods"></div>
+      <div id="kmethess" hidden><label class="klab" for="kmess">精髓重鑄用哪一顆</label><select id="kmess"></select></div>
       <div class="khint">詞綴條數的機率：魔法裝 1 條／2 條各 50%、稀有裝 4／5／6 條為 8 : 3 : 1。這是社群推定值（Kalandralang 採用），<b>不是官方公布的數字</b>；所有模擬結果都以這個機率為準。</div>
       <div class="krun">
         <label class="klab" for="knn">模擬次數</label>
@@ -219,8 +223,9 @@ function drawItem(){
   const mods=it.mods.slice().sort((x,y)=>(E.mods[y.m].pre-E.mods[x.m].pre));
   const rows=mods.map(x=>{
     const m=E.mods[x.m], t=E.tierOf(it.b,x.m);
-    const tip=`${E.modName(x.m,L())}（${m.pre?"前綴":"後綴"}，T${t}／共 ${E.tierCount(it.b,x.m)} 階）\n範圍：${modText(x.m).join(" / ")}${L()==="zh"?"\n英文："+E.render(x.m,x.v,"en").join(" / "):""}\n需求等級 ${m.lv}・群組 ${m.gr.join(", ")}`;
-    return `<div class="kmod" title="${esc(tip)}"><span class="ktag ${m.pre?"p":"s"}">${m.pre?"前":"後"} T${t}</span>
+    const src=E.sourceNote(it.b,x.m);
+    const tip=`${E.modName(x.m,L())}（${m.pre?"前綴":"後綴"}，${src||`T${t}／共 ${E.tierCount(it.b,x.m)} 階`}）\n範圍：${modText(x.m).join(" / ")}${L()==="zh"?"\n英文："+E.render(x.m,x.v,"en").join(" / "):""}\n需求等級 ${m.lv}・群組 ${m.gr.join(", ")}`;
+    return `<div class="kmod${m.d?" d"+m.d:""}${m.meta?" meta":""}" title="${esc(tip)}"><span class="ktag ${m.pre?"p":"s"}">${E.tagLabel(it.b,x.m)}</span>
       <span class="ktxt">${E.render(x.m,x.v,L()).map(esc).join("<br>")}</span></div>`;
   }).join("");
   const name=itemName(it);
@@ -242,16 +247,63 @@ function drawCurs(){
     return `<button class="kcur" data-k="${c.k}" aria-disabled="${!!err}" data-tip="${esc(tip)}" aria-label="${esc(c.zh+"（"+c.en+"）："+c.desc)}">${esc(c.zh)}</button>`;
   }).join("");
 }
+/* 精髓選單：只列這個物品類別用得到的，依階級分組 */
+const ESS_GROUP={1:"低語",2:"呢喃",3:"啼泣",4:"哀嚎",5:"咆哮",6:"尖嘯",7:"破空",8:"腐化精髓",0:"荒蕪精髓"};
+function essOptions(sel){
+  const cls=E.bases[S.b].c, list=E.essences.filter(e=>e.m[cls]!==undefined);
+  if(!list.length) return `<option value="">這類物品沒有精髓</option>`;
+  return [1,2,3,4,5,6,7,8,0].map(lv=>{
+    const g=list.filter(e=>e.lv===lv); if(!g.length) return "";
+    return `<optgroup label="${esc(ESS_GROUP[lv])}">`+g.map(e=>`<option value="${esc(e.k)}" ${e.k===sel?"selected":""}>${esc(L()==="zh"?e.nz:e.n)}</option>`).join("")+`</optgroup>`;
+  }).join("");
+}
+function fixEss(k){ const cls=E.bases[S.b].c, e=E.essByKey[k]; return e&&e.m[cls]!==undefined?k:((E.essences.find(x=>x.m[cls]!==undefined&&x.lv>=5)||{}).k||""); }
+function drawEss(){
+  S.ess=fixEss(S.ess); S.essence=fixEss(S.essence);
+  $("kess").innerHTML=essOptions(S.ess); $("kmess").innerHTML=essOptions(S.essence);
+  const err=S.ess?E.check(S.item,S.ess):"這類物品沒有精髓。";
+  const info=S.ess&&E.curInfo(S.ess);
+  $("kessgo").setAttribute("aria-disabled",!!err);
+  $("kessgo").dataset.tip=(info?info.en+"\n"+info.desc:"")+(err?"\n\n不能用："+err:"");
+  $("kmethess").hidden=S.method!=="essence";
+}
+$("kess").onchange=e=>{ S.ess=e.target.value; drawEss(); };
+/* 工藝台：清單在 craft-benchlist.js；做完一項就記到操作紀錄，清單保持開著 */
+let benchUI=null;
+function benchName(k){
+  const o=E.benchByKey[k];
+  if(o.a==="remove") return "移除工藝詞綴";
+  return E.modRange(o.m,L()).join(" / ");
+}
+function costText(c){ return Object.entries(c).map(([k,n])=>(E.curInfo(k)||{zh:k}).zh+" ×"+n).join("、"); }
+$("kbenchgo").onclick=()=>{
+  if(!window.CraftBenchList) return;
+  benchUI=CraftBenchList.open({E,item:S.item,lang:L(),host:root,onCraft(k){
+    const r=E.applyBench(S.item,k);
+    if(!r.ok){ benchUI.update(S.item,{bad:true,t:r.err}); return; }
+    const label="工藝台："+benchName(k);
+    S.hist.push({label,before:S.item,after:r.item});
+    S.item=r.item;
+    S.msg={bad:false,t:label+"（費用 "+costText(r.cost)+"）"};
+    drawAll();
+    benchUI.update(S.item,{t:"已完成："+benchName(k)+"（費用 "+costText(r.cost)+"）"});
+  }});
+};
+$("kmess").onchange=e=>{ S.essence=e.target.value; drawPrices(); };
+$("kessgo").onclick=()=>useCurrency(S.ess);
 $("kcurs").addEventListener("click",e=>{
   const x=e.target.closest(".kcur"); if(!x) return;
-  const c=CE.CUR[x.dataset.k];
+  useCurrency(x.dataset.k);
+});
+function useCurrency(k){
+  const c=k&&E.curInfo(k); if(!c) return;
   const r=E.apply(S.item,c.k);
   if(!r.ok){ S.msg={bad:true,t:c.zh+"："+r.err}; drawMsg(); return; }
   S.hist.push({label:c.zh,before:S.item,after:r.item});
   S.item=r.item;
   S.msg={bad:false,t:c.zh+" → "+summary(r.item)};
   drawAll();
-});
+}
 function summary(it){ return CE.RARITY_ZH[it.r]+"，"+it.mods.length+" 條詞綴"; }
 function drawMsg(){
   const m=$("kmsg");
@@ -270,7 +322,7 @@ $("kundo").onclick=()=>{
 };
 $("kreset").onclick=()=>{ reset(); S.msg={bad:false,t:"已重置成普通物品"}; drawAll(); };
 function reset(){ S.item=E.make(S.b,S.lv); S.hist=[]; S.msg=null; drawAll(); }
-function drawAll(){ drawItem(); drawCurs(); drawMsg(); drawHist(); }
+function drawAll(){ drawItem(); drawCurs(); drawEss(); drawMsg(); drawHist(); }
 
 /* ── 詞綴池 ── */
 let PV=null;
@@ -368,7 +420,7 @@ $("kneed").onchange=e=>{ S.need=Math.max(1,+e.target.value||1); e.target.value=S
   document.querySelector('input[name="kmode"][value="atleast"]').checked=true; };
 $("kmethods").innerHTML=CE.METHODS.map(m=>`<label class="kmethod"><input type="radio" name="kmeth" value="${m.k}" ${m.k===S.method?"checked":""}>
   <span><b>${esc(m.zh)}</b><small>${esc(m.desc)}</small></span></label>`).join("");
-$("kmethods").addEventListener("change",e=>{ if(e.target.name==="kmeth") S.method=e.target.value; });
+$("kmethods").addEventListener("change",e=>{ if(e.target.name==="kmeth"){ S.method=e.target.value; drawEss(); drawPrices(); } });
 const nr=$("knr"), nn=$("knn");
 nr.value=nn.value=S.n;
 nr.oninput=()=>{ S.n=+nr.value; nn.value=S.n; };
@@ -377,7 +429,9 @@ $("klimit").value=S.limit;
 $("klimit").onchange=e=>{ S.limit=Math.max(10,Math.round(+e.target.value)||10000); e.target.value=S.limit; };
 
 function drawPrices(){
-  $("kprices").innerHTML=CE.CURRENCIES.map(c=>`<label class="kprice"><span>${esc(c.zh)}</span>
+  const list=CE.CURRENCIES.slice();
+  if(S.method==="essence"&&S.essence) list.push(E.curInfo(S.essence));
+  $("kprices").innerHTML=list.map(c=>`<label class="kprice"><span>${esc(c.zh)}</span>
     ${c.k==="chaos"?`<input type="number" value="1" disabled aria-label="混沌石單價">`
       :`<input type="number" min="0" step="any" data-k="${c.k}" value="${S.prices[c.k]!=null?esc(S.prices[c.k]):""}" placeholder="—" aria-label="${esc(c.zh)}單價">`}</label>`).join("");
 }
@@ -394,22 +448,22 @@ let worker=null, workerBroken=false;
 function run(){
   if(S.running) return;
   const o={b:S.b,lv:S.lv,method:S.method,mode:S.mode,need:S.need,
-    targets:S.targets.map(t=>({ty:t.ty,g:t.g,maxTier:t.maxTier})),n:S.n,limit:S.limit};
+    targets:S.targets.map(t=>({ty:t.ty,g:t.g,maxTier:t.maxTier})),n:S.n,limit:S.limit,essence:S.essence};
   if(!o.targets.length){ showRunErr("還沒有設定目標詞綴。"); return; }
   const err=E.feasible(o);
   if(err){ showRunErr(err); return; }
-  const meta={o,method:CE.METHODS.find(m=>m.k===S.method),
+  const meta={o,method:CE.METHODS.find(m=>m.k===S.method),uses:E.methodUses(o),
     targets:S.targets.map(t=>({...t})),t0:performance.now()};
   S.running=true; S.progress=0; drawProgress();
   const done=results=>{
     S.running=false; drawProgress();
     meta.ms=performance.now()-meta.t0;
-    S.results={meta,results,sum:E.summarize(results,meta.method.uses)};
+    S.results={meta,results,sum:E.summarize(results,meta.uses)};
     drawResults();
   };
   if(!workerBroken&&typeof Worker!=="undefined"){
     try{
-      if(!worker) worker=new Worker("craft-worker.js");
+      if(!worker) worker=new Worker("craft-worker.js"+(window.CRAFT_VER?"?v="+window.CRAFT_VER:""));
       worker.onmessage=e=>{
         if(e.data.progress!=null){ S.progress=e.data.progress; drawProgress(); }
         if(e.data.done) done(e.data.results);
@@ -442,7 +496,7 @@ function drawProgress(){
 function drawResults(){
   const R=S.results;
   if(!R) return;
-  const {meta,sum}=R, uses=meta.method.uses;
+  const {meta,sum}=R, uses=meta.uses;
   const need=E.needCount(meta.o);
   const cond=meta.o.mode==="all"?"全部都要":`至少 ${need} 條`;
   let h=`<div class="kctx">${esc(baseLabel(E.bases[meta.o.b]))}・物品等級 ${meta.o.lv}・${esc(meta.method.zh)}・${cond}・${num(sum.n)} 次（${(meta.ms/1000).toFixed(1)} 秒）<br>`+
@@ -452,12 +506,12 @@ function drawResults(){
     `下面的數字已經把這些失敗件用掉的通貨算進去（當作沒中就重新開始）；要看「一直做到成功為止」的情況，建議把「每件最多重抽幾次」調高後再跑一次。</div>`;
   if(sum.success){
     h+=`<table class="kres"><thead><tr><th>通貨</th><th class="n">平均</th><th class="n">中位數</th><th class="n">90% 以內</th></tr></thead><tbody>`+
-      uses.map(k=>{ const s=sum.per[k]; return `<tr><td>${esc(CE.CUR[k].zh)}</td><td class="n">${num(+s.mean.toFixed(1))}</td><td class="n">${num(s.median)}</td><td class="n">${num(s.p90)}</td></tr>`; }).join("");
+      uses.map(k=>{ const s=sum.per[k]; return `<tr><td>${esc(E.curInfo(k).zh)}</td><td class="n">${num(+s.mean.toFixed(1))}</td><td class="n">${num(s.median)}</td><td class="n">${num(s.p90)}</td></tr>`; }).join("");
     const priced=uses.filter(k=>priceOf(k)!=null);
     if(priced.length){
       const prices={}; uses.forEach(k=>prices[k]=priceOf(k)||0);
       const c=E.costStats(R.results,uses,prices);
-      const miss=uses.filter(k=>priceOf(k)==null).map(k=>CE.CUR[k].zh);
+      const miss=uses.filter(k=>priceOf(k)==null).map(k=>E.curInfo(k).zh);
       h+=`<tr class="kcost"><td>總成本（混沌石）</td><td class="n">${num(+c.mean.toFixed(1))}</td><td class="n">${num(+c.median.toFixed(1))}</td><td class="n">${num(+c.p90.toFixed(1))}</td></tr></tbody></table>`+
         (miss.length?`<div class="khint">未填單價、以 0 計：${miss.map(esc).join("、")}</div>`:"");
     }else h+=`</tbody></table><div class="khint">在下面填通貨單價，就會換算成混沌石的總成本。</div>`;
