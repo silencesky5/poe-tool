@@ -38,7 +38,9 @@ node tools/test_craft_engine.js
 - 某條沒有中文就顯示英文。build 腳本最後會印出缺中文的數量和前 20 個 id（3.29.3.3：0 條）。
 - 「中／EN」切換在製裝方法分頁右上角，存在 localStorage（`poe-craft-lang`），程式在 index.html 的載入程式（`window.CraftLang`，切換時發出 `craftlang` 事件）。
 - 中文模式不組魔法／稀有物品的名稱，說明框標題只顯示底材中文名。按住 Alt 時，中文詞綴底下用灰色小字附英文原文。
-- 存檔只記底材、詞綴的編號，跟語言無關；加中文欄位時沒有改動編號順序。
+- 存檔（v3）記底材的 Metadata 路徑和詞綴 id（`craft-engine.js` 的 `toStored`／`fromStored`），不記編號，每季更新資料後也讀得回來；讀到舊格式（v2，記編號）時用目前這版資料轉換，下次存檔就以 v3 寫回。
+- 詞綴中文名稱來自 RePoE 的 `Traditional Chinese/mods.json`（`nz` 欄位）。
+- 每季更新資料：雙擊專案根目錄的 `更新製裝資料.bat`（`tools/update_craft_data.py`，會檢查版本、寫差異報告到 docs/、差異超過 10% 停下來確認、跑測試）。
   - 目前資料的遊戲版本：**3.29.3.3**（2026-10-21 下載，伺服器最後更新 2026-10-19）
   - 授權：程式碼 MIT（Copyright (c) 2016 brather1ng）。匯出的遊戲資料版權屬 Grinding Gear Games，需遵守其使用條款。
 - **Kalandralang**：https://github.com/doomeer/kalandralang ，MIT（Copyright (c) 2022 DooMeeR）
@@ -56,7 +58,8 @@ node tools/test_craft_engine.js
 - 詞綴池：`required_level ≤ 物品等級`；權重取 `spawn_weights` 依序第一個物品也有的 tag，≤ 0 或沒對到就排除；
   再乘上 `generation_weights`（百分比，取整數）。物品的 tag ＝ 底材 tag ＋ 身上詞綴的 `adds_tags`（例如 has_attack_mod）。
 - 已有同 `groups` 的前後綴就排除；前後綴上限魔法各 1、稀有各 3。
-- 詞綴數：蛻變／改造 1～2 條（50 : 50）；點金／混沌 4～6 條（8 : 3 : 1）；池子空了就停。
+- 詞綴數：蛻變／改造 1～2 條（50 : 50）；點金／混沌 4～6 條（8 : 3 : 1）；池子空了就停。這兩組機率是 Kalandralang 採用的社群推定值，不是官方數字。
+- 模擬器的平均＝全部用量（含失敗的件數）÷ 成功件數；中位數、90% 是「每做出一件成功品總共用掉多少」（沒中就重新開始，前面用掉的累加上去）。
 - 增幅、崇高、富豪各加 1 條；無效石隨機拿掉 1 條（稀有度不變）；重鑄清空並變回普通；神聖重骰所有數值。
 - Tier：同一個 mod `type`、能出現在這個底材上的詞綴（不看物品等級），依需求等級由高到低、同等級再比數值總和，第一個是 T1。
 - 和 Kalandralang 不同的地方：重鑄普通物品、神聖／無效石用在沒有詞綴的物品會被拒絕並顯示原因（Kalandralang 是不做事）。

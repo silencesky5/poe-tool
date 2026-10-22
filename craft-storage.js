@@ -21,7 +21,7 @@
    選了「用雲端的」存檔時會發出 "craftstorage:data"（detail = 新的 data），畫面要重新顯示。
 
    未登入：存在 localStorage（poeCraftStash）。
-   已登入：存在雲端（Cloudflare Worker），localStorage 留一份備份。
+   已登入：存在雲端（Cloudflare Worker＋D1），localStorage 留一份備份。
    這支要在分頁切換的程式之前載入：登入後網址的 #craft&login=… 要先清掉。 */
 (function(){
 "use strict";
@@ -30,7 +30,7 @@ const API = "https://poe-tool-auth.poe-tool-auth.workers.dev";
 const KEY = "poeCraftStash";          // { data }
 const META = "poeCraftStashMeta";    // { uid, base, dirty }：雲端版本與是否有還沒上傳的改動
 const AUTH = "poeCraftAuth";         // 登入 token
-const DEBOUNCE_MS = 5000;            // 停止操作 5 秒後才上傳（KV 免費方案每天只能寫 1,000 次）
+const DEBOUNCE_MS = 5000;            // 停止操作 5 秒後才上傳（合併多次操作，減少雲端寫入次數）
 const KEEPALIVE_MAX = 60 * 1024;     // 關閉頁面時用 keepalive 送出的上限
 
 /* ── localStorage：一律包 try/catch，不能用時只提示，不讓頁面壞掉 ── */

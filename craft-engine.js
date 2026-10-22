@@ -8,7 +8,8 @@
    用法：const E = CraftEngine.create(CRAFT_DATA);
 
    物品格式：{ b: 底材編號, lv: 物品等級, r: 0 普通 / 1 魔法 / 2 稀有, mods: [{ m: 詞綴編號, v: [數值…] }] }
-   apply() 不會改動傳進去的物品，會回傳新的。 */
+   apply() 不會改動傳進去的物品，會回傳新的。
+   編號只在網頁內部用（每次更新資料都可能變）；存檔一律用 toStored() 轉成穩定 id，讀檔用 fromStored()。 */
 (function(root){
 "use strict";
 
@@ -17,12 +18,12 @@ const RARITY_ZH=["普通","魔法","稀有"];
 
 /* 通貨。中文名稱照遊戲繁中版；作用說明給滑鼠提示用。 */
 const CURRENCIES=[
-  {k:"transmute", zh:"蛻變石", en:"Orb of Transmutation", desc:"普通 → 魔法，隨機 1～2 條詞綴（各 50%）"},
-  {k:"alt",       zh:"改造石", en:"Orb of Alteration",    desc:"魔法物品重抽，隨機 1～2 條詞綴（各 50%）"},
+  {k:"transmute", zh:"蛻變石", en:"Orb of Transmutation", desc:"普通 → 魔法，隨機 1～2 條詞綴（各 50%，社群推定值）"},
+  {k:"alt",       zh:"改造石", en:"Orb of Alteration",    desc:"魔法物品重抽，隨機 1～2 條詞綴（各 50%，社群推定值）"},
   {k:"aug",       zh:"增幅石", en:"Orb of Augmentation",  desc:"魔法物品補 1 條詞綴"},
   {k:"regal",     zh:"富豪石", en:"Regal Orb",            desc:"魔法 → 稀有，保留原詞綴並加 1 條"},
-  {k:"alch",      zh:"點金石", en:"Orb of Alchemy",       desc:"普通 → 稀有，隨機 4～6 條詞綴（機率 8 : 3 : 1）"},
-  {k:"chaos",     zh:"混沌石", en:"Chaos Orb",            desc:"稀有物品重抽，隨機 4～6 條詞綴（機率 8 : 3 : 1）"},
+  {k:"alch",      zh:"點金石", en:"Orb of Alchemy",       desc:"普通 → 稀有，隨機 4～6 條詞綴（機率 8 : 3 : 1，社群推定值）"},
+  {k:"chaos",     zh:"混沌石", en:"Chaos Orb",            desc:"稀有物品重抽，隨機 4～6 條詞綴（機率 8 : 3 : 1，社群推定值）"},
   {k:"exalt",     zh:"崇高石", en:"Exalted Orb",          desc:"稀有物品加 1 條詞綴"},
   {k:"annul",     zh:"無效石", en:"Orb of Annulment",     desc:"隨機拿掉 1 條詞綴（稀有度不變）"},
   {k:"scour",     zh:"重鑄石", en:"Orb of Scouring",      desc:"清空所有詞綴，變回普通"},
@@ -66,6 +67,7 @@ function create(D){
   const bases=D.bases.map((b,i)=>Object.assign({},b,{i,ts:new Set(b.t)}));
   const mods=D.mods.map((m,i)=>Object.assign({},m,{i,pre:m.g==="p",grs:new Set(m.gr)}));
   const modById=Object.fromEntries(mods.map(m=>[m.id,m]));
+  const baseById=Object.fromEntries(bases.filter(b=>b.id).map(b=>[b.id,b]));
 
   /* ── 權重：spawn_weights 依順序取第一個物品也有的 tag；再乘上 generation_weights（百分比） ── */
   function firstMatch(list,ts){
@@ -179,6 +181,7 @@ function create(D){
     addMod(item,mi,rng); return true;
   }
   /* 補到目標數量：魔法 1～2 條（50 : 50），稀有 4～6 條（8 : 3 : 1）；池子空了就停 */
+  /* 詞綴條數：魔法 1／2 條 50 : 50、稀有 4／5／6 條 8 : 3 : 1。照 Kalandralang，是社群推定值，不是官方數字 */
   function spawnAdditional(item,rng){
     let n;
     if(item.r===MAGIC) n=rng()<0.5?1:2;
@@ -315,6 +318,8 @@ function create(D){
   }
   /* 底材名稱、固有詞綴（範圍文字） */
   function baseName(b,lang){ const x=bases[b]; return lang==="zh"&&x.nz?x.nz:x.n; }
+  /* 詞綴名稱（例如 Frosted／結霜的） */
+  function modName(mi,lang){ const m=mods[mi]; return lang==="zh"&&m.nz?m.nz:m.n; }
   function implicitLines(b,lang){
     const x=bases[b];
     return x.imp.flatMap((t,i)=>{
@@ -412,7 +417,21 @@ function create(D){
       }
     }
   }
-  /* 把每件的結果彙整成平均、中位數、90%（只算成功的） */
+  /* 失敗的件數也要算：把結果依序串起來，每拿到一件成功品就切一段，
+     一段＝「拿到一件成功品總共用掉多少」（包含前面失敗、重新開始的那幾件）。
+     最後一件成功之後的失敗接回第一段（頭尾相接），所以每段加起來＝全部用量，平均＝全部用量 ÷ 成功件數。 */
+  function perSuccess(results,costOf){
+    const n=results.length, last=results.map(r=>r.ok).lastIndexOf(true);
+    if(last<0) return [];
+    const out=[]; let acc=0;
+    for(let j=1;j<=n;j++){
+      const r=results[(last+j)%n];
+      acc+=costOf(r);
+      if(r.ok){ out.push(acc); acc=0; }
+    }
+    return out;
+  }
+  /* 平均、中位數、90%（每拿到一件成功品要用掉多少，見 perSuccess） */
   function stat(arr){
     if(!arr.length) return {mean:0,median:0,p90:0};
     const s=arr.slice().sort((a,b)=>a-b);
@@ -420,18 +439,51 @@ function create(D){
     return {mean:s.reduce((a,b)=>a+b,0)/s.length,median:q(0.5),p90:q(0.9)};
   }
   function summarize(results,uses){
-    const ok=results.filter(r=>r.ok);
+    const success=results.filter(r=>r.ok).length;
     const per={};
-    for(const k of uses) per[k]=stat(ok.map(r=>r.used[k]||0));
-    return {n:results.length,success:ok.length,rate:results.length?ok.length/results.length:0,per};
+    for(const k of uses){
+      per[k]=stat(perSuccess(results,r=>r.used[k]||0));
+      per[k].total=results.reduce((a,r)=>a+(r.used[k]||0),0);   // 全部（含失敗）總共用掉幾顆
+    }
+    return {n:results.length,success,rate:results.length?success/results.length:0,per};
   }
-  /* 每件換算成混沌石的總成本；prices：{通貨: 單價}，沒填的算 0 */
+  /* 每拿到一件成功品換算成混沌石的總成本；prices：{通貨: 單價}，沒填的算 0 */
   function costStats(results,uses,prices){
-    return stat(results.filter(r=>r.ok).map(r=>uses.reduce((a,k)=>a+(r.used[k]||0)*(prices[k]||0),0)));
+    return stat(perSuccess(results,r=>uses.reduce((a,k)=>a+(r.used[k]||0)*(prices[k]||0),0)));
+  }
+
+  /* ── 存檔格式：底材存 Metadata 路徑、詞綴存 mod id（不存編號，每季更新資料後也讀得回來） ── */
+  function toStored(item){
+    return {base:bases[item.b].id,lv:item.lv,r:item.r,mods:item.mods.map(x=>({id:mods[x.m].id,v:x.v.slice()}))};
+  }
+  const okNum=v=>Array.isArray(v)&&v.every(n=>typeof n==="number"&&isFinite(n));
+  const okHead=(lv,r)=>Number.isInteger(lv)&&lv>=1&&lv<=100&&Number.isInteger(r)&&r>=0&&r<=2;
+  /* 讀回網頁內部的格式；找不到底材或詞綴（例如改版後被移除）、格式不對就回傳 null */
+  function fromStored(s){
+    if(!s||typeof s!=="object"||!okHead(s.lv,s.r)||!Array.isArray(s.mods)) return null;
+    const b=baseById[s.base]; if(!b) return null;
+    const out=[];
+    for(const x of s.mods){
+      const m=x&&modById[x.id];
+      if(!m||!okNum(x.v)) return null;
+      out.push({m:m.i,v:x.v.slice()});
+    }
+    return {b:b.i,lv:s.lv,r:s.r,mods:out};
+  }
+  /* 舊格式（存檔 v2 以前，用編號記）：用目前這版資料的編號解讀 */
+  function fromIndexed(s){
+    if(!s||typeof s!=="object"||!okHead(s.lv,s.r)||!Array.isArray(s.mods)) return null;
+    if(!(Number.isInteger(s.b)&&s.b>=0&&s.b<bases.length)) return null;
+    const out=[];
+    for(const x of s.mods){
+      if(!x||!(Number.isInteger(x.m)&&x.m>=0&&x.m<mods.length)||!okNum(x.v)) return null;
+      out.push({m:x.m,v:x.v.slice()});
+    }
+    return {b:s.b,lv:s.lv,r:s.r,mods:out};
   }
 
   return {
-    data:D, bases, mods, modById, tagId, NORMAL, MAGIC, RARE,
+    data:D, bases, mods, modById, baseById, tagId, NORMAL, MAGIC, RARE, toStored, fromStored, fromIndexed, modName,
     make, clone, check, apply, applyMut, pool, poolView, counts, maxSide, tagSet, weightOf,
     tierOf, tierCount, render, modRange, baseName, implicitLines, feasible, runOne, summarize, costStats, isDone, needCount,
   };

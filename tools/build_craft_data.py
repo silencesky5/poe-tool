@@ -8,7 +8,8 @@
 資料來源：RePoE fork（PoE1）https://repoe-fork.github.io/
 只保留第一版會用到的內容：武器、護甲、飾品的一般底材，以及能出現在這些底材上的
 item 前綴 / 後綴。詳細說明見 tools/README-craft.md。
-另外下載繁中版的 stat_translations.json、base_items.json，加上詞綴中文模板和底材中文名（英文保留）。
+另外下載繁中版的 stat_translations.json、base_items.json、mods.json，加上詞綴中文模板、底材中文名、
+詞綴中文名稱（英文保留）。
 
 圖示：底材和 10 顆通貨的官方圖下載到 img/craft/items/（網站只讀本地檔）。
     已經下載過的檔案會跳過；--no-icons 不下載圖示。
@@ -24,9 +25,9 @@ from datetime import date
 
 BASE_URL = "https://repoe-fork.github.io/"
 FILES = ["mods.json", "base_items.json", "stat_translations.json", "version.txt"]
-# 遊戲繁中版匯出的資料（結構和英文版一樣）：詞綴的中文模板、底材中文名
+# 遊戲繁中版匯出的資料（結構和英文版一樣）：詞綴的中文模板、底材中文名、詞綴中文名稱
 ZH_DIR = "Traditional Chinese/"
-ZH_FILES = ["stat_translations.json", "base_items.json"]
+ZH_FILES = ["stat_translations.json", "base_items.json", "mods.json"]
 ICON_URL = "https://web.poecdn.com/image/"
 ICON_MAX_MB = 30  # 超過就停下來，不要默默塞一大堆圖進網站
 
@@ -207,6 +208,7 @@ def main():
     trans = load(src, "stat_translations.json")
     zh_trans = load(src, zh_name("stat_translations.json"))
     zh_bases = load(src, zh_name("base_items.json"))
+    zh_mods = load(src, zh_name("mods.json"))
     zh_by_ids = {tuple(e["ids"]): e.get("Traditional Chinese") for e in zh_trans}
 
     # ── 底材 ──
@@ -251,7 +253,7 @@ def main():
     def implicit_mods(b):
         return [mods[i] for i in b["implicits"] if i in mods and mods[i].get("text")]
 
-    # 存檔裡的物品用底材「編號」記錄：順序不能變，新欄位只能往後加
+    # 存檔用底材的 id（Metadata 路徑）和詞綴 id 記錄，不用編號；網頁內部仍用編號，新欄位一律往後加
     out_bases, icon_jobs, missing_base = [], {}, []
     for bid, b in bases:
         dds = (b.get("visual_identity") or {}).get("dds_file") or ""
@@ -263,6 +265,7 @@ def main():
         if not zh_n or zh_n == b["name"]:
             missing_base.append(b["name"])
         out_bases.append({
+            "id": bid,                            # Metadata/Items/…：存檔用這個
             "n": b["name"],
             "c": b["item_class"],
             "lv": b["drop_level"],
@@ -331,8 +334,11 @@ def main():
         for sid in e["ids"]:
             stat_to_tr.setdefault(sid, idx)
 
-    out_mods = []
+    out_mods, missing_mod_zh = [], []
     for mid, m in sorted(keep.items()):
+        zh_mn = (zh_mods.get(mid) or {}).get("name")
+        if not zh_mn or zh_mn == m["name"]:
+            missing_mod_zh.append(mid)
         out_mods.append({
             "id": mid,
             "n": m["name"],
@@ -346,6 +352,7 @@ def main():
             "tg": m["implicit_tags"],
             "st": [[s["id"], s["min"], s["max"]] for s in m["stats"]],
             "tx": m.get("text") or "",
+            "nz": zh_mn or m["name"],             # 繁中詞綴名稱（沒有就用英文）
         })
 
     data = {
@@ -375,6 +382,8 @@ def main():
           + ("" if not missing_zh else "，前 20 個：" + ", ".join(missing_zh[:20])))
     print(f"繁中：底材 {len(out_bases)} 個，沒有中文名 {len(missing_base)} 個"
           + ("" if not missing_base else "：" + ", ".join(missing_base[:20])))
+    print(f"繁中：詞綴 {len(out_mods)} 條，沒有中文名稱 {len(missing_mod_zh)} 條"
+          + ("" if not missing_mod_zh else "：" + ", ".join(missing_mod_zh[:20])))
     if size > 3 * 1024 * 1024:
         print("錯誤：超過 3 MB")
         sys.exit(1)

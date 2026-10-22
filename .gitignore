@@ -7,3 +7,7 @@ make-manifest.ps1
 tools/_repoe_cache/
 .claude/
 CLAUDE.md
+更新製裝資料.bat
+tools/_repoe_new/
+tools/_repoe_new_out/
+tools/_repoe_prev/

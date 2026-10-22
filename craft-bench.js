@@ -62,18 +62,15 @@ const S={
 };
 const cont=cid=>cid==="inv"?S.inv:(S.tabs.find(t=>t.id===cid)||{}).items||null;
 
-/* ── 存檔 ── */
-function validItem(it){
-  if(!it||typeof it!=="object") return null;
-  const b=it.b|0, lv=it.lv|0, r=it.r|0;
-  if(!(b>=0&&b<E.bases.length)||!(lv>=1&&lv<=100)||!(r>=0&&r<=2)||!Array.isArray(it.mods)) return null;
-  const mods=[];
-  for(const x of it.mods){
-    if(!x||!(x.m>=0&&x.m<E.mods.length)||!Array.isArray(x.v)) return null;
-    mods.push({m:x.m|0,v:x.v.map(Number)});
-  }
-  return {b,lv,r,mods};
-}
+/* ── 存檔 ──
+   v3：裝備存底材的 Metadata 路徑和詞綴 id（E.toStored），每季更新資料後編號變了也讀得回來；
+       dataVersion 記錄存檔時的遊戲資料版本。
+   v2（舊）：存的是編號，讀到時用目前這版資料的編號解讀，下次存檔就以 v3 寫回（本機和雲端都一樣）。
+   讀不回來的裝備（例如改版後底材或詞綴被移除）不刪掉，原樣放在 unreadable，之後還能救回。 */
+const SAVE_V=3;
+let unreadable=[];   // [{at:"inv" 或倉庫頁 id, e:原始資料}]
+let newer=false;     // 存檔是更新版網頁存的（v 比 SAVE_V 大）：看不懂就不要覆蓋它
+function validItem(it,v){ return v>=3?E.fromStored(it):E.fromIndexed(it); }
 function fits(list,x,y,w,h,ignore){
   if(x<0||y<0||x+w>COLS||y+h>ROWS) return false;
   return !list.some(e=>e!==ignore&&overlap(e,x,y,w,h));
@@ -87,11 +84,12 @@ function firstFit(list,w,h){
   for(let x=0;x<=COLS-w;x++) for(let y=0;y<=ROWS-h;y++) if(fits(list,x,y,w,h)) return {x,y};
   return null;
 }
-function readEntries(arr){
+function readEntries(arr,v,at){
   const out=[];
   if(!Array.isArray(arr)) return out;
   for(const e of arr){
-    const item=validItem(e&&e.item); if(!item) continue;
+    const item=validItem(e&&e.item,v);
+    if(!item){ if(v>=3&&e&&e.item) unreadable.push({at,e}); continue; }
     const s=sizeOf(item);
     let x=e.x|0, y=e.y|0;
     if(!fits(out,x,y,s.w,s.h)){ const p=firstFit(out,s.w,s.h); if(!p) continue; x=p.x; y=p.y; }
@@ -101,13 +99,15 @@ function readEntries(arr){
 }
 /* 讀檔：格式不對（例如第一階段的存檔測試文字）就當作空倉庫 */
 function fromSave(d){
-  const ok=d&&typeof d==="object"&&d.v===2;
-  S.inv=ok?readEntries(d.inventory):[];
+  const v=d&&typeof d==="object"?d.v:0, ok=v===2||v===SAVE_V;
+  newer=typeof v==="number"&&v>SAVE_V;
+  unreadable=ok&&v>=3&&Array.isArray(d.unreadable)?d.unreadable.slice():[];
+  S.inv=ok?readEntries(d.inventory,v,"inv"):[];
   S.tabs=ok&&Array.isArray(d.tabs)?d.tabs.filter(t=>t&&typeof t==="object").map(t=>({
     id:typeof t.id==="string"?t.id:uid(),
     name:String(t.name||"倉庫頁").slice(0,20),
     color:/^#[0-9a-f]{6}$/i.test(t.color)?t.color:TAB_COLORS[0],
-    items:readEntries(t.items),
+    items:readEntries(t.items,v,typeof t.id==="string"?t.id:""),
   })):[];
   S.used={};
   if(ok&&d.currencyUsed&&typeof d.currencyUsed==="object")
@@ -127,19 +127,22 @@ function toSave(){
     if(!p){ target=inv; p=firstFit(inv,s.w,s.h); }
     if(p) target.push({...h.e,x:p.x,y:p.y});
   }
-  const strip=e=>({id:e.id,x:e.x,y:e.y,item:e.item});
-  return {v:2,inventory:inv.map(strip),tabs:tabs.map(t=>({...t,items:t.items.map(strip)})),
+  const strip=e=>({id:e.id,x:e.x,y:e.y,item:E.toStored(e.item)});
+  const out={v:SAVE_V,dataVersion:D.version,inventory:inv.map(strip),tabs:tabs.map(t=>({...t,items:t.items.map(strip)})),
     currencyUsed:{...S.used},activeTab:S.active};
+  if(unreadable.length) out.unreadable=unreadable;
+  return out;
 }
 let saveTimer=null, doc={};   // doc：上一次讀到的整份存檔（其他欄位例如 prices 原樣保留）
 function merged(cur){
   if(!cur||typeof cur!=="object"||Array.isArray(cur)) cur={};
   const next={...cur,...toSave()};
+  if(!unreadable.length) delete next.unreadable;
   delete next.text;   // 第一階段「存檔測試」留下的欄位
   return next;
 }
 function save(){
-  if(!St||!S.ready) return;
+  if(!St||!S.ready||newer) return;
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
     saveTimer=null;
@@ -150,7 +153,7 @@ function save(){
 }
 /* 離開頁面前（CraftStorage 要補同步）：還沒交出去的改動，用目前最新的整份存檔合併後馬上存 */
 window.addEventListener("craftstorage:beforeflush",e=>{
-  if(!saveTimer||!St||!S.ready) return;
+  if(!saveTimer||!St||!S.ready||newer) return;
   clearTimeout(saveTimer); saveTimer=null;
   doc=merged(e.detail&&e.detail.current||doc); St.save(doc);
 });
@@ -366,7 +369,7 @@ function itemTooltipHTML(it,detail){
   const lines=(zl,el)=>zl.map((t,i)=>`<div>${esc(t)}${detail&&zh&&el[i]&&el[i]!==t?`<div class="ken">${esc(el[i])}</div>`:""}</div>`).join("");
   const rows=mods.map(x=>{
     const m=E.mods[x.m], t=E.tierOf(it.b,x.m);
-    const big=detail?`<div class="kbig">${esc(m.n)}・${m.pre?"前綴":"後綴"} T${t}／共 ${E.tierCount(it.b,x.m)} 階・範圍 ${esc(E.modRange(x.m,lang).join(" / "))}</div>`:"";
+    const big=detail?`<div class="kbig">${esc(E.modName(x.m,lang))}・${m.pre?"前綴":"後綴"} T${t}／共 ${E.tierCount(it.b,x.m)} 階・範圍 ${esc(E.modRange(x.m,lang).join(" / "))}</div>`:"";
     return `<div class="kmod"><span class="ktag ${m.pre?"p":"s"}">${m.pre?"前":"後"} T${t}</span>
       <span class="ktxt">${lines(E.render(x.m,x.v,lang),E.render(x.m,x.v,"en"))}${big}</span></div>`;
   }).join("");
@@ -754,7 +757,7 @@ function openVendor(){
   S.ready=true;
   root.querySelector(".kb").style.opacity="";
   drawAll();
-  // 第一次使用（自動建立了暫存區）也存一次
-  if(!d||d.v!==2) save();
+  // 第一次使用（自動建立了暫存區）、或是舊格式（v2）的存檔：以新格式存一次
+  if(!d||d.v!==SAVE_V||d.dataVersion!==D.version) save();
 })();
 })();

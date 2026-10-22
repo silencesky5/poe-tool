@@ -120,5 +120,57 @@ for(const [b,lv] of [[helm,86],[helm,40],[ring,86],[bow,60]]){
   console.log(`  參考  改造＋增幅，生命 T3 以上 ×10000：成功率 ${(s.rate*100).toFixed(1)}%，平均改造 ${s.per.alt.mean.toFixed(1)}、中位數 ${s.per.alt.median}、90% ${s.per.alt.p90}，${Date.now()-t0} ms`);
 }
 
+// 點金 4／5／6 條約 8 : 3 : 1（社群推定值，見 craft-engine.js spawnAdditional）
+{
+  const n={4:0,5:0,6:0};
+  for(let i=0;i<24000;i++) n[E.apply(E.make(helm,86),"alch").item.mods.length]++;
+  ok(Math.abs(n[4]/24000-8/12)<0.02&&Math.abs(n[5]/24000-3/12)<0.02&&Math.abs(n[6]/24000-1/12)<0.015,
+    `點金石：4 條 ${n[4]}、5 條 ${n[5]}、6 條 ${n[6]}（約 8 : 3 : 1）`);
+}
+
+// 期望值要把失敗的件數算進去：混沌重抽生命 T1、上限 30 次（盤點報告的例子，約 26 顆）
+{
+  const o={b:helm,lv:86,method:"chaos",mode:"all",targets:[{ty:"IncreasedLife",g:"p",maxTier:1}],limit:30};
+  const res=[]; for(let i=0;i<20000;i++) res.push(E.runOne(o,Math.random));
+  const s=E.summarize(res,["alch","chaos"]), c=s.per.chaos;
+  const okOnly=res.filter(r=>r.ok).map(r=>r.used.chaos||0);
+  const oldMean=okOnly.reduce((a,b)=>a+b,0)/okOnly.length;
+  ok(Math.abs(c.mean-c.total/s.success)<1e-9,`平均＝全部用量 ÷ 成功件數（${c.total} ÷ ${s.success} = ${c.mean.toFixed(2)}）`);
+  ok(c.mean>23&&c.mean<29,`混沌重抽生命 T1、上限 30：成功率 ${(s.rate*100).toFixed(1)}%，期望 ${c.mean.toFixed(1)} 顆（舊算法只算成功的：${oldMean.toFixed(1)}），中位數 ${c.median}、90% ${c.p90}`);
+  const cost=E.costStats(res,["alch","chaos"],{alch:0.5,chaos:1});
+  ok(Math.abs(cost.mean-(s.per.alch.total*0.5+c.total)/s.success)<1e-9,`總成本平均＝全部花費 ÷ 成功件數（${cost.mean.toFixed(2)}）`);
+  // 全部成功時和舊算法一樣
+  const all=[{ok:true,used:{chaos:3}},{ok:true,used:{chaos:5}}];
+  ok(E.summarize(all,["chaos"]).per.chaos.mean===4,"全部成功時，平均和舊算法相同");
+  ok(E.summarize([{ok:false,used:{chaos:30}}],["chaos"]).per.chaos.mean===0,"全部失敗時不會出錯");
+}
+
+// 存檔格式：底材存 Metadata 路徑、詞綴存 mod id；舊格式（編號）轉過去內容完全一樣
+{
+  ok(E.bases.every(b=>/^Metadata\/Items\//.test(b.id))&&new Set(E.bases.map(b=>b.id)).size===E.bases.length,"每個底材都有唯一的 Metadata id");
+  ok(new Set(E.mods.map(m=>m.id)).size===E.mods.length,"每條詞綴都有唯一的 id");
+  let bad=0;
+  for(let i=0;i<3000;i++){
+    const b=Math.floor(Math.random()*E.bases.length);
+    let it=E.make(b,1+Math.floor(Math.random()*86));
+    it=E.apply(it,["transmute","alch"][i%2]).item;
+    if(i%3===0) it=E.apply(it,"exalt").item;
+    const st=E.toStored(it), back=E.fromStored(JSON.parse(JSON.stringify(st)));
+    const old=E.fromIndexed(JSON.parse(JSON.stringify(it)));
+    if(JSON.stringify(back)!==JSON.stringify(it)||JSON.stringify(old)!==JSON.stringify(it)) bad++;
+  }
+  ok(bad===0,"3000 件隨機裝備：新格式存回讀、舊格式轉換，底材、詞綴、數值完全一致");
+  ok(E.fromStored({base:"Metadata/Items/不存在",lv:80,r:0,mods:[]})===null&&
+     E.fromStored({base:E.bases[helm].id,lv:80,r:1,mods:[{id:"不存在的詞綴",v:[1]}]})===null,"找不到的底材或詞綴回傳 null（不會讀成別的東西）");
+}
+
+// 詞綴中文名稱
+{
+  const miss=E.mods.filter(m=>!m.nz||m.nz===m.n).length;
+  const frosted=E.mods.find(m=>m.n==="Frosted");
+  ok(miss===0&&E.modName(frosted.i,"zh")==="結霜的"&&E.modName(frosted.i,"en")==="Frosted",
+    `詞綴中文名稱：缺 ${miss} 條；Frosted → ${E.modName(frosted.i,"zh")}`);
+}
+
 console.log(fail?`\n有 ${fail} 項失敗`:"\n全部通過");
 process.exit(fail?1:0);

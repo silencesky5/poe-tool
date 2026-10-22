@@ -29,7 +29,7 @@ const baseHay=b=>(baseLabel(b,"zh")+"\n"+baseLabel(b,"en")).toLowerCase();
 const modHay=new Map();
 const modSearch=mi=>{
   let s=modHay.get(mi);
-  if(s===undefined){ const m=E.mods[mi]; s=(E.modRange(mi,"zh").join("\n")+"\n"+m.tx+"\n"+m.n).toLowerCase(); modHay.set(mi,s); }
+  if(s===undefined){ const m=E.mods[mi]; s=(E.modRange(mi,"zh").join("\n")+"\n"+m.tx+"\n"+m.n+"\n"+E.modName(mi,"zh")).toLowerCase(); modHay.set(mi,s); }
   return s;
 };
 const modText=mi=>E.modRange(mi,L());   // 範圍文字（目前語言）
@@ -144,6 +144,7 @@ root.innerHTML=`
       </div>
       <div class="klab">作法</div>
       <div class="kmethods" id="kmethods"></div>
+      <div class="khint">詞綴條數的機率：魔法裝 1 條／2 條各 50%、稀有裝 4／5／6 條為 8 : 3 : 1。這是社群推定值（Kalandralang 採用），<b>不是官方公布的數字</b>；所有模擬結果都以這個機率為準。</div>
       <div class="krun">
         <label class="klab" for="knn">模擬次數</label>
         <div class="klv"><input id="knr" type="range" min="1000" max="10000" step="1000" aria-label="模擬次數滑桿"><input id="knn" type="number" min="1000" max="10000" step="1000"></div>
@@ -164,6 +165,7 @@ root.innerHTML=`
 </section>
 <footer class="kfoot">資料：<a href="https://github.com/lvlvllvlvllvlvl/RePoE" target="_blank" rel="noopener">RePoE</a>（PoE1，遊戲版本 ${esc(D.version)}，MIT；遊戲資料版權屬 Grinding Gear Games）。
   通貨規則參考 <a href="https://github.com/doomeer/kalandralang" target="_blank" rel="noopener">Kalandralang</a>（MIT）的實作。
+  詞綴條數機率（魔法 1／2 條 50 : 50、稀有 4／5／6 條 8 : 3 : 1）為社群推定值，非官方數字。
   不含勢力、分裂、精髓、化石、工藝台、收穫。</footer>`;
 
 /* ── 左側：類別、底材、物品等級 ── */
@@ -217,7 +219,7 @@ function drawItem(){
   const mods=it.mods.slice().sort((x,y)=>(E.mods[y.m].pre-E.mods[x.m].pre));
   const rows=mods.map(x=>{
     const m=E.mods[x.m], t=E.tierOf(it.b,x.m);
-    const tip=`${m.n}（${m.pre?"前綴":"後綴"}，T${t}／共 ${E.tierCount(it.b,x.m)} 階）\n範圍：${modText(x.m).join(" / ")}${L()==="zh"?"\n英文："+E.render(x.m,x.v,"en").join(" / "):""}\n需求等級 ${m.lv}・群組 ${m.gr.join(", ")}`;
+    const tip=`${E.modName(x.m,L())}（${m.pre?"前綴":"後綴"}，T${t}／共 ${E.tierCount(it.b,x.m)} 階）\n範圍：${modText(x.m).join(" / ")}${L()==="zh"?"\n英文："+E.render(x.m,x.v,"en").join(" / "):""}\n需求等級 ${m.lv}・群組 ${m.gr.join(", ")}`;
     return `<div class="kmod" title="${esc(tip)}"><span class="ktag ${m.pre?"p":"s"}">${m.pre?"前":"後"} T${t}</span>
       <span class="ktxt">${E.render(x.m,x.v,L()).map(esc).join("<br>")}</span></div>`;
   }).join("");
@@ -309,7 +311,7 @@ function drawPool(){
       const bar=r.pct/(maxPct[r.pre?"p":"s"]||1)*100;
       return `<tr class="${t?"on":""}"><td class="c"><input type="checkbox" data-m="${r.m}" data-t="${r.maxTier}" ${t?"checked":""} aria-label="加到目標"></td>
         <td class="t">${r.tierText}</td>
-        <td><div class="ptx">${modText(r.m).map(esc).join("<br>")}</div><div class="pn">${esc(m.n)}${r.n>1?`・${r.n} 階`:""}</div></td>
+        <td><div class="ptx">${modText(r.m).map(esc).join("<br>")}</div><div class="pn">${esc(E.modName(r.m,L()))}${r.n>1?`・${r.n} 階`:""}</div></td>
         <td class="n">${S.poolMerge?"":m.lv}</td><td class="n">${num(r.w)}</td>
         <td class="n pc"><span style="--w:${bar.toFixed(1)}%">${pct(r.pct)}</span></td></tr>`;
     }).join("")+`</tbody></table>`:`<div class="khint">沒有符合的詞綴。</div>`;
@@ -446,6 +448,8 @@ function drawResults(){
   let h=`<div class="kctx">${esc(baseLabel(E.bases[meta.o.b]))}・物品等級 ${meta.o.lv}・${esc(meta.method.zh)}・${cond}・${num(sum.n)} 次（${(meta.ms/1000).toFixed(1)} 秒）<br>`+
     meta.targets.map(t=>`<span class="ktag ${t.g}">${t.g==="p"?"前":"後"} T${t.maxTier}${t.maxTier>1?"+":""}</span> ${esc(modText(t.mi)[0])}`).join("<br>")+`</div>`;
   h+=`<div class="krate"><b>${(sum.rate*100).toFixed(1)}%</b> 成功（${num(sum.success)} / ${num(sum.n)}）${sum.rate<1?`<small>沒成功的是重抽超過 ${num(meta.o.limit)} 次</small>`:""}</div>`;
+  if(sum.rate<0.99) h+=`<div class="kmsg bad">成功率低於 99%：有 ${num(sum.n-sum.success)} 件重抽到上限（${num(meta.o.limit)} 次）還沒中。`+
+    `下面的數字已經把這些失敗件用掉的通貨算進去（當作沒中就重新開始）；要看「一直做到成功為止」的情況，建議把「每件最多重抽幾次」調高後再跑一次。</div>`;
   if(sum.success){
     h+=`<table class="kres"><thead><tr><th>通貨</th><th class="n">平均</th><th class="n">中位數</th><th class="n">90% 以內</th></tr></thead><tbody>`+
       uses.map(k=>{ const s=sum.per[k]; return `<tr><td>${esc(CE.CUR[k].zh)}</td><td class="n">${num(+s.mean.toFixed(1))}</td><td class="n">${num(s.median)}</td><td class="n">${num(s.p90)}</td></tr>`; }).join("");
@@ -457,7 +461,8 @@ function drawResults(){
       h+=`<tr class="kcost"><td>總成本（混沌石）</td><td class="n">${num(+c.mean.toFixed(1))}</td><td class="n">${num(+c.median.toFixed(1))}</td><td class="n">${num(+c.p90.toFixed(1))}</td></tr></tbody></table>`+
         (miss.length?`<div class="khint">未填單價、以 0 計：${miss.map(esc).join("、")}</div>`:"");
     }else h+=`</tbody></table><div class="khint">在下面填通貨單價，就會換算成混沌石的總成本。</div>`;
-    h+=`<div class="khint">只算成功的那幾次。「90% 以內」＝ 90% 的情況下用量不會超過這個數字。</div>`;
+    h+=`<div class="khint">每做出一件成功品要用掉多少，<b>失敗的件數也算進去</b>（沒中就重新開始，前面用掉的累加到下一件成功品）。`+
+      `平均＝全部用量 ÷ 成功件數；「90% 以內」＝ 90% 的情況下用量不會超過這個數字。</div>`;
   }
   $("kres").innerHTML=h;
 }
