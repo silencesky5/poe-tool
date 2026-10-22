@@ -150,3 +150,98 @@
 #tab-craft .kbl-foot{padding:8px 14px 12px;font-size:12px;color:#8C887F;line-height:1.6;border-top:1px solid #2C2A27}
 @media (max-width:560px){ #tab-craft .kbl-row{flex-wrap:wrap} #tab-craft .kbl-lv{width:auto} #tab-craft .kbl-c{min-width:0} #tab-craft .kbl-tab{width:34px;height:31px} }
 #kbench .kb-benchcur{background:#1B1B19;border:1px solid var(--accent);color:var(--bone);border-radius:4px;font-size:12px;padding:2px 6px;white-space:nowrap}
+/* 化石頁：放進鑄新儀的化石、先不開放（待確認）的化石、相加／相乘切換 */
+#kbench .kb-fos.sel{outline:3px solid #E9C98A;outline-offset:-3px;box-shadow:inset 0 0 18px rgba(233,201,138,.45)}
+#kbench .kb-fos.off img{filter:grayscale(1) brightness(.55)}
+#kbench .kb-fmode{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
+#kbench .kb-fmode .kb-btn{padding:3px 10px;font-size:12.5px}
+#kbench .kb-fmode small{color:#9C988F}
+#kbench .kb-res.fit{outline:3px solid #E9C98A;outline-offset:-3px}
+#kbench .kb-hint2{color:#E9C98A;font-size:12.5px}
+
+/* ── 園藝工藝台（craft-harvest.js）：照遊戲畫面排版，座標用遊戲美術圖的像素（--u ＝ 1 像素）── */
+#tab-craft .khv-veil{position:fixed;inset:0;z-index:80;background:rgba(6,5,5,.72);display:flex;align-items:center;justify-content:center;padding:12px}
+#tab-craft .khv{width:min(100%,1100px,calc((92vh - 90px)*1.494));max-height:96vh;overflow:auto;container-type:inline-size;color:#8E949B;
+  font-family:var(--sans,system-ui),sans-serif}
+#tab-craft .khv-stage{--u:calc(100cqw/1566);position:relative;width:100%;aspect-ratio:1566/1048;font-size:calc(var(--u)*27)}
+#tab-craft .khv-frame{position:absolute;left:0;top:0;width:calc(var(--u)*1231);height:auto;pointer-events:none;user-select:none}
+#tab-craft .khv-title{position:absolute;left:calc(var(--u)*366);top:calc(var(--u)*84);width:calc(var(--u)*330);height:calc(var(--u)*76);
+  display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:calc(var(--u)*40);color:#3B2512;letter-spacing:.1em;
+  text-shadow:0 1px 0 rgba(255,235,190,.5)}
+#tab-craft .khv-x{position:absolute;left:calc(var(--u)*1150);top:calc(var(--u)*118);width:calc(var(--u)*58);height:calc(var(--u)*58);border-radius:50%;
+  border:2px solid #8C5A2B;background:radial-gradient(#5A2A14,#2A120A);color:#E9C98A;font-size:calc(var(--u)*40);line-height:1;cursor:pointer;padding:0}
+#tab-craft .khv-tabs{position:absolute;left:calc(var(--u)*330);top:calc(var(--u)*184);display:flex;gap:calc(var(--u)*16)}
+#tab-craft .khv-tab{width:calc(var(--u)*72);height:calc(var(--u)*72);padding:calc(var(--u)*6);border:2px solid #3E5560;border-radius:3px;cursor:pointer;
+  background:linear-gradient(#2B3D47,#16222A);box-shadow:inset 0 0 6px #000}
+#tab-craft .khv-tab img{width:100%;height:100%;object-fit:contain;display:block}
+#tab-craft .khv-tab[aria-selected="true"]{border-color:#C9E4F0;background:linear-gradient(#557584,#2A3E49);box-shadow:0 0 8px rgba(160,220,255,.6)}
+#tab-craft .khv-list{position:absolute;left:calc(var(--u)*104);top:calc(var(--u)*268);width:calc(var(--u)*866);height:calc(var(--u)*700);overflow-y:auto;
+  scrollbar-color:#7A4A2A #120C08}
+#tab-craft .khv-row{position:relative;display:block;width:100%;min-height:calc(var(--u)*152);text-align:left;border:0;cursor:pointer;color:inherit;font:inherit;
+  padding:calc(var(--u)*14) calc(var(--u)*22) calc(var(--u)*46);background:url(img/craft/ui/harvest_panel.webp) center/100% 100% no-repeat}
+#tab-craft .khv-row:hover,#tab-craft .khv-row.sel{background-image:url(img/craft/ui/harvest_panel_hover.webp)}
+#tab-craft .khv-row.sel{outline:2px solid #C9A25A;outline-offset:-3px}
+#tab-craft .khv-row.off .khv-t,#tab-craft .khv-row.off .khv-cs{opacity:.45;filter:grayscale(.6)}
+#tab-craft .khv-row .why{display:block;font-style:normal;font-size:.78em;color:#B7795A;margin-top:.25em}
+#tab-craft .khv-row.na .why{color:#7E858C}
+#tab-craft .khv-cs{position:absolute;right:calc(var(--u)*20);bottom:calc(var(--u)*8);display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+#tab-craft .khv-c{display:flex;align-items:center;gap:3px;color:#E6E2DB}
+#tab-craft .khv-c img{width:calc(var(--u)*38);height:calc(var(--u)*38)}
+#tab-craft .khv-none{padding:20px;text-align:center}
+#tab-craft .khv-t span{font-weight:400}
+#tab-craft .hv-white{color:#F2F2F2;font-weight:700}
+#tab-craft .hv-craftingfire{color:#FF6A3D}
+#tab-craft .hv-craftingcold{color:#7CC0F2}
+#tab-craft .hv-craftinglightning{color:#F5C842}
+#tab-craft .hv-craftingphysical{color:#E0A07E}
+#tab-craft .hv-craftinglife,#tab-craft .hv-ccraftinglife{color:#E5484D}
+#tab-craft .hv-craftingdefences{color:#D8B45A}
+#tab-craft .hv-craftingchaos{color:#E28FD8}
+#tab-craft .hv-craftingattack{color:#EE9550}
+#tab-craft .hv-craftingcaster{color:#6CCFD3}
+#tab-craft .hv-craftingspeed{color:#C6E27A}
+#tab-craft .hv-craftingcrit{color:#B7A2EC}
+#tab-craft .hv-rare{color:#F5E05A}
+#tab-craft .hv-enchanted{color:#B8DAF2}
+#tab-craft .khv-side{position:absolute;left:calc(var(--u)*1046);top:calc(var(--u)*300);width:calc(var(--u)*331);height:calc(var(--u)*552)}
+#tab-craft .khv-sidebg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#tab-craft .khv-slot{position:absolute;left:calc(var(--u)*61);top:calc(var(--u)*40);width:calc(var(--u)*208);height:calc(var(--u)*361)}
+#tab-craft .khv-slotbg{position:absolute;inset:0;width:100%;height:100%}
+#tab-craft .khv-itm{position:absolute;inset:8%;display:flex;align-items:center;justify-content:center}
+#tab-craft .khv-itm img{max-width:100%;max-height:100%;filter:drop-shadow(0 2px 4px #000)}
+#tab-craft .khv-go{position:absolute;left:calc(var(--u)*52);top:calc(var(--u)*428);width:calc(var(--u)*226);height:calc(var(--u)*64);cursor:pointer;
+  border:2px solid #5D6366;border-radius:3px;background:linear-gradient(#2E3236,#121416);color:#D8D4CC;font:inherit;font-size:calc(var(--u)*30);letter-spacing:.2em}
+#tab-craft .khv-go:hover{border-color:#B9BEC2;color:#fff}
+#tab-craft .khv-go[aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+#tab-craft .khv-counts{position:absolute;left:calc(var(--u)*1386);top:calc(var(--u)*330)}
+#tab-craft .khv-cnt{position:relative;width:calc(var(--u)*173);height:calc(var(--u)*100);display:flex;align-items:center}
+#tab-craft .khv-cnt .bg{position:absolute;inset:0;width:100%;height:100%}
+#tab-craft .khv-cnt .ic{position:relative;width:calc(var(--u)*72);height:calc(var(--u)*72);margin-left:calc(var(--u)*8)}
+#tab-craft .khv-cnt span{position:relative;flex:1;text-align:center;color:#F0ECE4;font-size:calc(var(--u)*26)}
+#tab-craft .khv-bar{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin-top:6px;padding:6px 10px;background:#140F0B;border:1px solid #4A3424}
+#tab-craft .khv-ql{display:flex;align-items:center;gap:8px;color:#E9C98A;flex:1;min-width:200px}
+#tab-craft .khv-q{flex:1;min-width:0;background:#0A0806;border:1px solid #7A5A3A;color:#E6E2DB;padding:4px 8px}
+#tab-craft .khv-chk{display:flex;align-items:center;gap:4px;color:#C9C3B8}
+#tab-craft .khv-msg{min-height:1.4em;padding:4px 10px;color:#9FD39A;background:#0D0B09}
+#tab-craft .khv-msg.bad{color:#F08A6A}
+#tab-craft .khv-foot{padding:0 10px 8px;font-size:12px;color:#8A847A;background:#0D0B09}
+/* 窄螢幕：改成上下排列（美術圖縮太小會看不清楚） */
+@container (max-width:640px){
+  #tab-craft .khv-stage{--u:.42px;aspect-ratio:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;font-size:14px;
+    background:url(img/craft/ui/harvest_window.webp) center/cover}
+  #tab-craft .khv-frame{display:none}
+  #tab-craft .khv-stage>*{position:static!important;left:auto!important;top:auto!important}
+  #tab-craft .khv-title{width:auto;height:auto;font-size:20px;color:#E9C98A;text-shadow:0 1px 2px #000}
+  #tab-craft .khv-x{position:absolute!important;right:8px;top:8px!important;width:32px;height:32px;font-size:22px}
+  #tab-craft .khv-tab{width:44px;height:44px;padding:4px}
+  #tab-craft .khv-list{width:100%;height:auto;max-height:55vh}
+  #tab-craft .khv-row{min-height:0;padding:8px 10px 34px}
+  #tab-craft .khv-c img{width:20px;height:20px}
+  #tab-craft .khv-side{position:relative!important;width:190px;height:317px}
+  #tab-craft .khv-side .khv-slot{left:35px;top:23px;width:120px;height:207px}
+  #tab-craft .khv-side .khv-go{left:30px;top:246px;width:130px;height:37px;font-size:16px}
+  #tab-craft .khv-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+  #tab-craft .khv-cnt{width:100px;height:58px}
+  #tab-craft .khv-cnt .ic{width:40px;height:40px;margin-left:5px}
+  #tab-craft .khv-cnt span{font-size:14px}
+}

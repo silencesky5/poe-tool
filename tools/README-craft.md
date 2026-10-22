@@ -66,7 +66,7 @@ node tools/test_craft_engine.js
 
 ## 第一版不做
 
-勢力、分裂、精髓、化石、工藝台、收穫、珠寶。
+勢力、分裂、精髓、化石、工藝台、收穫、珠寶。（精髓、工藝台、化石、豐收後來已加入，見下面各節。）
 
 **機會石（Orb of Chance）、瓦爾寶珠（Vaal Orb）**：Kalandralang（查到 2026-01-06 的 master `5a6d1fb`）兩顆都沒有實作，
 沒有可以照的規則，所以先不做。它們和其他「模擬器尚未支援」的通貨一樣，只在製裝台通貨頁當擺設（`craft-bench.js` 的 `DECOR_SLOT`）。
@@ -112,3 +112,17 @@ node tools/test_craft_engine.js
   - 沒找到、用 CSS 模擬：清單面板的深色底、搜尋框（遊戲裡是多個通用小元件拼成，切割表沒有整張）。
 - 物品類別分頁：遊戲資料 `CraftingItemClassCategories`（英文／繁中名稱、包含的物品類別），放在 `craft-data.js` 的 `benchUI.tabs`。
 - 每列的「lvl」＝做完後裝備的角色需求等級＝詞綴等級的 80%（無條件捨去），和遊戲畫面一致。遊戲資料 `CraftingBenchOptions.RequiredLevel` 對裝備詞綴都是 0，物品等級不限制工藝台（Kalandralang 也不檢查）。
+
+## 通貨頁「輿圖」「聯盟」、化石（2026-10-22 加入）
+- 「輿圖」（SlotGroup 1）「聯盟」（SlotGroup 2）：遊戲的整張輿圖背景（BackgroundAtlas）是舊版面、和 3.29 排列資料對不上，所以用官方空白底圖（CurrencyBackground）＋官方格框（Currency1x1Slot、CurrencyCentreSlot）照 3.29 的 CurrencyStashTabLayout 組成（`extract_stash_layout.py` 的 `compose_tabs`）。用同樣方法組出的「一般」頁和官方整張圖一致。
+- 化石：RePoE `fossils.json`（＋繁中）。權重 100＝×1；禁止的標籤優先；每顆化石對同一條詞綴只算一次；多顆化石的「增加」可切換相加（預設）／相乘（社群推定值）；減少（×0.15）相乘。鏤空化石保證深淵插槽（限武器、頭盔、手套、鞋子、胸甲），雕琢化石加入化石專屬的寶石等級詞綴。
+- 待確認先禁用：神聖、雕紋、紊亂、破裂、血漬、鑲金、華麗（原因寫在 `build_craft_data.py` 的 `FOSSIL_HOLD`）。
+- 鑄新儀（共振器）：普通物品＝點金效果、稀有物品＝混沌效果；魔法物品、有元工藝不能用；鑄新儀要插滿才能用：混沌鑄新儀 初階 1、強效 2、強力 3、終極 4 孔（RePoE 沒有，KAI 在遊戲內確認）；點金鑄新儀照同樣等級（待確認）。
+- 化石倉庫頁：官方背景圖 DelveTabBackground＋DelveStashTabLayout（`extract_stash_layout.py` 的 `delve_art`，用格框亮線自動對位）。
+
+## 豐收（園藝工藝台，2026-10-22 加入）
+- 資料：遊戲資料表 `HarvestCraftOptions`（`extract_ui_art.py` 的 `harvest_options` 用 pathofexile-dat 抽英文＋繁中，存成 `tools/harvest_options.json`），`build_craft_data.py` 的 `harvest_options` 轉成 `D.harvest`。全部 74 個選項和截圖對照表在 `docs/2026-10-22_豐收選項.md`。
+- 生命力：野性 `x:HarvestSeedRed`、靈現 `x:HarvestSeedGreen`、原始 `x:HarvestSeedBlue`、神聖 `x:HarvestSeedBoss`、晶化仇怨 `x:HarvestSeedFaridun`；使用量和其他通貨一樣記在 `currencyUsed`。
+- 已實作（照 Kalandralang）：「重鑄並包含 1 個 X 詞綴」（`reforge_rare ~tag`）、「增加 1 個新 X 詞綴並移除其它隨機詞綴」（`harvest_augment_and_remove`）。X＝詞綴的 `implicit_tags`。
+- 待確認先禁用：機率較大／較小（參數 900／-90 的意思不確定）、抗性／傷害互換（「相似階級」沒有公布）。原因寫在 `build_craft_data.py` 的 `HARVEST_HOLD`；勢力、附魔、通貨交換等標成不適用（`HARVEST_NA`）。
+- 介面：`craft-harvest.js`（製裝台「園藝」按鈕、模擬器「園藝工藝台…」共用），美術圖 `harvest_window`、`harvest_panel`、`harvest_side`、`harvest_slot`、`harvest_counter`、`lifeforce_*`。模擬器作法「豐收重鑄」只能選「重鑄並包含」。

@@ -437,7 +437,7 @@ for(const [b,lv] of [[helm,86],[helm,40],[ring,86],[bow,60]]){
 
 // ── 通貨倉庫頁「一般」：官方 3.29 美術圖＋遊戲資料 CurrencyStashTabLayout ──
 {
-  const T=E.data.curTab, G=JSON.parse(fs.readFileSync(path.join(__dirname,"stash_layout_game.json"),"utf8"));
+  const T=E.data.curTabs.general, G=JSON.parse(fs.readFileSync(path.join(__dirname,"stash_layout_game.json"),"utf8"));
   const raw=G.currency.filter(r=>r.group===0||r.group===3);
   ok(T&&fs.existsSync(path.join(__dirname,"..","img","craft",T.bg)),"通貨頁背景：官方美術圖 "+(T&&T.bg)+" 存在");
   ok(T.slots.length===raw.length&&T.slots.length===67,`格子數＝遊戲資料 SlotGroup 0＋3（${T.slots.length} 格：通貨 52、大格 1、通用格 14）`);
@@ -460,6 +460,22 @@ for(const [b,lv] of [[helm,86],[helm,40],[ring,86],[bow,60]]){
   ok(["scrollfrag","wisdom","vaal","chance","mirror","fracture","binding"].every(d=>pos(d).length===1),"原本的擺設通貨（卷軸碎片、瓦爾寶珠等）都還在");
 }
 
+// ── 通貨倉庫頁「輿圖」「聯盟」：官方空白底圖＋官方格框，照遊戲資料排 ──
+for(const [name,zh,g] of [["atlas","輿圖",1],["league","聯盟",2]]){
+  const T=E.data.curTabs[name], G=JSON.parse(fs.readFileSync(path.join(__dirname,"stash_layout_game.json"),"utf8"));
+  const raw=G.currency.filter(r=>r.group===g||r.group===3);
+  ok(T&&T.composed&&fs.existsSync(path.join(__dirname,"..","img","craft",T.bg)),`「${zh}」頁背景 ${T&&T.bg} 存在（空白底圖＋官方格框組成）`);
+  ok(T.slots.length===raw.length,`「${zh}」頁格子數＝遊戲資料 SlotGroup ${g}＋3（${T.slots.length} 格）`);
+  ok(T.slots.filter(s=>s.hide).length===raw.filter(r=>r.group===g&&!r.show).length,`「${zh}」頁隱藏格 ${T.slots.filter(s=>s.hide).length} 格有標記（空著時不顯示）`);
+  const vis=T.slots.filter(s=>!s.hide&&s.kind!=="craft");
+  let overlap=0;
+  for(let i=0;i<vis.length;i++) for(let j=i+1;j<vis.length;j++){ const a=vis[i],b=vis[j];
+    if(a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h) overlap++; }
+  ok(overlap===0&&vis.every(s=>s.x>=0&&s.y>=0&&s.x+s.w<=T.w&&s.y+s.h<=T.h),`「${zh}」頁顯示的格子互不重疊、都在圖內`);
+  ok(T.slots.filter(s=>s.kind==="item"&&!s.hide).every(s=>s.k&&(CE.CUR[s.k]||E.data.decor[s.k])),`「${zh}」頁每個會顯示的通貨格都有名稱和圖示（目前都是擺設）`);
+}
+ok(E.data.curTabs.general===undefined?false:E.data.curTabs.general.slots.length===67,"「一般」頁格子資料不變（67 格）");
+
 // ── 工藝台介面：lvl、物品類別分頁、官方美術圖 ──
 {
   const lv=id=>E.craftLevel(E.modById[id].i);
@@ -478,6 +494,181 @@ for(const [b,lv] of [[helm,86],[helm,40],[ring,86],[bow,60]]){
   const miss=need.filter(n=>!fs.existsSync(path.join(__dirname,"..","img","craft","ui",n+".webp")));
   ok(miss.length===0,`官方介面美術圖 ${need.length} 個都在 img/craft/ui/`+(miss.length?"（缺："+miss.join("、")+"）":""));
   ok(E.bench.filter(o=>o.a==="add").every(o=>o.t>=0&&o.t<=5),"每條工藝詞綴的階級都在 0～5（有對應的階級盾牌）");
+}
+
+// ── 化石＋鑄新儀 ──
+{
+  const F=n=>E.fossils.find(f=>f.n===n);
+  ok(E.fossils.length===25&&E.fossils.filter(f=>!f.why).length===18,`化石 25 種：開放 ${E.fossils.filter(f=>!f.why).length} 種、待確認先禁用 ${E.fossils.filter(f=>f.why).length} 種`);
+  ok(E.fossils.every(f=>f.nz&&f.nz!==f.n),"每種化石都有中文名稱");
+  ok(F("Prismatic Fossil").pos.some(([t,w])=>t==="elemental"&&w===6),"三相化石：元素 ×6（遊戲資料，不是 Kalandralang 的 ×10）");
+  ok(F("Aetheric Fossil").neg.some(([t,w])=>t==="attack"&&w===0.15),"神幻化石：攻擊詞綴 ×0.15（減少，不是禁止）");
+  E.setFossilMode("add");
+  // 每種開放的化石：找一個能用、而且受影響的底材，比較有／沒有化石時的權重
+  const classes=[...new Set(E.bases.map(b=>b.c))], rareOf=b=>({b,lv:86,r:E.RARE,mods:[]});
+  let dirBad=[], tested=0, sampleBad=0;
+  for(const f of E.fossils.filter(f=>!f.why&&(f.pos.length||f.neg.length))){
+    let done=false;
+    for(const c of classes){
+      const b=E.bases.filter(x=>x.c===c).slice(-1)[0].i, it=rareOf(b);
+      if(E.check(it,E.resoKey([f.id]))) continue;
+      const p0=E.basePool(it), p1=E.basePool(it,[f]);
+      const w1=new Map(p1.list.map(x=>[x.m,x.w]));
+      const up=p0.list.filter(x=>f.pos.some(([t])=>E.mods[x.m].tg.includes(t))&&!f.neg.some(([t])=>E.mods[x.m].tg.includes(t)));
+      const no=p0.list.filter(x=>f.neg.some(([t,w])=>w===0&&E.mods[x.m].tg.includes(t)));
+      const down=p0.list.filter(x=>f.neg.some(([t,w])=>w>0&&E.mods[x.m].tg.includes(t))&&!f.pos.some(([t])=>E.mods[x.m].tg.includes(t)));
+      if(!up.length&&!no.length&&!down.length) continue;
+      tested++; done=true;
+      if(up.some(x=>!(w1.get(x.m)>x.w))) dirBad.push(f.nz+" 加權");
+      if(no.some(x=>w1.has(x.m))) dirBad.push(f.nz+" 禁止");
+      if(down.some(x=>!(w1.get(x.m)<x.w))) dirBad.push(f.nz+" 減少");
+      // 實際抽 300 次：禁止的標籤一條都不出現
+      const k=E.resoKey([f.id]), blocked=f.neg.filter(([,w])=>w===0).map(([t])=>t);
+      for(let i=0;i<300;i++) if(E.apply(it,k).item.mods.some(x=>blocked.some(t=>E.mods[x.m].tg.includes(t)))) sampleBad++;
+      break;
+    }
+    if(!done) dirBad.push(f.nz+" 找不到可測的底材");
+  }
+  ok(dirBad.length===0,`${tested} 種加權／禁止化石：加權的權重上升、禁止的權重歸零、減少的權重下降`+(dirBad.length?"（錯："+dirBad.join("、")+"）":""));
+  ok(sampleBad===0,"每種化石抽 300 次：禁止的標籤一條都沒有出現");
+  // 加權的實際出現率上升（原始化石：生命）
+  const helmet=rareOf(E.bases.findIndex(b=>b.n==="Hubris Circlet"));
+  const lifeRate=k=>{ let n=0,c=0; for(let i=0;i<2000;i++) for(const x of E.apply(helmet,k).item.mods){ c++; if(E.mods[x.m].tg.includes("life")) n++; } return n/c; };
+  const r0=lifeRate("chaos"), r1=lifeRate(E.resoKey([F("Pristine Fossil").id]));
+  ok(r1>r0*1.8,`原始化石：生命詞綴出現率 ${(r0*100).toFixed(1)}% → ${(r1*100).toFixed(1)}%（上升）`);
+  // 相加／相乘
+  const two=[F("Scorched Fossil"),F("Prismatic Fossil")], fire=E.mods.find(m=>m.tg.includes("fire")&&m.tg.includes("elemental")&&!m.tg.includes("cold"));
+  E.setFossilMode("add"); const fa=E.fossilFactor(fire,two), ta=E.basePool(helmet,two).total;
+  E.setFossilMode("mul"); const fm=E.fossilFactor(fire,two), tm=E.basePool(helmet,two).total;
+  E.setFossilMode("add");
+  ok(fa===16&&fm===60&&ta!==tm,`暴炎＋三相對火焰詞綴：相加 ×${fa}、相乘 ×${fm}；詞綴池總權重 ${ta} vs ${tm}（切換結果不同）`);
+  // 特殊化石
+  const hollow=E.resoKey([F("Hollow Fossil").id]);
+  ok(Array.from({length:200}).every(()=>E.apply(helmet,hollow).item.mods.some(x=>E.mods[x.m].id==="DelveAbyssJewelSocket1")),"鏤空化石：每次都有「深淵插槽」");
+  ok(/不能用在這類物品/.test(E.check(rareOf(E.bases.findIndex(b=>b.c==="Ring")),hollow)||""),"鏤空化石不能用在戒指（只限武器、頭盔、手套、鞋子、胸甲）");
+  const staff=rareOf(E.bases.filter(b=>b.c==="Staff").slice(-1)[0].i), fac=[F("Faceted Fossil")];
+  ok(E.basePool(staff,fac).list.some(x=>E.mods[x.m].d==="f")&&!E.basePool(staff).list.some(x=>E.mods[x.m].d==="f"),"雕琢化石：化石專屬的寶石等級詞綴只在用雕琢化石時出現");
+  ok(E.fossils.filter(f=>f.why).every(f=>/先不開放/.test(E.check(helmet,E.resoKey([f.id]))||"")),"待確認的 7 種化石用了會被拒絕並說明原因");
+  // 共振器規則
+  const mm=E.applyBench({b:helmet.b,lv:86,r:E.RARE,mods:[]},"StrMasterItemGenerationCannotChangePrefixes").item;
+  const pr=E.resoKey([F("Pristine Fossil").id]);
+  ok(/元工藝/.test(E.check(mm,pr)||""),"有元工藝的裝備不能用鑄新儀");
+  ok(/魔法/.test(E.check(E.apply(E.make(helmet.b,86),"transmute").item,pr)||""),"魔法物品不能用鑄新儀");
+  const fromNormal=E.apply(E.make(helmet.b,86),pr);
+  ok(fromNormal.ok&&fromNormal.item.r===E.RARE&&fromNormal.item.mods.length>=4,"普通物品用鑄新儀＝點金效果（變成稀有）");
+  ok(JSON.stringify(E.resoCost(E.make(helmet.b,86),pr))===JSON.stringify({["fos:"+F("Pristine Fossil").id]:1,"res:a1":1})&&
+     E.resoCost(helmet,pr)["res:c1"]===1,"消耗：每顆化石 1 個＋鑄新儀 1 個（普通物品記點金鑄新儀、稀有物品記混沌鑄新儀）");
+  const R=E.data.resonators.filter(r=>r.kind==="c").sort((a,b)=>a.s-b.s);
+  ok(R.map(r=>r.s).join()==="1,2,3,4"&&E.MAX_FOSSILS===4,"混沌鑄新儀插槽數：初階 1、強效 2、強力 3、終極 4 孔（遊戲內確認）");
+  const three=E.resoKey(["Metadata/Items/Currency/CurrencyDelveCraftingLife","Metadata/Items/Currency/CurrencyDelveCraftingPhysical","Metadata/Items/Currency/CurrencyDelveCraftingSpeed"]);
+  ok(E.resoCost(helmet,three)["res:c3"]===1&&E.curInfo("res:c3").zh===R[2].nz,"放 3 顆化石＝用 3 孔的「"+R[2].nz+"」");
+  ok(/最多放 4/.test(E.check(helmet,E.resoKey(E.fossils.filter(f=>!f.why).slice(0,5).map(f=>f.id)))||"")&&
+     /兩顆一樣/.test(E.check(helmet,"reso:"+[F("Pristine Fossil").id,F("Pristine Fossil").id].join("|"))||""),"最多 4 顆化石、不能放兩顆一樣的");
+  // 化石重鑄（批次模擬）
+  const o={b:helmet.b,lv:86,method:"fossil",fossils:[F("Pristine Fossil").id],fossilMode:"add",mode:"all",targets:[{ty:"IncreasedLife",g:"p",maxTier:3}],limit:200};
+  ok(!E.feasible(o),"化石重鑄的可行性檢查通過");
+  const res=[]; for(let i=0;i<500;i++) res.push(E.runOne(o,Math.random));
+  const s=E.summarize(res,E.methodUses(o)), sc=E.summarize(Array.from({length:500},()=>E.runOne({...o,method:"chaos"},Math.random)),["alch","chaos"]);
+  ok(s.rate>0.99&&s.per["res:c1"].mean<sc.per.chaos.mean,`化石重鑄生命 T3：平均 ${s.per["res:c1"].mean.toFixed(1)} 個初階鑄新儀，比混沌石 ${sc.per.chaos.mean.toFixed(1)} 顆少（原始化石有效）`);
+  ok(/禁止|不會出現/.test(E.feasible({...o,fossils:[F("Dense Fossil").id]})||"")||!!E.feasible({...o,fossils:[F("Dense Fossil").id]}),"稠密化石（禁止生命）做生命目標：可行性檢查會擋下");
+  // 化石倉庫頁
+  const T=E.data.delveTab;
+  ok(T&&T.slots.length===35&&T.slots.filter(x=>x.hide).length===4,"化石頁：遊戲資料 35 格（25 化石、8 鑄新儀、2 通用大格），點金鑄新儀 4 格是隱藏格");
+  ok(E.fossils.every(f=>T.slots.some(x=>x.item===f.id)),"每種化石在化石頁都有格子");
+  ok(fs.existsSync(path.join(__dirname,"..","img","craft",T.bg)),"化石頁背景是官方美術圖 "+T.bg);
+}
+
+// ── 豐收（園藝工藝台）──
+{
+  const H=k=>E.hvByKey["hv:"+k];
+  const tg=(it,t)=>it.mods.filter(x=>E.mods[x.m].tg.includes(t)).length;
+  const raw=JSON.parse(fs.readFileSync(path.join(__dirname,"harvest_options.json"),"utf8")).options;
+  ok(E.harvest.length===74&&raw.length===74,"園藝工藝台：遊戲資料 HarvestCraftOptions 共 74 個選項");
+  const n=f=>E.harvest.filter(f).length;
+  ok(n(o=>o.a==="reforge")===16&&n(o=>o.a==="augment")===11&&n(o=>o.why)===14&&n(o=>o.na)===33,
+     `已實作 重鑄包含 X ${n(o=>o.a==="reforge")}、增加並移除 ${n(o=>o.a==="augment")}；待確認 ${n(o=>o.why)}、不適用 ${n(o=>o.na)}`);
+  const LFK={1:"x:HarvestSeedRed",2:"x:HarvestSeedGreen",3:"x:HarvestSeedBlue"};
+  ok(raw.every(r=>{ const c=H(r.id).c; return (c[LFK[r.lf]]||0)===r.n&&(c["x:HarvestSeedBoss"]||0)===r.sacred&&(c["x:HarvestSeedFaridun"]||0)===r.rancour; }),
+     "每個選項的生命力種類、數量、神聖、晶化仇怨和遊戲資料一致");
+  ok(JSON.stringify(H("ReforgeMinion").c)===JSON.stringify({"x:HarvestSeedBlue":200,"x:HarvestSeedFaridun":3})&&
+     JSON.stringify(H("AugmentFire").c)===JSON.stringify({"x:HarvestSeedRed":15000,"x:HarvestSeedBoss":1}),"截圖抽查：召喚物 200 藍＋3 晶化仇怨；增加火焰 15,000 紅＋1 神聖");
+  ok(["x:HarvestSeedRed","x:HarvestSeedGreen","x:HarvestSeedBlue","x:HarvestSeedBoss","x:HarvestSeedFaridun"].every(k=>{ const c=E.curInfo(k); return c&&c.ic&&fs.existsSync(path.join(__dirname,"..","img","craft","items",c.ic)); }),
+     "五種生命力都有名稱和圖示");
+  const p=E.hvParts(H("AugmentLife").zh);
+  ok(p.some(x=>x.c==="ccraftinglife"&&x.t==="生命")&&E.hvText(H("ReforgeFire"))==="重鑄 1 件有隨機詞綴的稀有物品，包含 1 個火焰 詞綴","選項文字的顏色標記能拆開（遊戲原文打錯的 <ccraftinglife> 也行）");
+  ok(E.hvTagZh(H("ReforgeSpell"))==="法術"&&E.hvTagZh(H("AugmentCritical"))==="暴擊","選項的類型名稱取自遊戲文字（法術、暴擊）");
+
+  // 重鑄並包含 1 個 X 詞綴
+  const rare=E.apply(E.make(helm,86),"alch").item;
+  let bad=0, miss=0;
+  for(const t of ["fire","cold","life","defences","caster","speed","critical","elemental","mana","attribute"]){
+    const k="hv:"+E.harvest.find(o=>o.a==="reforge"&&o.tag===t).id;
+    if(E.check(rare,k)) continue;
+    for(let i=0;i<150;i++){
+      const it=E.apply(rare,k).item, c=E.counts(it), gs=it.mods.flatMap(x=>E.mods[x.m].gr);
+      if(it.r!==E.RARE||it.mods.length<4||it.mods.length>6||c.p>3||c.s>3||new Set(gs).size!==gs.length) bad++;
+      if(!tg(it,t)) miss++;
+    }
+  }
+  ok(miss===0,"重鑄並包含 X（10 種 × 150 次）：每次都至少有 1 條 X 類詞綴");
+  ok(bad===0,"重鑄並包含 X：結果都是稀有、4～6 條、前後綴各不超過 3 條、沒有同群組");
+  let chaosFire=0, hvFire=0;
+  for(let i=0;i<400;i++){ if(tg(E.apply(rare,"chaos").item,"fire")) chaosFire++; if(tg(E.apply(rare,"hv:ReforgeFire").item,"fire")) hvFire++; }
+  ok(hvFire===400&&chaosFire<400,`有火焰詞綴的比例：混沌石 ${(chaosFire/4).toFixed(0)}%、重鑄包含火焰 100%`);
+  ok(/稀有/.test(E.check(E.apply(E.make(helm,86),"transmute").item,"hv:ReforgeFire")||"")&&/稀有/.test(E.check(E.make(helm,86),"hv:ReforgeFire")||""),"重鑄包含 X 只能用在稀有物品");
+  // 元工藝：前綴不能被改變時前綴保留；不能骰出攻擊詞綴時，弓的「包含攻擊」不能用
+  let base=null;
+  for(let i=0;i<200&&!base;i++){ const it=E.apply(E.make(helm,86),"alch").item, c=E.counts(it); if(c.s<3&&c.p>=2) base=it; }
+  const pl=E.applyBench(base,"StrMasterItemGenerationCannotChangePrefixes").item;
+  const pre=pl.mods.filter(x=>E.mods[x.m].pre).map(x=>x.m);
+  ok(Array.from({length:100}).every(()=>{ const it=E.apply(pl,"hv:ReforgeLife").item; return pre.every(m=>it.mods.some(x=>x.m===m)); }),
+     "有「前綴不能被改變」時，豐收重鑄保留原本所有前綴（空的前綴位置照樣可以補，照 Kalandralang）");
+  const naOpt=E.bench.find(o=>o.m!=null&&E.mods[o.m]&&E.mods[o.m].meta==="NA"&&o.cs.has(E.bases[bow].c));
+  let rb=null;
+  for(let i=0;i<200&&!rb;i++){ const it=E.apply(E.make(bow,86),"alch").item; if(!E.benchCheck(it,naOpt).err) rb=it; }
+  const na=E.applyBench(rb,naOpt.k).item;
+  const naMod=na.mods.find(x=>E.mods[x.m].meta==="NA").m;
+  // 重鑄會把元工藝本身一起洗掉（和混沌石一樣，除非那一邊被鎖住），所以之後可以出現攻擊詞綴
+  ok(Array.from({length:50}).every(()=>!E.apply(na,"hv:ReforgeAttack").item.mods.some(x=>x.m===naMod)),
+     "「不能骰出攻擊詞綴」本身會被豐收重鑄洗掉（和混沌石相同，照 Kalandralang）");
+  // 增加並移除：先選新詞綴、才移除，所以元工藝還在的時候新詞綴不能是攻擊詞綴
+  ok(/攻擊/.test(E.check(na,"hv:AugmentAttack")||""),"有「不能骰出攻擊詞綴」時，「增加攻擊並移除」不能用："+E.check(na,"hv:AugmentAttack"));
+
+  // 增加 1 個新 X 詞綴並移除其它隨機詞綴
+  let four=null;
+  for(let i=0;i<300&&!four;i++){ const it=E.apply(E.make(helm,86),"alch").item, c=E.counts(it); if(c.p===2&&c.s===2&&!tg(it,"cold")) four=it; }
+  let augBad=0;
+  for(let i=0;i<300;i++){
+    const r=E.apply(four,"hv:AugmentCold"), it=r.item, c=E.counts(it), gs=it.mods.flatMap(x=>E.mods[x.m].gr);
+    const kept=it.mods.filter(x=>four.mods.some(y=>y.m===x.m)).length;
+    if(!r.ok||it.mods.length!==4||kept!==3||!tg(it,"cold")||c.p>3||c.s>3||new Set(gs).size!==gs.length) augBad++;
+  }
+  ok(augBad===0,"增加冰冷並移除（2 前 2 後，300 次）：還是 4 條，原本的留 3 條，新加的是冰冷詞綴");
+  let full=four;
+  for(let i=0;i<50&&E.counts(full).p+E.counts(full).s<6;i++) full=E.apply(full,"exalt").item;
+  ok(E.counts(full).p===3&&E.counts(full).s===3&&/都滿|放得下/.test(E.check(full,"hv:AugmentFire")||""),"前綴、後綴都滿的物品不能用「增加並移除」（照 Kalandralang，待確認）");
+  ok(/普通/.test(E.check(E.make(helm,86),"hv:AugmentFire")||""),"普通物品不能用「增加並移除」");
+  let mag=null;
+  for(let i=0;i<200&&!mag;i++){ const it=E.apply(E.make(helm,86),"transmute").item; if(it.mods.length===1&&E.mods[it.mods[0].m].pre) mag=it; }
+  const ma=E.apply(mag,"hv:AugmentLife");
+  ok(ma.ok&&ma.item.r===E.MAGIC&&ma.item.mods.length===1&&tg(ma.item,"life")===1,"魔法物品（1 條前綴）用「增加生命並移除」：拿掉原本那條、換成 1 條生命詞綴");
+
+  // 待確認、不適用
+  ok(/先不開放/.test(E.check(rare,"hv:ReforgeMoreLikely")||"")&&/先不開放/.test(E.check(rare,"hv:ChangeColdToFireResist")||""),"機率較大／較小、抗性互換：待確認，用了會被拒絕並說明原因");
+  ok(/不適用/.test(E.check(rare,"hv:LifeBodyEnchant")||"")&&/不適用/.test(E.check(rare,"hv:RerollFossils")||""),"附魔、通貨交換：模擬器不適用");
+  ok(E.harvestCost("hv:ReforgeElemental")["x:HarvestSeedRed"]===200&&E.harvestCost("hv:ReforgeElemental")["x:HarvestSeedFaridun"]===1,"用一次的消耗＝遊戲資料的數量（元素：200 紅＋1 晶化仇怨）");
+
+  // 豐收重鑄（批次模擬）
+  const o={b:helm,lv:86,method:"harvest",harvest:"ReforgeFire",mode:"all",targets:[{ty:"FireResistance",g:"s",maxTier:3}],limit:300};
+  ok(!E.feasible(o),"豐收重鑄的可行性檢查通過");
+  ok(/重鑄並包含/.test(E.feasible({...o,harvest:"AugmentFire"})||"")&&/還沒有選/.test(E.feasible({...o,harvest:""})||""),"豐收重鑄只能選「重鑄並包含」，沒選會提示");
+  ok(JSON.stringify(E.methodUses(o))===JSON.stringify(["alch","x:HarvestSeedRed"]),"豐收重鑄用到：點金石＋野性生命力");
+  const res=Array.from({length:400},()=>E.runOne(o,Math.random));
+  ok(res.every(r=>(r.used["x:HarvestSeedRed"]||0)%50===0),"每次重鑄記 50 個野性生命力");
+  const s=E.summarize(res,E.methodUses(o)), sc=E.summarize(Array.from({length:400},()=>E.runOne({...o,method:"chaos"},Math.random)),["alch","chaos"]);
+  const reforges=s.per["x:HarvestSeedRed"].mean/50;
+  ok(s.rate>0.99&&reforges<sc.per.chaos.mean,`火焰抗性 T3：豐收重鑄平均 ${reforges.toFixed(1)} 次，混沌石 ${sc.per.chaos.mean.toFixed(1)} 顆`);
+  ok(CE.METHODS.some(m=>m.k==="harvest"),"模擬器作法有「豐收重鑄」");
 }
 
 console.log(fail?`\n有 ${fail} 項失敗`:"\n全部通過");

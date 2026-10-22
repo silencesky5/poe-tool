@@ -11,25 +11,34 @@ const E=CE.create(D);
 
 /* ── 設定 ── */
 const COLS=12, ROWS=12, UNDO_MAX=50, FLASH_MS=2000;
-/* 通貨頁「一般」：官方 3.29 美術圖＋遊戲資料 CurrencyStashTabLayout 的格子（craft-data.js 的 curTab，
-   tools/extract_stash_layout.py 抽出、build_craft_data.py 換算成圖上的位置）。
+/* 通貨頁的三個子分頁（一般、輿圖、聯盟）：官方 3.29 美術圖＋遊戲資料 CurrencyStashTabLayout 的格子
+   （craft-data.js 的 curTabs，tools/extract_stash_layout.py 抽出、build_craft_data.py 換算成圖上的位置）。
+   「一般」是遊戲的整張背景圖；「輿圖」「聯盟」是官方空白底圖＋官方格框照排列資料組成（遊戲的整張輿圖背景是舊版面）。
    格子裡是模擬器能用的通貨（CraftEngine.CURRENCIES）就能右鍵拿起；其他通貨只放圖示當擺設（右鍵拿不起來）。
    某顆做成可用時，在 craft-engine.js 的 CURRENCIES 加上規則即可，位置照遊戲資料不用另外設定。
    機會石、瓦爾寶珠：Kalandralang 沒有實作，規則先不做。
    隱藏格（遊戲 ShowIfEmpty＝否，例如六分儀）：倉庫裡沒有這個物品時不顯示；模擬器的倉庫只有能用的通貨，
    所以只有能用的通貨在隱藏格時才會出現。 */
-const CUR_TAB=D.curTab||null;
+const CUR_TABS=D.curTabs||{};
 /* 通貨頁的三個子分頁；按鈕在每一頁都放在同一個相對位置（以 1254 寬計算） */
 const CUR_SUBS=[
-  {k:"general",zh:"一般",bg:CUR_TAB?CUR_TAB.bg.replace(/\.webp$/,""):"",box:[150,14,418,75]},
-  {k:"atlas",zh:"輿圖",bg:"stash_currency_general",box:[483,14,752,75]},
-  {k:"league",zh:"聯盟",bg:"stash_page_B",box:[818,14,1086,75]},
+  {k:"general",zh:"一般",box:[150,14,418,75]},
+  {k:"atlas",zh:"輿圖",box:[483,14,752,75]},
+  {k:"league",zh:"聯盟",box:[818,14,1086,75]},
 ];
 /* 精髓倉庫頁（stash_layouts.json 的 stash_page_D）：位置照遊戲資料的 EssenceStashTabLayout
    （craft-data.js 的 essTab.slots，tools/extract_stash_layout.py 抽出、build_craft_data.py 對到背景圖的格子）。
    遊戲排列表沒有專屬格的精髓（荒蕪精髓）放在通用格；中間的大格（CraftingSlot）留空。
    沒有 essTab（排列表對不齊）時改成依序排列。 */
 const ESSENCE_PAGE="stash_page_D";
+/* 化石倉庫頁：官方背景圖（DelveTabBackground）＋遊戲資料 DelveStashTabLayout 的格子（craft-data.js 的 delveTab）。
+   右鍵點化石＝放進／拿出鑄新儀（最多 4 顆）；右鍵點混沌鑄新儀＝拿起裝好化石的鑄新儀，再左鍵點裝備套用
+   （普通物品＝點金效果、稀有物品＝混沌效果）。點金鑄新儀在遊戲裡是隱藏格（3.29 只在無情模式），不顯示。
+   鑄新儀要插滿才能用：初階 1、強效 2、強力 3、終極 4 孔，放的化石數要等於點的那一個鑄新儀的孔數。 */
+const DELVE_TAB=D.delveTab||null;
+const FOSSIL_MODE_KEY="poe-craft-fossil-mode";   // 多顆化石「增加」相加／相乘（這台電腦的偏好）
+const fossilMode=()=>{ try{ return localStorage.getItem(FOSSIL_MODE_KEY)==="mul"?"mul":"add"; }catch(e){ return "add"; } };
+E.setFossilMode(fossilMode());
 const TAB_COLORS=["#7a1f1f","#7a4a1f","#6b6a1f","#2f6b2f","#1f6b66","#1f4f7a","#4a2f7a","#6b1f5a","#3a3a3a"];
 const IMG="img/craft/";
 const GROUP_ZH={weapon:"武器",armour:"護甲",jewellery:"飾品"};
@@ -56,7 +65,8 @@ const S={
   inv:[],                 // [{id,x,y,item}]
   tabs:[],                // [{id,name,color,items:[…]}]
   used:{},                // 通貨使用次數
-  active:"currency",      // "currency" 或倉庫頁 id
+  active:"currency",      // "currency"、"essence"、"delve" 或倉庫頁 id
+  resoSel:[],             // 放進鑄新儀的化石（Metadata 路徑）
   curSub:"general",
   held:null,              // {kind:"cur",k} 或 {kind:"item",e,from:{cid,x,y},snap}
   undo:[],
@@ -116,7 +126,7 @@ function fromSave(d){
   if(ok&&d.currencyUsed&&typeof d.currencyUsed==="object")
     for(const [k,v] of Object.entries(d.currencyUsed)){ const n=v|0; if(n>0&&E.curInfo(k)) S.used[k]=n; }
   if(!S.tabs.length) S.tabs.push({id:uid(),name:"暫存區",color:TAB_COLORS[0],items:[]});
-  S.active=ok&&(d.activeTab==="currency"||d.activeTab==="essence"||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
+  S.active=ok&&(["currency","essence","delve"].includes(d.activeTab)||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
 }
 /* 存檔時：拿在游標上的裝備當作還在原位 */
 function toSave(){
@@ -204,6 +214,7 @@ root.innerHTML=`
     <div class="kb-invbar"><span class="t">背包</span>
       <button class="kb-btn" id="kb-vendor">底材商人</button>
       <button class="kb-btn" id="kb-craftbench" title="點這裡，再點一件裝備，打開工藝台">工藝台</button>
+      <button class="kb-btn" id="kb-harvest" title="點這裡，再點一件裝備，打開園藝工藝台（豐收）">園藝</button>
       <button class="kb-btn" id="kb-undo" title="Ctrl+Z">上一步</button></div>
     <div class="kb-grid" id="kb-inv" data-cid="inv"></div>
     <div class="kb-discard" id="kb-discard">丟棄（把裝備放進來）</div>
@@ -237,7 +248,8 @@ function drawUndo(){ $("kb-undo").disabled=!S.undo.length; }
 function tabStyle(t){ return t?`--tc:${t.color}`:""; }
 function drawStrip(){
   const chips=[`<button class="kb-chip" role="tab" data-tab="currency" aria-selected="${S.active==="currency"}">通貨</button>`,
-    `<button class="kb-chip" role="tab" data-tab="essence" aria-selected="${S.active==="essence"}">精髓</button>`]
+    `<button class="kb-chip" role="tab" data-tab="essence" aria-selected="${S.active==="essence"}">精髓</button>`,
+    `<button class="kb-chip" role="tab" data-tab="delve" aria-selected="${S.active==="delve"}">化石</button>`]
     .concat(S.tabs.map(t=>`<button class="kb-chip" role="tab" data-tab="${esc(t.id)}" aria-selected="${S.active===t.id}" style="${tabStyle(t)}">${esc(t.name)}</button>`));
   $("kb-strip").innerHTML=chips.join("");
   const on=$("kb-strip").querySelector('[aria-selected="true"]');
@@ -246,6 +258,7 @@ function drawStrip(){
 function drawPage(){
   if(S.active==="currency"){ drawCurrencyPage(); return; }
   if(S.active==="essence"){ drawEssencePage(); return; }
+  if(S.active==="delve"){ drawDelvePage(); return; }
   pageEl.style.height="";
   const t=S.tabs.find(x=>x.id===S.active);
   pageEl.innerHTML=`<div class="kb-grid" id="kb-tabgrid" data-cid="${esc(t.id)}"></div>`;
@@ -254,11 +267,10 @@ function drawPage(){
 }
 function drawCurrencyPage(){
   const sub=CUR_SUBS.find(s=>s.k===S.curSub)||CUR_SUBS[0];
-  const T=sub.k==="general"?CUR_TAB:null;
-  const L=T?{width:T.w,height:T.h}:S.layouts&&S.layouts[sub.bg];
-  const W=L?L.width:1254, H=L?L.height:1254;
+  const T=CUR_TABS[sub.k]||null;
+  const W=T?T.w:1254, H=T?T.h:1254;
   const pct=(v,t)=>(v/t*100).toFixed(3)+"%";
-  let h=`<div class="kb-cur" style="background-image:url(${IMG}${sub.bg}.webp)">`;
+  let h=`<div class="kb-cur" style="${T?`background-image:url(${IMG}${T.bg})`:""}">`;
   h+=CUR_SUBS.map(s=>{
     const [x0,y0,x1,y1]=s.box;
     return `<button class="kb-sub" data-sub="${s.k}" style="left:${pct(x0,1254)};top:${pct(y0,1254)};width:${pct(x1-x0,1254)};height:${pct(y1-y0,1254)};background-image:url(${IMG}subtab_${s.k===sub.k?"selected":"normal"}.webp)">${s.zh}</button>`;
@@ -281,11 +293,11 @@ function drawCurrencyPage(){
   h+=`</div>`;
   pageEl.innerHTML=h;
   // 背景不是正方形時，頁面高度跟著比例
-  pageEl.style.height=L?`calc(var(--grid) * ${H/W})`:"";
+  pageEl.style.height=T?`calc(var(--grid) * ${H/W})`:"";
   const total=Object.values(S.used).reduce((a,b)=>a+b,0);
-  $("kb-curbar").innerHTML=sub.k==="general"
-    ?`<span>右上角數字＝已經用了幾次（共 ${total} 次）${T?`・版面照遊戲資料（${esc(T.patch)}）`:"・沒有通貨頁排列資料"}</span><button class="kb-btn" id="kb-zero"${total?"":" disabled"}>歸零</button>`
-    :`<span>${sub.zh}：之後會用到，目前是空的</span>`;
+  $("kb-curbar").innerHTML=`<span>右上角數字＝已經用了幾次（共 ${total} 次）`+
+    (T?`・版面照遊戲資料（${esc(T.patch)}）`+(T.composed?"，官方空白底圖＋官方格框組成":""):"・沒有這一頁的排列資料")+
+    `</span><button class="kb-btn" id="kb-zero"${total?"":" disabled"}>歸零</button>`;
 }
 function drawEssencePage(){
   const L=S.layouts&&S.layouts[ESSENCE_PAGE];
@@ -308,6 +320,38 @@ function drawEssencePage(){
   $("kb-curbar").innerHTML=`<span>精髓 ${E.essences.length} 種・右上角數字＝已經用了幾次（共 ${n} 次）・`+
     (T?`格子位置照遊戲資料（${esc(T.patch)}）；荒蕪精髓沒有專屬格，放在通用格`:`格子依序排列（沒有遊戲排列資料）`)+`</span>`;
 }
+function drawDelvePage(){
+  const T=DELVE_TAB, W=T?T.w:1264, H=T?T.h:1264;
+  const pct=(v,t)=>(v/t*100).toFixed(3)+"%";
+  const at=sl=>`left:${pct(sl.x,W)};top:${pct(sl.y,H)};width:${pct(sl.w,W)};height:${pct(sl.h,H)}`;
+  let h=`<div class="kb-cur" style="${T?`background-image:url(${IMG}${T.bg})`:""}">`;
+  for(const sl of T?T.slots:[]){
+    if(sl.hide||!sl.item) continue;                       // 點金鑄新儀（隱藏格）、通用大格
+    const f=E.fosById[sl.item];
+    if(f){
+      const on=S.resoSel.includes(f.id), n=S.used[f.k]?`<span class="kb-n">${S.used[f.k]}</span>`:"";
+      h+=`<div class="kb-slot kb-fos${on?" sel":""}${f.why?" off":""}" data-cur="${esc(f.k)}" data-fos="${esc(f.id)}" style="${at(sl)}">${curIcon(f.k)}${n}</div>`;
+      continue;
+    }
+    const r=(D.resonators||[]).find(x=>x.id===sl.item);
+    if(r&&r.kind==="c"){
+      const rk="res:c"+r.s;
+      const held=S.held&&S.held.kind==="cur"&&S.held.k.startsWith("reso:")&&S.resoSel.length===r.s;
+      const n=S.used[rk]?`<span class="kb-n">${S.used[rk]}</span>`:"";
+      h+=`<div class="kb-slot kb-res${held?" held":""}${S.resoSel.length===r.s?" fit":""}" data-cur="${rk}" data-res="${r.s}" style="${at(sl)}">${iconHTML(IMG+"items/"+r.ic,r.nz)}${n}</div>`;
+    }
+  }
+  h+=`</div>`;
+  pageEl.innerHTML=h;
+  pageEl.style.height=T?`calc(var(--grid) * ${H/W})`:"";
+  const sel=S.resoSel.map(id=>E.fosById[id].nz);
+  const m=fossilMode();
+  $("kb-curbar").innerHTML=`<span>鑄新儀：${sel.length?esc(sel.join("＋")):"還沒放化石"}（${sel.length}／${E.MAX_FOSSILS}）・右鍵點化石放進去，再右鍵點混沌鑄新儀拿起</span>`+
+    `<span class="kb-hint2">${sel.length?"要用 "+sel.length+" 孔的鑄新儀（"+esc((E.resonatorOf("c",sel.length)||{}).nz||"")+"）":""}</span>`+
+    `<span class="kb-fmode" title="多顆化石的「增加」效果怎麼疊加：社群推定值，遊戲沒有公布">多顆化石增加：`+
+    `<button class="kb-btn${m==="add"?" pri":""}" data-fmode="add">相加</button><button class="kb-btn${m==="mul"?" pri":""}" data-fmode="mul">相乘</button>`+
+    `<small>（社群推定值）</small></span>`+(T?"":"<span>沒有化石頁排列資料</span>");
+}
 function drawGrid(el,list){
   const cell="var(--cell)";
   el.innerHTML=list.map(e=>{
@@ -320,6 +364,7 @@ function drawList(){
   $("kb-list").innerHTML=
     `<div class="kb-row" data-tab="currency" aria-selected="${S.active==="currency"}"><span class="nm">通貨</span></div>`+
     `<div class="kb-row" data-tab="essence" aria-selected="${S.active==="essence"}"><span class="nm">精髓</span></div>`+
+    `<div class="kb-row" data-tab="delve" aria-selected="${S.active==="delve"}"><span class="nm">化石</span></div>`+
     S.tabs.map(t=>`<div class="kb-row" data-tab="${esc(t.id)}" draggable="true" aria-selected="${S.active===t.id}" style="${tabStyle(t)}">
       <span class="grip" aria-hidden="true">⋮⋮</span><span class="nm">${esc(t.name)}</span>${cnt(t)}
       <button data-act="edit" aria-label="改名和顏色" title="改名、選顏色">✎</button>
@@ -337,8 +382,8 @@ function drawCursor(){
   if(h.kind==="cur"){
     cursorEl.innerHTML=curIcon(h.k);
     cursorEl.style.width=cursorEl.style.height=c+"px";
-  }else if(h.kind==="bench"){
-    cursorEl.innerHTML=`<span class="kb-benchcur">工藝台：點一件裝備</span>`;
+  }else if(h.kind==="bench"||h.kind==="harvest"){
+    cursorEl.innerHTML=`<span class="kb-benchcur">${h.kind==="bench"?"工藝台":"園藝工藝台"}：點一件裝備</span>`;
     cursorEl.style.width=cursorEl.style.height="auto";
   }else{
     const s=sizeOf(h.e.item);
@@ -420,10 +465,16 @@ function itemTooltipHTML(it,detail){
 }
 function decorTooltipHTML(k){
   const d=(D.decor||{})[k]||{zh:k,en:""};
+  if(/^x:HarvestSeed/.test(k)) return `<div class="kb-curtip"><b>${esc(d.zh)}</b><em>${esc(d.en)}</em><em>園藝工藝台的費用（按背包上方的「園藝」）・已用 ${S.used[k]||0} 個</em></div>`;
   return `<div class="kb-curtip"><b>${esc(d.zh)}</b><em>${esc(d.en)}</em><em>模擬器尚未支援${S.used[k]?"・工藝台費用已用 "+S.used[k]+" 個":""}</em></div>`;
 }
 function currencyTooltipHTML(k){
   const c=E.curInfo(k);
+  if(k.startsWith("fos:")){
+    const f=c.fossil, on=S.resoSel.includes(f.id);
+    return `<div class="kb-curtip"><b>${esc(c.zh)}</b><em>${esc(c.en)}</em>${esc((f.desc||[]).join("、"))}
+      <em>${f.why?"先不開放（待確認）："+esc(f.why):on?"已放進鑄新儀・右鍵拿出":"右鍵放進鑄新儀"}・已用 ${S.used[k]||0} 個</em></div>`;
+  }
   return `<div class="kb-curtip"><b>${esc(c.zh)}</b><em>${esc(c.en)}</em>${esc(c.desc)}
     <em>${S.held&&S.held.kind==="cur"&&S.held.k===k?"已拿在游標上":"按右鍵拿起"}・已用 ${S.used[k]||0} 次</em></div>`;
 }
@@ -453,12 +504,23 @@ function refreshTip(){
 function findEntry(cid,id){ const l=cont(cid); return l?l.find(e=>e.id===id):null; }
 
 /* ── 動作 ── */
+/* 化石放進／拿出鑄新儀（不能放待確認的化石、不能超過上限） */
+function toggleFossil(id){
+  const f=E.fosById[id]; if(!f) return;
+  if(f.why){ flash(f.nz+"：先不開放（待確認）"); return; }
+  const i=S.resoSel.indexOf(id);
+  if(i>=0) S.resoSel.splice(i,1);
+  else if(S.resoSel.length>=E.MAX_FOSSILS){ flash("鑄新儀最多放 "+E.MAX_FOSSILS+" 顆化石（終極鑄新儀 "+E.MAX_FOSSILS+" 孔）"); return; }
+  else S.resoSel.push(id);
+  if(S.held&&S.held.kind==="cur"&&S.held.k.startsWith("reso:")) S.held=S.resoSel.length?{kind:"cur",k:E.resoKey(S.resoSel)}:null;
+  drawCursor(); drawDelvePage(); refreshTip();
+}
 function pickCurrency(k){
   if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
   S.held={kind:"cur",k};
   drawCursor(); redrawCurPage();
 }
-function redrawCurPage(){ if(S.active==="currency") drawCurrencyPage(); else if(S.active==="essence") drawEssencePage(); }
+function redrawCurPage(){ if(S.active==="currency") drawCurrencyPage(); else if(S.active==="essence") drawEssencePage(); else if(S.active==="delve") drawDelvePage(); }
 function dropHeld(silent){
   if(!S.held) return;
   if(S.held.kind==="item") returnHeld();
@@ -484,10 +546,11 @@ function applyCurrency(cid,e,keep){
   const err=E.check(e.item,k);
   if(err){ flash(c.zh+"："+err.replace(/^這顆/,"")); return; }
   const snap=snapshot();
+  const cost=k.startsWith("reso:")?E.resoCost(e.item,k):{[k]:1};   // 鑄新儀：每顆化石＋鑄新儀各 1 個
   const r=E.apply(e.item,k);
   if(!r.ok){ flash(c.zh+"："+r.err); return; }
   e.item=r.item;
-  S.used[k]=(S.used[k]||0)+1;
+  for(const [ck,n] of Object.entries(cost)) S.used[ck]=(S.used[ck]||0)+n;
   pushUndo(snap,c.zh);
   if(!keep){ S.held=null; drawCursor(); }
   redrawContainer(cid);
@@ -509,6 +572,22 @@ function openCraftBench(cid,e){
     pushUndo(snap,"工藝台");
     redrawContainer(cid); redrawCurPage(); save();
     ui.update(e.item,{t:"已完成："+name(k)+"（費用 "+Object.entries(r.cost).map(([c,n])=>(E.curInfo(c)||{zh:c}).zh+" ×"+n).join("、")+"）"});
+  }});
+}
+/* 園藝工藝台（清單在 craft-harvest.js）：每賦予一次就記生命力用量、記進「上一步」、存檔；視窗保持開著 */
+function openHarvest(cid,e){
+  if(!window.CraftHarvest) return;
+  hideTip();
+  const ui=CraftHarvest.open({E,item:e.item,lang:L(),host:root,used:()=>S.used,onCraft(k){
+    const snap=snapshot(), name=E.hvText(E.hvByKey[k]);
+    const r=E.apply(e.item,k);
+    if(!r.ok){ ui.update(e.item,{bad:true,t:r.err}); return; }
+    e.item=r.item;
+    const cost=E.harvestCost(k);
+    for(const [c,n] of Object.entries(cost)) S.used[c]=(S.used[c]||0)+n;
+    pushUndo(snap,"園藝工藝台");
+    redrawContainer(cid); redrawCurPage(); save();
+    ui.update(e.item,{t:"已賦予："+name+"（"+Object.entries(cost).map(([c,n])=>(E.curInfo(c)||{zh:c}).zh+" ×"+n.toLocaleString("en-US")).join("、")+"）"});
   }});
 }
 function pickItem(cid,e){
@@ -542,7 +621,7 @@ function placeHeld(cid,gridEl){
 function quickMove(cid,e){
   let to;
   if(cid==="inv"){
-    if(S.active==="currency"||S.active==="essence"){ flash("先打開一個一般倉庫頁"); return; }
+    if(["currency","essence","delve"].includes(S.active)){ flash("先打開一個一般倉庫頁"); return; }
     to=S.active;
   }else to="inv";
   const dst=cont(to), s=sizeOf(e.item), p=firstFit(dst,s.w,s.h);
@@ -599,6 +678,14 @@ root.addEventListener("contextmenu",ev=>{
   const decor=ev.target.closest(".kb-decor");
   if(decor){ ev.preventDefault(); ev.stopPropagation(); flash("模擬器尚未支援"); return; }   // 擺設：拿不起來
   const slot=ev.target.closest(".kb-slot");
+  if(slot&&slot.dataset.fos){ ev.preventDefault(); ev.stopPropagation(); toggleFossil(slot.dataset.fos); return; }
+  if(slot&&slot.dataset.res){
+    ev.preventDefault(); ev.stopPropagation();
+    if(!S.resoSel.length){ flash("先右鍵點化石放進鑄新儀"); return; }
+    const need=+slot.dataset.res;
+    if(S.resoSel.length!==need){ flash("這個鑄新儀有 "+need+" 孔，目前放了 "+S.resoSel.length+" 顆化石（要剛好插滿才能用）"); return; }
+    pickCurrency(E.resoKey(S.resoSel)); refreshTip(); return;
+  }
   if(slot){ ev.preventDefault(); ev.stopPropagation(); pickCurrency(slot.dataset.cur); refreshTip(); return; }
   if(S.held){ ev.preventDefault(); ev.stopPropagation(); if(S.held.kind!=="item") dropHeld(); }
 });
@@ -617,6 +704,9 @@ root.addEventListener("click",ev=>{
   const sub=t.closest(".kb-sub");
   if(sub){ S.curSub=sub.dataset.sub; drawCurrencyPage(); return; }
   if(t.closest("#kb-newtab")){ editTab(null); return; }
+  const fm=t.closest("[data-fmode]");
+  if(fm){ try{ localStorage.setItem(FOSSIL_MODE_KEY,fm.dataset.fmode); }catch(e){} E.setFossilMode(fm.dataset.fmode); drawDelvePage();
+    flash("多顆化石的增加效果："+(fm.dataset.fmode==="mul"?"相乘":"相加")+"（社群推定值）",true); return; }
   if(t.closest("#kb-zero")){ S.used={}; drawCurrencyPage(); save(); flash("已歸零",true); return; }
   if(t.closest("#kb-undo")){ undo(); return; }
   if(t.closest("#kb-vendor")){ openVendor(); return; }
@@ -624,7 +714,12 @@ root.addEventListener("click",ev=>{
     if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
     S.held={kind:"bench"}; drawCursor(); redrawCurPage(); flash("點一件裝備打開工藝台（右鍵或 Esc 取消）",true); return;
   }
-  if(t.closest(".kb-decor")){ flash("模擬器尚未支援"); return; }
+  if(t.closest("#kb-harvest")){
+    if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
+    S.held={kind:"harvest"}; drawCursor(); redrawCurPage(); flash("點一件裝備打開園藝工藝台（右鍵或 Esc 取消）",true); return;
+  }
+  if(t.closest(".kb-decor")){ const k=t.closest(".kb-decor").dataset.decor||"";
+    flash(/^x:HarvestSeed/.test(k)?"生命力是園藝工藝台的費用：按背包上方的「園藝」，再點一件裝備":"模擬器尚未支援",/^x:HarvestSeed/.test(k)); return; }
   if(t.closest(".kb-slot")){ flash("按右鍵拿起通貨"); return; }
   if(t.closest("#kb-discard")){ discardHeld(); return; }
   const g=gridOf(t);
@@ -635,6 +730,7 @@ root.addEventListener("click",ev=>{
   if(!e) return;
   if(S.held&&S.held.kind==="cur"){ applyCurrency(cid,e,ev.shiftKey); return; }
   if(S.held&&S.held.kind==="bench"){ S.held=null; drawCursor(); openCraftBench(cid,e); return; }
+  if(S.held&&S.held.kind==="harvest"){ S.held=null; drawCursor(); openHarvest(cid,e); return; }
   if(ev.ctrlKey||ev.metaKey){ quickMove(cid,e); return; }
   pickItem(cid,e);
 });
@@ -644,7 +740,7 @@ function benchVisible(){ return root.offsetParent!==null; }
 document.addEventListener("keydown",ev=>{
   if(!S.ready||!benchVisible()) return;
   if(ev.target.closest&&ev.target.closest("input,textarea,select,[contenteditable]")) return;
-  if(root.querySelector(".kb-veil,.kbl-veil")) return;
+  if(root.querySelector(".kb-veil,.kbl-veil,.khv-veil")) return;
   if(ev.key==="Escape"&&S.held){ ev.preventDefault(); dropHeld(); return; }
   if((ev.ctrlKey||ev.metaKey)&&!ev.shiftKey&&(ev.key==="z"||ev.key==="Z")){ ev.preventDefault(); undo(); return; }
   if(ev.key==="Alt"){ ev.preventDefault(); if(!altDown){ altDown=true; refreshTip(); } }
@@ -654,7 +750,7 @@ window.addEventListener("blur",()=>{ if(altDown){ altDown=false; refreshTip(); }
 
 /* ── 分頁 ── */
 function setActive(id){
-  if(id!=="currency"&&id!=="essence"&&!S.tabs.some(t=>t.id===id)) return;
+  if(!["currency","essence","delve"].includes(id)&&!S.tabs.some(t=>t.id===id)) return;
   S.active=id; hideTip();
   drawStrip(); drawPage(); drawList(); save();
 }

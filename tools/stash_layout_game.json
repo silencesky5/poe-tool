@@ -2287,6 +2287,367 @@
    "show": true
   }
  ],
+ "delve": [
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingFire",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingFire",
+   "x": 530,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingCold",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingCold",
+   "x": 334,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingLightning",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingLightning",
+   "x": 629,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingPhysical",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingPhysical",
+   "x": 137,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingChaos",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingChaos",
+   "x": 432,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingLife",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingLife",
+   "x": 727,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingDefences",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingDefences",
+   "x": 235,
+   "y": 75,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingBleedPoison",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingBleedPoison",
+   "x": 138,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingElemental",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingElemental",
+   "x": 334,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingCasterMods",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingCasterMods",
+   "x": 530,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingAttackMods",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingAttackMods",
+   "x": 727,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingMana",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingMana",
+   "x": 629,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingSpeed",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingSpeed",
+   "x": 825,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingMinionsAuras",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingMinionsAuras",
+   "x": 39,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingQuality",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingQuality",
+   "x": 236,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingEnchant",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingEnchant",
+   "x": 432,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingSockets",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingSockets",
+   "x": 432,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingGemLevel",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingGemLevel",
+   "x": 727,
+   "y": 369,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingVaal",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingVaal",
+   "x": 185,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingAbyss",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingAbyss",
+   "x": 678,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingMirror",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingMirror",
+   "x": 776,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingCorruptEssence",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingCorruptEssence",
+   "x": 137,
+   "y": 369,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingRandom",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingRandom",
+   "x": 87,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingLuckyModRolls",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingLuckyModRolls",
+   "x": 530,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDelveCraftingSellPrice",
+   "item": "Metadata/Items/Currency/CurrencyDelveCraftingSellPrice",
+   "x": 333,
+   "y": 271,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade1",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade1",
+   "x": 0,
+   "y": 462,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade2",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade2",
+   "x": 0,
+   "y": 576,
+   "w": 1,
+   "h": 2,
+   "size": 64,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade3",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade3",
+   "x": 108,
+   "y": 500,
+   "w": 2,
+   "h": 2,
+   "size": 64,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade4",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyUpgrade4",
+   "x": 640,
+   "y": 500,
+   "w": 2,
+   "h": 2,
+   "size": 64,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll1",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll1",
+   "x": 223,
+   "y": 746,
+   "w": 1,
+   "h": 1,
+   "size": 72,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll2",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll2",
+   "x": 323,
+   "y": 721,
+   "w": 1,
+   "h": 2,
+   "size": 64,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll3",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll3",
+   "x": 422,
+   "y": 721,
+   "w": 2,
+   "h": 2,
+   "size": 64,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll4",
+   "item": "Metadata/Items/Delve/DelveStackableSocketableCurrencyReroll4",
+   "x": 578,
+   "y": 721,
+   "w": 2,
+   "h": 2,
+   "size": 64,
+   "show": true
+  },
+  {
+   "id": "GenericSlot1",
+   "item": null,
+   "x": 322,
+   "y": 399,
+   "w": 2,
+   "h": 4,
+   "size": 64,
+   "show": true
+  },
+  {
+   "id": "GenericSlot2",
+   "item": null,
+   "x": 486,
+   "y": 399,
+   "w": 2,
+   "h": 4,
+   "size": 64,
+   "show": true
+  }
+ ],
+ "delveArt": {
+  "file": "stash_delve_official.webp",
+  "game": "art/textures/interface/2d/2dart/uiimages/ingame/mtx/delvestash/4k/delvetabbackground.dds",
+  "w": 1264,
+  "h": 1264,
+  "k": 1.35,
+  "tx": -5.0,
+  "ty": -6.0
+ },
  "currencyArt": {
   "file": "stash_currency_official.webp",
   "game": "art/textures/interface/2d/2dart/uiimages/ingame/mtx/currencystash/4k/backgroundbase.dds",
@@ -2295,6 +2656,23 @@
   "k": 1.3484,
   "tx": -16.5,
   "ty": -21.5,
-  "unit": 85
+  "unit": 85,
+  "tabs": {
+   "general": {
+    "file": "stash_currency_official.webp",
+    "group": 0,
+    "composed": false
+   },
+   "atlas": {
+    "file": "stash_currency_atlas.webp",
+    "group": 1,
+    "composed": true
+   },
+   "league": {
+    "file": "stash_currency_league.webp",
+    "group": 2,
+    "composed": true
+   }
+  }
  }
 }

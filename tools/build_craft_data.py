@@ -25,10 +25,10 @@ from datetime import date
 
 BASE_URL = "https://repoe-fork.github.io/"
 FILES = ["mods.json", "base_items.json", "stat_translations.json", "essences.json", "crafting_bench_options.json",
-         "version.txt"]
+         "fossils.json", "version.txt"]
 # 遊戲繁中版匯出的資料（結構和英文版一樣）：詞綴的中文模板、底材中文名、詞綴中文名稱
 ZH_DIR = "Traditional Chinese/"
-ZH_FILES = ["stat_translations.json", "base_items.json", "mods.json", "essences.json"]
+ZH_FILES = ["stat_translations.json", "base_items.json", "mods.json", "essences.json", "fossils.json"]
 ICON_URL = "https://web.poecdn.com/image/"
 ICON_MAX_MB = 30  # 超過就停下來，不要默默塞一大堆圖進網站
 
@@ -219,9 +219,10 @@ def essence_tab(here, essence_ids):
     return {"slots": slots, "generic": generic, "patch": game["patch"]}
 
 
-def currency_tab(here, bases_raw, zh_bases, cur_key, decor, icon_jobs):
-    """通貨頁「一般」：官方 3.29 美術圖（stash_currency_official.webp）＋ CurrencyStashTabLayout 的格子
-    （SlotGroup 0 的通貨格＋SlotGroup 3 的大格和通用格）。座標換算由 extract_stash_layout.py 算好。
+def currency_tabs(here, bases_raw, zh_bases, cur_key, decor, icon_jobs):
+    """通貨頁的三個子分頁（一般、輿圖、聯盟）：背景是官方美術圖（「一般」是遊戲的整張圖；「輿圖」「聯盟」是
+    官方空白底圖＋官方格框照排列資料組成，見 extract_stash_layout.py），格子照 CurrencyStashTabLayout
+    （各頁自己的 SlotGroup＋SlotGroup 3 的大格和通用格）。座標換算由 extract_stash_layout.py 算好。
     版面上的物品不在模擬器通貨／擺設清單裡的，自動加成擺設（鍵值 "x:" ＋ Metadata 最後一段）。
     hide：ShowIfEmpty＝否的格子（倉庫裡有這個物品才顯示）。"""
     gp = os.path.join(here, "stash_layout_game.json")
@@ -235,31 +236,56 @@ def currency_tab(here, bases_raw, zh_bases, cur_key, decor, icon_jobs):
         return None
     k, tx, ty, u = art["k"], art["tx"], art["ty"], art["unit"]
     inset = 0.08   # 格框內側（圖示放在框裡面）
-    slots, added = [], 0
-    for r in game["currency"]:
-        if r["group"] not in (0, 3):
+    tabs_art = art.get("tabs") or {"general": {"file": art["file"], "group": 0, "composed": False}}
+    out, added = {}, 0
+    for name, t in tabs_art.items():
+        if not os.path.exists(os.path.join(here, "..", "img", "craft", t["file"])):
+            print(f"警告：通貨頁「{name}」沒有背景圖，略過")
             continue
-        key = None
-        if r["item"]:
-            key = cur_key.get(r["item"])
-            if not key:
-                key = "x:" + r["item"].split("/")[-1]
-                b = bases_raw.get(r["item"]) or {}
-                dds = (b.get("visual_identity") or {}).get("dds_file")
-                if key not in decor and b and dds:
-                    decor[key] = {"en": b["name"], "zh": (zh_bases.get(r["item"]) or {}).get("name") or b["name"],
-                                  "ic": icon_name(dds)}
-                    icon_jobs[decor[key]["ic"]] = dds
-                    added += 1
-            if key not in decor and key not in CURRENCY_BASES:
-                key = None
-        ip = k * u * inset
-        slots.append({"k": key, "x": round(k * r["x"] + tx + ip, 1), "y": round(k * r["y"] + ty + ip, 1),
-                      "w": round(k * u * r["w"] - 2 * ip, 1), "h": round(k * u * r["h"] - 2 * ip, 1),
-                      "hide": bool(r["group"] == 0 and not r["show"]),
-                      "kind": "item" if r["item"] else ("craft" if r["id"] == "CraftingSlot" else "generic")})
-    print(f"通貨頁：官方美術圖 {art['w']}×{art['h']}、格子 {len(slots)} 個（隱藏格 {sum(s['hide'] for s in slots)}），"
-          f"新增擺設通貨 {added} 種（{game['patch']}）")
+        g, slots = t["group"], []
+        for r in game["currency"]:
+            if r["group"] not in (g, 3):
+                continue
+            key = None
+            if r["item"]:
+                key = cur_key.get(r["item"])
+                if not key:
+                    key = "x:" + r["item"].split("/")[-1]
+                    b = bases_raw.get(r["item"]) or {}
+                    dds = (b.get("visual_identity") or {}).get("dds_file")
+                    if key not in decor and b and dds:
+                        decor[key] = {"en": b["name"], "zh": (zh_bases.get(r["item"]) or {}).get("name") or b["name"],
+                                      "ic": icon_name(dds)}
+                        icon_jobs[decor[key]["ic"]] = dds
+                        added += 1
+                if key not in decor and key not in CURRENCY_BASES:
+                    key = None
+            ip = k * u * inset
+            slots.append({"k": key, "x": round(k * r["x"] + tx + ip, 1), "y": round(k * r["y"] + ty + ip, 1),
+                          "w": round(k * u * r["w"] - 2 * ip, 1), "h": round(k * u * r["h"] - 2 * ip, 1),
+                          "hide": bool(r["group"] == g and not r["show"]),
+                          "kind": "item" if r["item"] else ("craft" if r["id"] == "CraftingSlot" else "generic")})
+        out[name] = {"bg": t["file"], "w": art["w"], "h": art["h"], "patch": game["patch"], "group": g,
+                     "composed": t.get("composed", False), "slots": slots}
+        print(f"通貨頁「{name}」：格子 {len(slots)} 個（隱藏格 {sum(x['hide'] for x in slots)}）")
+    print(f"通貨頁：新增擺設通貨 {added} 種（{game['patch']}）")
+    return out
+
+
+def delve_tab(here):
+    """化石倉庫頁：官方背景圖（stash_delve_official.webp）＋ DelveStashTabLayout 的格子（換算由 extract_stash_layout.py 算好）。
+    hide：HideIfEmpty（點金共振器：3.29 只在無情模式出現）。"""
+    gp = os.path.join(here, "stash_layout_game.json")
+    game = json.load(open(gp, encoding="utf-8")) if os.path.exists(gp) else {}
+    art = game.get("delveArt")
+    if not art or not os.path.exists(os.path.join(here, "..", "img", "craft", art["file"])):
+        print("警告：沒有化石頁排列資料或背景圖")
+        return None
+    k, tx, ty = art["k"], art["tx"], art["ty"]
+    slots = [{"item": r["item"], "id": r["id"], "x": round(k * r["x"] + tx, 1), "y": round(k * r["y"] + ty, 1),
+              "w": round(k * r["w"] * r["size"], 1), "h": round(k * r["h"] * r["size"], 1), "hide": not r["show"]}
+             for r in game["delve"]]
+    print(f"化石頁：格子 {len(slots)} 個（隱藏 {sum(x['hide'] for x in slots)}）")
     return {"bg": art["file"], "w": art["w"], "h": art["h"], "patch": game["patch"], "slots": slots}
 
 
@@ -279,6 +305,58 @@ def bench_ui(here):
     return {"tabs": tabs, "art": art, "patch": m.get("patch")}
 
 
+# 生靈之力：HarvestCraftOptions 的 LifeforceType → 通貨鍵值（圖示、名稱在 decor，聯盟通貨頁會加進去）
+LIFEFORCE_KEYS = {1: "x:HarvestSeedRed", 2: "x:HarvestSeedGreen", 3: "x:HarvestSeedBlue"}
+SACRED_KEY, RANCOUR_KEY = "x:HarvestSeedBoss", "x:HarvestSeedFaridun"
+# 不能模擬的指令：物品以外（通貨交換、命運卡、寶石）、模擬器沒有的系統（影響力、附魔）
+HARVEST_NA = {
+    "reroll_with_influence_mod": "模擬器還沒有影響力詞綴",
+    "reroll_influence_types": "模擬器還沒有影響力詞綴",
+    "add_enchant_to_class": "模擬器還沒有附魔（品質換附魔）",
+}
+# 機制不明確、先禁用（待確認）
+HARVEST_HOLD = {
+    "reroll_with_current_tags_affinity_multiplier":
+        "遊戲資料的參數是 900／-90，不知道是倍率還是百分比；Kalandralang 舊版是 ×90／×0.01，3.29 是否相同待確認",
+    "convert_mod": "「相似階級」怎麼對應（同等級？同階？數值怎麼換）遊戲沒有公布",
+}
+
+
+def harvest_options(here):
+    """園藝工藝台：tools/harvest_options.json（extract_ui_art.py 從 HarvestCraftOptions 抽出）。
+    a：模擬器的作法（reforge 重鑄＋保證 1 條 tag、augment 增加 1 條 tag 並移除另 1 條），
+    why：機制不明確先禁用（待確認），na：不是裝備詞綴、模擬器不適用。"""
+    p = os.path.join(here, "harvest_options.json")
+    if not os.path.exists(p):
+        print("警告：沒有 tools/harvest_options.json，園藝工藝台會是空的")
+        return None
+    src = json.load(open(p, encoding="utf-8"))
+    out = []
+    for r in src["options"]:
+        o = {"id": r["id"], "zh": r["zh"], "en": r["en"], "lf": r["lf"], "c": {}}
+        if r["n"]:
+            o["c"][LIFEFORCE_KEYS[r["lf"]]] = r["n"]
+        if r["sacred"]:
+            o["c"][SACRED_KEY] = r["sacred"]
+        if r["rancour"]:
+            o["c"][RANCOUR_KEY] = r["rancour"]
+        par = r["par"].split()
+        if r["cmd"] == "reroll_with_mod" and len(par) == 3 and par[1] == "ON" and par[2] == "rare":
+            o["a"], o["tag"] = "reforge", par[0]
+        elif r["cmd"] == "remove_type_and_add_type_mod" and par[:2] == ["ANY", "FOR"]:
+            o["a"], o["tag"] = "augment", par[2]
+            if "noinfluence" in par:
+                o["noinf"] = True
+        elif r["cmd"] in HARVEST_HOLD:
+            o["why"] = HARVEST_HOLD[r["cmd"]]
+        else:
+            o["na"] = HARVEST_NA.get(r["cmd"], "不是裝備詞綴（通貨／碎片／命運卡／寶石等），模擬器不適用")
+        out.append(o)
+    print(f"園藝工藝台：{len(out)} 個選項（可用 {sum(1 for o in out if 'a' in o)}、待確認 "
+          f"{sum(1 for o in out if 'why' in o)}、不適用 {sum(1 for o in out if 'na' in o)}；{src.get('patch')}）")
+    return {"patch": src.get("patch"), "options": out}
+
+
 def first_weight(spawn_weights, tags):
     """依列表順序取第一個底材也有的 tag 的權重（Kalandralang 的規則）。"""
     for sw in spawn_weights:
@@ -290,7 +368,7 @@ def first_weight(spawn_weights, tags):
 def icon_name(dds):
     """Art/2DItems/Armours/Helmets/HelmetInt11.dds → Armours_Helmets_HelmetInt11.png"""
     p = dds[len("Art/2DItems/"):] if dds.startswith("Art/2DItems/") else dds
-    return os.path.splitext(p)[0].replace("/", "_") + ".png"
+    return os.path.splitext(p)[0].replace("/", "_").replace(" ", "_") + ".png"
 
 
 def download_icons(jobs, out_dir):
@@ -300,7 +378,7 @@ def download_icons(jobs, out_dir):
     for name, dds in sorted(jobs.items()):
         path = os.path.join(out_dir, name)
         if not os.path.exists(path):
-            url = ICON_URL + os.path.splitext(dds)[0] + ".png"
+            url = ICON_URL + urllib.parse.quote(os.path.splitext(dds)[0] + ".png")
             try:
                 with urllib.request.urlopen(url, timeout=30) as r:
                     data = r.read()
@@ -339,6 +417,8 @@ def main():
     zh_mods = load(src, zh_name("mods.json"))
     essences_raw = load(src, "essences.json")
     bench_raw = load(src, "crafting_bench_options.json")
+    fossils_raw = load(src, "fossils.json")
+    zh_fossils = load(src, zh_name("fossils.json"))
     zh_essences = load(src, zh_name("essences.json"))
     zh_by_ids = {tuple(e["ids"]): e.get("Traditional Chinese") for e in zh_trans}
 
@@ -373,7 +453,15 @@ def main():
 
     # 精髓保證的詞綴：一般詞綴池抽不到的（權重 0）另外收進來，標記 d = "e"，只會從精髓出現
     # 工藝台詞綴（domain crafted，含元工藝）：標記 d = "c"，只會從工藝台出現
+    # 化石加入或保證的詞綴（domain delve，例如雕琢化石的寶石等級、鏤空化石的深淵插槽）：標記 d = "f"
     special = {}
+    for f in fossils_raw.values():
+        if not f.get("name"):
+            continue
+        for mid in (f.get("added_mods") or []) + (f.get("forced_mods") or []):
+            if mid in mods and mid not in keep:
+                keep[mid] = mods[mid]
+                special[mid] = "f"
     for o in bench_raw:
         mid = (o.get("actions") or {}).get("add_explicit_mod")
         if mid and mid in mods and set(o.get("item_classes") or []) & set(CLASSES):
@@ -500,7 +588,7 @@ def main():
             "nz": zh_mn or m["name"],             # 繁中詞綴名稱（沒有就用英文）
         })
         if mid in special:
-            out_mods[-1]["d"] = special[mid]      # 不在一般詞綴池："e" 精髓專屬、"c" 工藝台
+            out_mods[-1]["d"] = special[mid]      # 不在一般詞綴池："e" 精髓專屬、"c" 工藝台、"f" 化石
     mod_index = {m["id"]: i for i, m in enumerate(out_mods)}
 
     # ── 工藝台選項：加詞綴、移除工藝詞綴、3.29 新增的重抽詞綴（規則待確認，只列出不模擬）──
@@ -528,6 +616,53 @@ def main():
                 bench_cost_missing.add(cid)
         entry.update({"c": cost, "cls": cls, "t": o.get("bench_tier")})
         out_bench.append(entry)
+
+    # ── 化石（RePoE fossils.json，有名稱的 25 種；權重 100 ＝ ×1）──
+    # 機制明確的才開放（ok）；不明確的標待確認、先禁用（why）。
+    FOSSIL_HOLD = {
+        "Metadata/Items/Currency/CurrencyDelveCraftingLuckyModRolls": "神聖化石：「數值幸運、高等級詞綴較常見」的權重算法只有社群推定（poewiki 引用 reddit），待確認",
+        "Metadata/Items/Currency/CurrencyDelveCraftingCorruptEssence": "雕紋化石：保證哪一條腐化精髓詞綴、怎麼抽，資料沒有寫，待確認",
+        "Metadata/Items/Currency/CurrencyDelveCraftingRandom": "紊亂化石：隨機標籤 ×30／禁止的抽法只有說明文字，待確認",
+        "Metadata/Items/Currency/CurrencyDelveCraftingMirror": "破裂化石：模擬器沒有「破裂詞綴」，待確認",
+        "Metadata/Items/Currency/CurrencyDelveCraftingVaal": "血漬化石：模擬器沒有「腐化」和腐化固有詞綴，待確認",
+        "Metadata/Items/Currency/CurrencyDelveCraftingSellPrice": "鑲金化石：只加隱藏的賣價詞綴，對詞綴的影響資料沒有寫，待確認",
+        "Metadata/Items/Currency/CurrencyDelveCraftingQuality": "華麗化石：說明寫「沒有無標籤詞綴」，但 RePoE 的禁止權重是空的，兩邊不一致，待確認",
+    }
+    out_fossils = []
+    for fid, f in fossils_raw.items():
+        if not f.get("name"):
+            continue
+        b = bases_raw.get(fid) or {}
+        dds = (b.get("visual_identity") or {}).get("dds_file") or ""
+        ic = icon_name(dds) if dds else ""
+        if ic:
+            icon_jobs[ic] = dds
+        entry = {
+            "id": fid, "n": f["name"], "nz": (zh_fossils.get(fid) or {}).get("name") or f["name"], "ic": ic,
+            "pos": [[w["tag"], w["weight"] / 100] for w in f.get("positive_mod_weights") or []],
+            "neg": [[w["tag"], w["weight"] / 100] for w in f.get("negative_mod_weights") or []],
+            "add": [mod_index[m] for m in f.get("added_mods") or [] if m in mod_index],
+            "force": [mod_index[m] for m in f.get("forced_mods") or [] if m in mod_index],
+            "allow": f.get("allowed_tags") or [], "forbid": f.get("forbidden_tags") or [],
+            "desc": list((f.get("descriptions") or {}).values()),
+        }
+        if fid in FOSSIL_HOLD:
+            entry["why"] = FOSSIL_HOLD[fid]
+        out_fossils.append(entry)
+
+    # 共振器（名稱、圖示、插槽數）：c 混沌（重鑄稀有物品）、a 點金（普通 → 稀有；3.29 只在無情模式）。
+    # 插槽數 RePoE 沒有：混沌鑄新儀 初階 1、強效 2、強力 3、終極 4 孔（KAI 在遊戲內確認，2026-10-22）；
+    # 點金鑄新儀照同樣等級（未在遊戲內確認，待確認）。
+    out_reso = []
+    for rid, b in bases_raw.items():
+        if b.get("item_class") == "DelveStackableSocketableCurrency" and b.get("release_state") == "released":
+            dds = (b.get("visual_identity") or {}).get("dds_file") or ""
+            if dds:
+                icon_jobs[icon_name(dds)] = dds
+            out_reso.append({"id": rid, "n": b["name"], "nz": (zh_bases.get(rid) or {}).get("name") or b["name"],
+                             "ic": icon_name(dds) if dds else "", "kind": "c" if "Reroll" in rid else "a",
+                             "s": int(rid[-1]),   # Reroll1～4／Upgrade1～4 → 1～4 孔
+                             "w": b.get("inventory_width") or 1, "h": b.get("inventory_height") or 1})
 
     # ── 精髓（遺忘的污染器皿沒有詞綴、3.27 起已移除，不收）──
     out_ess = []
@@ -562,11 +697,15 @@ def main():
         "decor": decor,
         "mods": out_mods,
         "essences": out_ess,
+        "fossils": out_fossils,
+        "resonators": out_reso,
+        "delveTab": delve_tab(os.path.dirname(os.path.abspath(__file__))),
         "essTab": essence_tab(os.path.dirname(os.path.abspath(__file__)), [e["id"] for e in out_ess]),
         "benchUI": bench_ui(os.path.dirname(os.path.abspath(__file__))),
-        "curTab": currency_tab(os.path.dirname(os.path.abspath(__file__)), bases_raw, zh_bases,
-                               {v: k for k, v in {**CURRENCY_BASES, **DECOR_BASES}.items()}, decor, icon_jobs),
+        "curTabs": currency_tabs(os.path.dirname(os.path.abspath(__file__)), bases_raw, zh_bases,
+                                 {v: k for k, v in {**CURRENCY_BASES, **DECOR_BASES}.items()}, decor, icon_jobs),
         "bench": out_bench,
+        "harvest": harvest_options(os.path.dirname(os.path.abspath(__file__))),
         "v2": legacy_v2(),
         "trans": out_trans,
         "statTr": stat_to_tr,
@@ -585,6 +724,8 @@ def main():
           + ("" if not missing_zh else "，前 20 個：" + ", ".join(missing_zh[:20])))
     print(f"繁中：底材 {len(out_bases)} 個，沒有中文名 {len(missing_base)} 個"
           + ("" if not missing_base else "：" + ", ".join(missing_base[:20])))
+    print(f"化石 {len(out_fossils)} 種（開放 {sum(1 for f in out_fossils if 'why' not in f)}，待確認先禁用 "
+          f"{sum(1 for f in out_fossils if 'why' in f)}）")
     print(f"工藝台選項 {len(out_bench)} 個（加詞綴 {sum(1 for b in out_bench if b['a'] == 'add')}）"
           + (f"；費用裡有不認得的通貨：{sorted(bench_cost_missing)}" if bench_cost_missing else ""))
     print(f"精髓 {len(out_ess)} 種、精髓／工藝專屬詞綴 {len(special)} 條；沒有中文名稱的精髓 "

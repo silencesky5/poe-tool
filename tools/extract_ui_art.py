@@ -47,6 +47,8 @@ HARVEST = {
     "harvest_panel": "Harvest/RewardInfoPanel",
     "harvest_panel_hover": "Harvest/RewardInfoPanelHover",
     "harvest_counter": "Harvest/HarvestLifeforceCounter",
+    "harvest_side": "Harvest/CraftingBase",              # 右側放物品的面板（藤蔓＋物品格）
+    "harvest_slot": "Harvest/CraftingLargeSlot",
 }
 # 生命力：物品圖示（不在介面圖集裡）
 LIFEFORCE = {
@@ -91,6 +93,31 @@ def bench_tabs(work, patch):
             for r, z in zip(en, zh) if r["CategoryCode"]]
 
 
+def harvest_options(work, patch):
+    """園藝工藝台的全部選項（HarvestCraftOptions，英文＋繁中）存成 tools/harvest_options.json。
+    LifeforceType：1 野性（紅）、2 靈現（黃）、3 原始（藍）；SacredCost 神聖（白）；RancourCost 晶化仇怨（第五種）。"""
+    from extract_stash_layout import tool_cmd
+    d = os.path.join(work, "harvest")
+    os.makedirs(d, exist_ok=True)
+    cols = ["Id", "Text", "Command", "Parameters", "LifeforceType", "LifeforceCost", "SacredCost", "RancourCost",
+            "IsProportionalToStackSize", "IsEnchant"]
+    with open(os.path.join(d, "config.json"), "w", encoding="utf-8") as f:
+        json.dump({"patch": patch, "translations": ["English", "Traditional Chinese"], "files": [],
+                   "tables": [{"name": "HarvestCraftOptions", "columns": cols}]}, f)
+    if subprocess.run(tool_cmd(), cwd=d, stdout=subprocess.DEVNULL).returncode != 0:
+        raise RuntimeError("匯出 HarvestCraftOptions 失敗")
+    en = json.load(open(os.path.join(d, "tables", "English", "HarvestCraftOptions.json"), encoding="utf-8"))
+    zh = json.load(open(os.path.join(d, "tables", "Traditional Chinese", "HarvestCraftOptions.json"), encoding="utf-8"))
+    rows = [{"id": r["Id"], "en": r["Text"], "zh": z["Text"], "cmd": r["Command"], "par": r["Parameters"],
+             "lf": r["LifeforceType"], "n": r["LifeforceCost"], "sacred": r["SacredCost"], "rancour": r["RancourCost"],
+             "stack": r["IsProportionalToStackSize"], "enchant": r["IsEnchant"]} for r, z in zip(en, zh)]
+    out = os.path.join(HERE, "harvest_options.json")
+    with open(out, "w", encoding="utf-8", newline="\n") as f:
+        json.dump({"patch": patch, "source": "pathofexile-dat HarvestCraftOptions", "options": rows}, f,
+                  ensure_ascii=False, indent=1)
+    print(f"園藝工藝台選項 {len(rows)} 個 → {out}")
+
+
 def parse_sheet(text):
     """切割表：一行一個元件 "名稱" "圖集" x0 y0 x1 y1（x1、y1 含在內）"""
     defs = {}
@@ -132,6 +159,7 @@ def extract(patch):
                 missing[out] = path
         manifest = {"patch": patch, "source": "pathofexile-dat（官方更新伺服器）＋ " + SHEET_INDEX,
                     "found": found, "missing": missing, "css": NOT_FOUND, "benchTabs": bench_tabs(work, patch)}
+        harvest_options(work, patch)
         with open(os.path.join(OUT_DIR, "manifest.json"), "w", encoding="utf-8", newline="\n") as f:
             json.dump(manifest, f, ensure_ascii=False, indent=1)
         size = sum(os.path.getsize(os.path.join(OUT_DIR, k + ".webp")) for k in found)

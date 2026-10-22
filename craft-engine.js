@@ -36,6 +36,8 @@ const METHODS=[
   {k:"altaug", zh:"改造＋增幅", desc:"蛻變石開始；沒中就改造，只有一條、而且增幅有機會補中時才增幅", uses:["transmute","alt","aug"]},
   {k:"chaos",  zh:"混沌重抽",   desc:"點金石開始；沒中就用混沌石重抽", uses:["alch","chaos"]},
   {k:"alchscour", zh:"點金＋重鑄", desc:"點金石開始；沒中就重鑄再點金", uses:["alch","scour"]},
+  {k:"fossil", zh:"化石重鑄", desc:"點金石開始；沒中就用混沌鑄新儀（共振器）＋選定的化石重鑄", uses:["fossil"]},
+  {k:"harvest", zh:"豐收重鑄", desc:"點金石開始；沒中就用選定的園藝工藝台選項「重鑄並包含 1 個 X 詞綴」重鑄（生靈之力照遊戲資料的數量計算）", uses:["harvest"]},
   {k:"essence", zh:"精髓重鑄", desc:"用選定的精髓開始；沒中就再用一次（咆哮以上直接重鑄稀有物品，哀嚎以下要先重鑄石變回普通）", uses:["ess"]},
 ];
 
@@ -78,6 +80,35 @@ function create(D){
   /* 精髓：k ＝ "ess:" ＋ Metadata 路徑（當通貨鍵值用，存檔裡的使用次數也用這個） */
   const essences=(D.essences||[]).map((e,i)=>Object.assign({},e,{i,k:"ess:"+e.id}));
   const essByKey=Object.fromEntries(essences.map(e=>[e.k,e]));
+  /* 化石：k ＝ "fos:" ＋ Metadata 路徑。why：機制不明確、先禁用的原因（待確認）。
+     用化石＝把 1～4 顆化石放進鑄新儀（共振器）：鍵值 "reso:" ＋ 各化石 Metadata 路徑用 "|" 串起來。
+     使用次數另外記在每顆化石（"fos:…"）和鑄新儀（"res:c1"～"res:c4" 混沌、"res:a1"～"res:a4" 點金，數字＝孔數）。
+     鑄新儀要插滿才能用，所以放幾顆化石就是用幾孔的鑄新儀：初階 1、強效 2、強力 3、終極 4 孔
+     （混沌鑄新儀 KAI 在遊戲內確認；點金鑄新儀照同樣等級，待確認）。 */
+  const fossils=(D.fossils||[]).map((f,i)=>Object.assign({},f,{i,k:"fos:"+f.id}));
+  const fosByKey=Object.fromEntries(fossils.map(f=>[f.k,f]));
+  const fosById=Object.fromEntries(fossils.map(f=>[f.id,f]));
+  const resonators=D.resonators||[];
+  const MAX_FOSSILS=Math.max(1,...resonators.map(r=>r.s||0));   // 終極鑄新儀 4 孔
+  function resonatorOf(kind,n){ return resonators.find(r=>r.kind===kind&&r.s===n)||null; }
+  /* 多顆化石的「增加」：add 相加（預設，社群較多人接受）、mul 相乘。都是社群推定，見 poewiki Fossil */
+  let fossilMode="add";
+  function setFossilMode(m){ m=m==="mul"?"mul":"add"; if(m!==fossilMode){ fossilMode=m; poolCache.clear(); } }
+  function getFossilMode(){ return fossilMode; }
+  /* 一條詞綴在這組化石下的權重倍率（0＝禁止）。每顆化石對同一條詞綴只算一次：
+     禁止（權重 0）的標籤優先；「增加」取這顆化石符合的最大倍率，多顆化石依 fossilMode 相加或相乘；「減少」（例如 ×0.15）相乘。 */
+  function fossilFactor(m,fs){
+    const more=[]; let less=1;
+    for(const f of fs){
+      let lf=1, mf=0;
+      for(const [t,w] of f.neg) if(m.tg.includes(t)){ if(w===0) return 0; lf=Math.min(lf,w); }
+      for(const [t,w] of f.pos) if(m.tg.includes(t)) mf=Math.max(mf,w);
+      if(mf) more.push(mf);
+      less*=lf;
+    }
+    const mo=!more.length?1:fossilMode==="mul"?more.reduce((a,b)=>a*b,1):more.reduce((a,b)=>a+b,0);
+    return mo*less;
+  }
 
   /* ── 權重：spawn_weights 依順序取第一個物品也有的 tag；再乘上 generation_weights（百分比） ── */
   function firstMatch(list,ts){
@@ -114,14 +145,18 @@ function create(D){
 
   /* 只依底材、物品等級、附加 tag 決定的詞綴池（還沒考慮身上已有的詞綴），快取起來。 */
   const poolCache=new Map();
-  function basePool(item){
-    const key=item.b+"|"+item.lv+"|"+tagKey(item);
+  /* fs：用鑄新儀時的化石（權重倍率、化石加入的詞綴） */
+  function basePool(item,fs){
+    const key=item.b+"|"+item.lv+"|"+tagKey(item)+(fs&&fs.length?"|"+fossilMode+":"+fs.map(f=>f.i).join(","):"");
     let p=poolCache.get(key);
     if(p) return p;
     const ts=tagSet(item), list=[];
+    const added=fs?new Set(fs.flatMap(f=>f.add)):null;
     for(const m of mods){
-      if(m.d||m.lv>item.lv) continue;   // d：精髓專屬等，不在一般詞綴池
-      const w=weightOf(m,ts);
+      if(m.lv>item.lv) continue;
+      if(m.d&&!(m.d==="f"&&added&&added.has(m.i))) continue;   // d：精髓、工藝台、化石專屬，不在一般詞綴池
+      let w=weightOf(m,ts);
+      if(w>0&&fs&&fs.length) w=Math.trunc(w*fossilFactor(m,fs));
       if(w>0) list.push({m:m.i,w});
     }
     const cum=new Float64Array(list.length);
@@ -173,15 +208,15 @@ function create(D){
   /* cap：其他隨機詞綴的最高等級（低階精髓），0 ＝ 不限 */
   function capped(item,cap){ return cap&&cap<item.lv?{b:item.b,lv:cap,mods:item.mods}:item; }
   /* 目前這件物品「下一條詞綴」的完整詞綴池（已排除滿了的那一邊和同 group） */
-  function pool(item,cap){
-    const bp=basePool(capped(item,cap)), c=counts(item), max=maxSide(item), f=metaOf(item);
+  function pool(item,cap,fs){
+    const bp=basePool(capped(item,cap),fs), c=counts(item), max=maxSide(item), f=metaOf(item);
     return bp.list.filter(x=>allowed(item,mods[x.m],c,max,f));
   }
 
   /* 依權重抽一條。先從快取的池子抽、抽到不合格的就重抽（結果和從篩過的池子抽一樣），
      重抽太多次才真的篩一次池子。抽不到回傳 -1。 */
-  function pickMod(item,rng,cap){
-    const bp=basePool(capped(item,cap));
+  function pickMod(item,rng,cap,fs){
+    const bp=basePool(capped(item,cap),fs);
     if(!bp.list.length) return -1;
     const c=counts(item), max=maxSide(item), f=metaOf(item);
     for(let tries=0;tries<40;tries++){
@@ -191,7 +226,7 @@ function create(D){
       const m=mods[bp.list[lo].m];
       if(allowed(item,m,c,max,f)) return m.i;
     }
-    const pl=pool(item,cap);
+    const pl=pool(item,cap,fs);
     if(!pl.length) return -1;
     let t=0; for(const x of pl) t+=x.w;
     let r=rng()*t;
@@ -207,19 +242,19 @@ function create(D){
   }
   function addMod(item,mi,rng){ item.mods.push({m:mi,v:rollValues(mods[mi],rng)}); }
   /* 成功加了一條回傳 true */
-  function spawn(item,rng,cap){
-    const mi=pickMod(item,rng,cap);
+  function spawn(item,rng,cap,fs){
+    const mi=pickMod(item,rng,cap,fs);
     if(mi<0) return false;
     addMod(item,mi,rng); return true;
   }
   /* 補到目標數量：魔法 1～2 條（50 : 50），稀有 4～6 條（8 : 3 : 1）；池子空了就停 */
   /* 詞綴條數：魔法 1／2 條 50 : 50、稀有 4／5／6 條 8 : 3 : 1。照 Kalandralang，是社群推定值，不是官方數字 */
-  function spawnAdditional(item,rng,cap){
+  function spawnAdditional(item,rng,cap,fs){
     let n;
     if(item.r===MAGIC) n=rng()<0.5?1:2;
     else if(item.r===RARE){ const i=Math.floor(rng()*12); n=i<8?4:i<11?5:6; }
     else n=0;
-    for(let k=item.mods.length;k<n;k++) if(!spawn(item,rng,cap)) break;
+    for(let k=item.mods.length;k<n;k++) if(!spawn(item,rng,cap,fs)) break;
   }
 
   function clone(item){ return {b:item.b,lv:item.lv,r:item.r,mods:item.mods.map(x=>({m:x.m,v:x.v.slice()}))}; }
@@ -228,6 +263,8 @@ function create(D){
   /* 能不能用：可以回傳 null，不行回傳原因 */
   function check(item,k){
     if(essByKey[k]) return checkEssence(item,essByKey[k]);
+    if(k.startsWith("reso:")) return checkReso(item,k);
+    if(hvByKey[k]) return checkHarvest(item,hvByKey[k]);
     const n=item.mods.length, c=counts(item);
     const need=r=>item.r===r?null:"這顆只能用在"+RARITY_ZH[r]+"物品上，目前是"+RARITY_ZH[item.r]+"物品。";
     const room=()=>{
@@ -284,16 +321,124 @@ function create(D){
     addMod(item,essenceMod(item,e),rng);
     spawnAdditional(item,rng,e.ilr||0);
   }
+  /* ── 化石＋鑄新儀（共振器） ──
+     普通物品：點金鑄新儀（普通 → 稀有）；稀有物品：混沌鑄新儀（重鑄）。魔法物品、有元工藝的物品不能用（poewiki Resonator）。
+     先放化石保證的詞綴（鏤空化石的深淵插槽），再照化石的權重補到 4～6 條（8 : 3 : 1，同混沌石，社群推定值）。 */
+  function resoKey(ids){ return "reso:"+ids.slice().sort().join("|"); }
+  function resoFossils(k){ return k.slice(5).split("|").filter(Boolean).map(id=>fosById[id]||null); }
+  function checkReso(item,k){
+    const fs=resoFossils(k);
+    if(!fs.length) return "鑄新儀裡還沒有放化石。";
+    if(fs.some(f=>!f)) return "不認得的化石。";
+    if(fs.length>MAX_FOSSILS) return "最多放 "+MAX_FOSSILS+" 顆化石（終極鑄新儀 "+MAX_FOSSILS+" 孔）。";
+    if(new Set(fs.map(f=>f.id)).size!==fs.length) return "同一個鑄新儀不能放兩顆一樣的化石。";
+    const off=fs.find(f=>f.why); if(off) return "先不開放："+off.why+"。";
+    if(item.r===MAGIC) return "鑄新儀只能用在普通（點金）或稀有（混沌）物品上，目前是魔法物品。";
+    if(metaOf(item)) return "物品上有元工藝，不能使用鑄新儀。";
+    const ts=bases[item.b].ts;
+    for(const f of fs){
+      if(f.allow.length&&!f.allow.some(t=>ts.has(tagId[t]))) return f.nz+"不能用在這類物品上。";
+      if(f.forbid.some(t=>ts.has(tagId[t]))) return f.nz+"不能用在這類物品上。";
+    }
+    return null;
+  }
+  function applyReso(item,k,rng){
+    const fs=resoFossils(k);
+    item.r=RARE; item.mods=[];
+    for(const f of fs) for(const mi of f.force) if(!item.mods.some(x=>x.m===mi)) addMod(item,mi,rng);
+    spawn(item,rng,0,fs); spawnAdditional(item,rng,0,fs);
+  }
+  /* 用一次鑄新儀實際消耗的東西（每顆化石 1 個＋鑄新儀 1 個） */
+  function resoCost(item,k){
+    const c={}; for(const f of resoFossils(k)) if(f) c[f.k]=1;
+    c["res:"+(item.r===NORMAL?"a":"c")+resoFossils(k).length]=1;
+    return c;
+  }
+  /* ── 園藝工藝台（豐收，遊戲資料 HarvestCraftOptions；k ＝ "hv:" ＋ 選項 Id）──
+     費用 c：{生靈之力鍵值: 數量}（野性 x:HarvestSeedRed、靈現 x:HarvestSeedGreen、原始 x:HarvestSeedBlue、
+     神聖 x:HarvestSeedBoss、晶化仇怨 x:HarvestSeedFaridun）。詞綴的「類型」＝RePoE 的 implicit_tags（例如 fire）。
+     ・重鑄並包含 1 個 X 詞綴（a:"reforge"，只能用在稀有物品）：照 Kalandralang reforge_rare ~tag——
+       洗掉可以洗的詞綴（前綴／後綴不能被改變時那一邊不動），先從含 X 的詞綴依權重抽 1 條，其餘照一般規則補到 4～6 條。
+     ・增加 1 個新 X 詞綴並移除其它隨機詞綴（a:"augment"）：照 Kalandralang harvest_augment_and_remove——
+       先從「目前物品還放得下」的含 X 詞綴抽 1 條，再隨機移除 1 條原有詞綴（受元工藝保護的不移除），最後加上新詞綴。
+       所以前綴、後綴都滿的時候不能用（遊戲內待確認）。
+     ・不能骰出攻擊／法術詞綴（元工藝）：新加的詞綴照樣排除 attack／caster（poewiki 寫「待確認」，照 Kalandralang）。
+     ・why：機制不明確、先禁用（待確認）；na：不是裝備詞綴或模擬器沒有的系統（影響力、附魔）。 */
+  const harvest=((D.harvest||{}).options||[]).map((o,i)=>Object.assign({},o,{i,k:"hv:"+o.id}));
+  const hvByKey=Object.fromEntries(harvest.map(o=>[o.k,o]));
+  /* 選項文字裡的顏色標記：<craftingfire>{火焰} → [{t:"火焰",c:"craftingfire"}…]（遊戲原文就有 <ccraftinglife> 這種打錯的標記，照樣保留） */
+  function hvParts(s){
+    const out=[], re=/<([a-z]+)>\{([^}]*)\}/g; let i=0, m;
+    while((m=re.exec(s))){ if(m.index>i) out.push({t:s.slice(i,m.index)}); out.push({t:m[2],c:m[1]}); i=re.lastIndex; }
+    if(i<s.length) out.push({t:s.slice(i)});
+    return out;
+  }
+  function hvText(o){ return hvParts(o.zh).map(p=>p.t).join("").replace(/\s+/g," ").trim(); }
+  /* 選項的類型名稱（例如「火焰」）：文字裡第 2 個有標記的字（第 1 個是「重鑄」或「增加」） */
+  function hvTagZh(o){ const p=hvParts(o.zh).filter(x=>x.c); return (p[1]||{}).t||o.tag; }
+  function tagPool(item,tag){ return pool(item).filter(x=>mods[x.m].tg.includes(tag)); }
+  function pickFrom(pl,rng){
+    let t=0; for(const x of pl) t+=x.w;
+    let r=rng()*t;
+    for(const x of pl){ r-=x.w; if(r<0) return x.m; }
+    return pl[pl.length-1].m;
+  }
+  function checkHarvest(item,o){
+    if(o.na) return "模擬器不適用："+o.na+"。";
+    if(o.why) return "先不開放（待確認）："+o.why+"。";
+    const tz=hvTagZh(o);
+    if(o.a==="reforge"){
+      if(item.r!==RARE) return "只能用在稀有物品上，目前是"+RARITY_ZH[item.r]+"物品。";
+      const t=clone(item); strip(t,false);
+      return tagPool(t,o.tag).length?null:"這件物品重鑄後沒有任何「"+tz+"」詞綴可以出現。";
+    }
+    if(o.a==="augment"){
+      if(item.r===NORMAL) return "只能用在魔法或稀有物品上，目前是普通物品。";
+      if(!tagPool(item,o.tag).length) return "目前沒有放得下的「"+tz+"」詞綴（那一邊已經滿了、同群組，或這類物品沒有）；"+
+        "照 Kalandralang，前綴、後綴都滿時不能用（遊戲內待確認）。";
+      return removable(item,false).length?null:"物品上沒有可以移除的詞綴（沒有詞綴，或全部受元工藝保護）。";
+    }
+    return "不認得的園藝選項。";
+  }
+  function applyHarvest(item,o,rng){
+    if(o.a==="reforge"){
+      strip(item,false);
+      addMod(item,pickFrom(tagPool(item,o.tag),rng),rng);
+      spawnAdditional(item,rng);
+    }else{
+      const mi=pickFrom(tagPool(item,o.tag),rng), l=removable(item,false);
+      item.mods.splice(item.mods.indexOf(l[Math.floor(rng()*l.length)]),1);
+      addMod(item,mi,rng);
+    }
+  }
+  /* 用一次實際消耗的生靈之力 */
+  function harvestCost(k){ const o=hvByKey[k]; return o?Object.assign({},o.c):{}; }
   /* 通貨的名稱、說明、圖示（一般通貨和精髓都可以） */
   function curInfo(k){
+    const fo=fosByKey[k];
+    if(fo) return {k,zh:fo.nz,en:fo.n,ic:fo.ic,fossil:fo,desc:(fo.desc||[]).join("、")+(fo.why?"（先不開放："+fo.why+"）":"")};
+    const rm=/^res:([ca])([1-9])$/.exec(k);
+    if(rm){
+      const r=resonatorOf(rm[1],+rm[2]);
+      return r?{k,zh:r.nz,en:r.n,ic:r.ic,reso:r,
+        desc:r.s+" 孔・"+(r.kind==="c"?"放滿化石後重鑄稀有物品":"放滿化石後把普通物品變成稀有（插槽數照混沌鑄新儀，待確認）")}:null;
+    }
+    if(k.startsWith("reso:")){
+      const fs=resoFossils(k).filter(Boolean);
+      return {k,zh:"鑄新儀（"+fs.map(f=>f.nz).join("＋")+"）",en:"Resonator",ic:((D.resonators||[]).find(x=>x.kind==="c")||{}).ic||"",
+        desc:fs.map(f=>f.nz+"："+(f.desc||[]).join("、")).join("；")};
+    }
     const e=essByKey[k];
     if(e) return {k,zh:e.nz,en:e.n,ic:e.ic,ess:e,
       desc:(e.lv>=5?"普通 → 稀有，或重鑄稀有物品":"普通 → 稀有（不能用在稀有物品）")+"，保證一條指定詞綴"+
         (e.ilr?"；其他隨機詞綴最高等級 "+e.ilr:"")};
     const c=CUR[k];
     if(c) return Object.assign({ic:(D.curIcons||{})[k]||""},c);
+    const h=hvByKey[k];
+    if(h){ const lf=Object.keys(h.c)[0]; return {k,zh:hvText(h),en:h.en,ic:(((D.decor||{})[lf])||{}).ic||"",hv:h,
+      desc:h.na?"模擬器不適用："+h.na:h.why?"先不開放（待確認）："+h.why:hvText(h)}; }
     const d=(D.decor||{})[k];   // 工藝台費用用到的其他通貨（瓦爾寶珠、機會石等）
-    return d?{k,zh:d.zh,en:d.en,ic:d.ic,desc:"模擬器只用來計算工藝台費用"}:null;
+    return d?{k,zh:d.zh,en:d.en,ic:d.ic,desc:/^x:HarvestSeed/.test(k)?"園藝工藝台的費用（生靈之力）":"模擬器只用來計算工藝台費用"}:null;
   }
 
   /* ── 工藝台（RePoE crafting_bench_options；假設全部配方都已解鎖）──
@@ -348,6 +493,8 @@ function create(D){
   /* 直接改動 item（給批次模擬用）。呼叫前要先 check。 */
   function applyMut(item,k,rng){
     if(essByKey[k]){ applyEssence(item,essByKey[k],rng); return item; }
+    if(k.startsWith("reso:")){ applyReso(item,k,rng); return item; }
+    if(hvByKey[k]){ applyHarvest(item,hvByKey[k],rng); return item; }
     switch(k){
       case "transmute": item.r=MAGIC; item.mods=[]; spawnAdditional(item,rng); break;
       case "alt": strip(item,false); spawnAdditional(item,rng); break;
@@ -405,12 +552,14 @@ function create(D){
     if(m.meta) return side+" 元工藝";
     if(m.d==="c") return side+" 工藝";
     if(m.d==="e") return side+" 精≈T"+tierOf(b,mi);
+    if(m.d==="f") return side+" 化石";
     return side+" T"+tierOf(b,mi);
   }
   /* 詞綴來源的說明（給滑鼠提示、詳細資訊） */
   function sourceNote(b,mi){
     const m=mods[mi];
     if(m.d==="e") return "精髓詞綴（數值相當於一般詞綴 T"+tierOf(b,mi)+"）";
+    if(m.d==="f") return "化石專屬詞綴（只有用特定化石才會出現）";
     if(m.meta) return "元工藝（工藝台詞綴，改變其他通貨的作用）";
     if(m.d==="c") return "工藝台詞綴（數值相當於一般詞綴 T"+tierOf(b,mi)+"）";
     return null;
@@ -523,6 +672,23 @@ function create(D){
   function feasible(o){
     const item=make(o.b,o.lv);
     let bp=basePool(item), ess=null;
+    let fs=null;
+    if(o.method==="fossil"){
+      if(o.fossilMode) setFossilMode(o.fossilMode);
+      const r=make(o.b,o.lv); r.r=RARE;
+      const err=checkReso(r,resoKey(o.fossils||[]));
+      if(err) return err;
+      fs=resoFossils(resoKey(o.fossils));
+      bp=basePool(item,fs);
+    }
+    if(o.method==="harvest"){
+      const h=hvByKey["hv:"+o.harvest];
+      if(!h) return "還沒有選園藝工藝台的選項。";
+      if(h.a!=="reforge") return "豐收重鑄只能用「重鑄並包含 1 個 X 詞綴」的選項。";
+      const r=make(o.b,o.lv); r.r=RARE;
+      const err=checkHarvest(r,h);
+      if(err) return err;
+    }
     if(o.method==="essence"){
       ess=essByKey[o.essence];
       if(!ess) return "還沒有選精髓。";
@@ -531,9 +697,10 @@ function create(D){
       bp=basePool(capped(item,ess.ilr||0));
     }
     const em=ess?essenceMod(item,ess):-1;
+    const forced=fs?fs.flatMap(f=>f.force):[];
     const hits=(mi,t)=>{ const m=mods[mi]; return m.ty===t.ty&&m.g===t.g&&tierOf(o.b,mi)<=t.maxTier; };
     for(const t of o.targets){
-      const any=(em>=0&&hits(em,t))||bp.list.some(x=>hits(x.m,t));
+      const any=(em>=0&&hits(em,t))||forced.some(mi=>hits(mi,t))||bp.list.some(x=>hits(x.m,t));
       if(!any) return ess&&ess.ilr&&o.lv>ess.ilr
         ?"有目標詞綴在這個精髓下不會出現（低階精髓的其他隨機詞綴最高只到 "+ess.ilr+" 級）。"
         :"有目標詞綴在這個底材、物品等級下不會出現（例如 tier 要求太高）。";
@@ -564,6 +731,26 @@ function create(D){
         if(isDone(item,o)) return {ok:true,used};
         if(i>=limit) return {ok:false,used};
         use(item,"alt");
+      }
+    }else if(o.method==="fossil"){
+      if(o.fossilMode) setFossilMode(o.fossilMode);
+      const rk=resoKey(o.fossils||[]);
+      const rc="res:c"+o.fossils.length;
+      const pay=()=>{ for(const id of o.fossils) used["fos:"+id]=(used["fos:"+id]||0)+1; used[rc]=(used[rc]||0)+1; };
+      use(item,"alch");
+      for(let i=0;;i++){
+        if(isDone(item,o)) return {ok:true,used};
+        if(i>=limit) return {ok:false,used};
+        applyMut(item,rk,rng); pay();
+      }
+    }else if(o.method==="harvest"){
+      const hk="hv:"+o.harvest, cost=harvestCost(hk);
+      use(item,"alch");
+      for(let i=0;;i++){
+        if(isDone(item,o)) return {ok:true,used};
+        if(i>=limit) return {ok:false,used};
+        applyMut(item,hk,rng);
+        for(const k in cost) used[k]=(used[k]||0)+cost[k];
       }
     }else if(o.method==="essence"){
       const ess=essByKey[o.essence], again=ess.lv>=5;
@@ -614,6 +801,8 @@ function create(D){
   /* 作法實際會用到的通貨（精髓重鑄：選的那顆精髓，哀嚎以下再加重鑄石） */
   function methodUses(o){
     const m=METHODS.find(x=>x.k===o.method);
+    if(o.method==="fossil") return ["alch",...(o.fossils||[]).map(id=>"fos:"+id),"res:c"+(o.fossils||[]).length];
+    if(o.method==="harvest") return ["alch",...Object.keys(harvestCost("hv:"+o.harvest))];
     if(o.method!=="essence") return m.uses;
     const e=essByKey[o.essence];
     return e?(e.lv>=5?[e.k]:[e.k,"scour"]):[];
@@ -668,6 +857,8 @@ function create(D){
   return {
     data:D, bases, mods, modById, baseById, tagId, NORMAL, MAGIC, RARE, toStored, fromStored, fromIndexed, modName,
     essences, essByKey, curInfo, essenceMod, methodUses, tagLabel, sourceNote,
+    harvest, hvByKey, hvParts, hvText, hvTagZh, harvestCost, checkHarvest,
+    fossils, fosByKey, fosById, resoKey, resoCost, setFossilMode, getFossilMode, fossilFactor, basePool, MAX_FOSSILS, resonatorOf,
     bench, benchByKey, benchFor, benchCheck, applyBench, craftLevel, metaOf, craftedCount, maxCrafted, removable,
     make, clone, check, apply, applyMut, pool, poolView, counts, maxSide, tagSet, weightOf,
     tierOf, tierCount, render, modRange, baseName, implicitLines, feasible, runOne, summarize, costStats, isDone, needCount,

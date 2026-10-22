@@ -1067,6 +1067,16 @@ body .gbtns .pri:hover{background:#DD8B36}
 #tab-craft .kcurs{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 #tab-craft .kessrow{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:7px}
 #tab-craft #kmethess{margin-top:8px}
+#tab-craft #kmethfos{margin-top:8px}
+#tab-craft #kmethhv{margin-top:8px}
+#tab-craft #kmhv{width:100%}
+#tab-craft .kfos{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0 6px}
+#tab-craft .kfo{display:inline-flex;align-items:center;gap:3px;padding:2px 6px 2px 2px;border:1px solid #33312D;border-radius:4px;font-size:12.5px;cursor:pointer;background:#1D1D1B}
+#tab-craft .kfo input{display:none}
+#tab-craft .kfo img{width:24px;height:24px}
+#tab-craft .kfo.on{border-color:var(--accent);background:rgba(199,124,46,.15)}
+#tab-craft .kfo.off{opacity:.45;cursor:not-allowed}
+#tab-craft .kfmode{font-size:12.5px;color:var(--dim);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #tab-craft .kcur{position:relative;background:#1D1D1B;border:1px solid #46443F;color:var(--curr);font-family:var(--sans);
   font-size:14px;font-weight:500;padding:9px 8px;border-radius:5px;cursor:pointer;transition:all .15s}
 #tab-craft .kcur:hover{border-color:var(--curr);background:#262420;color:#F0D9A2}
@@ -1074,8 +1084,11 @@ body .gbtns .pri:hover{background:#DD8B36}
 #tab-craft .kcur::after{content:attr(data-tip);position:absolute;z-index:30;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);
   width:230px;white-space:pre-line;text-align:left;background:#20201E;border:1px solid var(--edge-hi);border-radius:6px;
   padding:9px 11px;font-size:12.5px;line-height:1.6;color:var(--bone);font-weight:400;box-shadow:0 8px 24px rgba(0,0,0,.5);
-  opacity:0;pointer-events:none;transition:opacity .12s}
-#tab-craft .kcur:hover::after,#tab-craft .kcur:focus-visible::after{opacity:1}
+  display:none;pointer-events:none}
+/* 提示框只在滑過時才畫出來：藏著（透明）的提示框也會佔位置，右欄的會超出視窗、讓整頁可以左右捲動 */
+#tab-craft .kcur:hover::after,#tab-craft .kcur:focus-visible::after{display:block}
+/* 三欄版面：右欄的提示框靠右對齊，滑過時也不會超出視窗 */
+@media(min-width:1101px){#tab-craft .kright .kcur::after{left:auto;right:0;transform:none}}
 #tab-craft .kmsg{min-height:22px;font-size:13px;line-height:1.6;color:var(--muted);margin-top:10px}
 #tab-craft .kmsg.bad{color:#E58A78}
 #tab-craft .khead{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
@@ -1203,7 +1216,7 @@ body .gbtns .pri:hover{background:#DD8B36}
 @media(max-width:640px){#tab-craft .kauth{align-items:flex-start;text-align:left;flex-basis:100%}
   #tab-craft .kauth-who{align-items:flex-start}}
 </style>
-<link rel="stylesheet" href="craft-bench.css?v=20261022-1253">
+<link rel="stylesheet" href="craft-bench.css?v=20261022-1359">
 </head>
 <body>
 <div id="shell">
@@ -4291,9 +4304,9 @@ if(typeof SCARABS==="undefined"){
     if(started||panel.hidden) return;
     started=true;
     /* 製裝相關檔案加版本號：改版後瀏覽器一定抓新的（舊的程式配新的資料會出錯）。改這些檔案時記得一起改 */
-    const VER="20261022-1253";
+    const VER="20261022-1359";
     window.CRAFT_VER=VER;
-    const files=["craft-data.js","craft-engine.js","craft-benchlist.js","craft-ui.js","craft-bench.js"];
+    const files=["craft-data.js","craft-engine.js","craft-benchlist.js","craft-harvest.js","craft-ui.js","craft-bench.js"];
     (function next(i){
       if(i>=files.length) return;
       const s=document.createElement("script");

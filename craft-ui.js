@@ -39,6 +39,8 @@ const S={
   poolQuery:"", poolMerge:false,
   targets:[], mode:"all", need:1, method:"altaug", n:10000, limit:10000,
   ess:"", essence:"",   // 手動用的精髓、「精髓重鑄」用的精髓（"ess:" ＋ Metadata 路徑）
+  fossils:[],           // 放進鑄新儀的化石（Metadata 路徑），手動和「化石重鑄」共用
+  harvest:"ReforgeLife", // 「豐收重鑄」用的園藝工藝台選項 Id（只能選「重鑄並包含 1 個 X 詞綴」）
   running:false, progress:0, results:null,
   prices:{},
 };
@@ -112,7 +114,9 @@ root.innerHTML=`
     <div class="klab">通貨（Currency）</div>
     <div class="kcurs" id="kcurs"></div>
     <div class="kessrow"><select id="kess" aria-label="選精髓"></select><button class="kcur" id="kessgo">用精髓</button></div>
+    <button class="kcur kbenchbtn" id="kresogo">用鑄新儀（下面選的化石）</button>
     <button class="kcur kbenchbtn" id="kbenchgo" data-tip="工藝台：加工藝詞綴、元工藝（前綴／後綴不能被改變等）、移除工藝詞綴">工藝台…</button>
+    <button class="kcur kbenchbtn" id="kharvestgo" data-tip="園藝工藝台（豐收）：重鑄並包含 1 個 X 詞綴、增加 1 個 X 詞綴並移除其它隨機詞綴">園藝工藝台…</button>
     <div class="kmsg" id="kmsg" role="status" aria-live="polite"></div>
     <div class="khead"><span class="klab">操作紀錄</span>
       <span class="kbtns"><button class="kmini" id="kundo">上一步</button><button class="kmini" id="kreset">重置</button></span></div>
@@ -148,6 +152,11 @@ root.innerHTML=`
       <div class="klab">作法</div>
       <div class="kmethods" id="kmethods"></div>
       <div id="kmethess" hidden><label class="klab" for="kmess">精髓重鑄用哪一顆</label><select id="kmess"></select></div>
+      <div id="kmethhv" hidden><label class="klab" for="kmhv">豐收重鑄用哪一個選項（生命力照遊戲資料的數量）</label><select id="kmhv"></select></div>
+      <div id="kmethfos"><div class="klab">鑄新儀裡的化石（最多 <span id="kfosmax"></span> 顆；灰色＝機制待確認，先不開放）</div>
+        <div class="kfos" id="kfos"></div>
+        <div class="kfmode">多顆化石的「增加」效果：<label class="kchk"><input type="radio" name="kfm" value="add">相加</label>
+          <label class="kchk"><input type="radio" name="kfm" value="mul">相乘</label><small>社群推定值，遊戲沒有公布</small></div></div>
       <div class="khint">詞綴條數的機率：魔法裝 1 條／2 條各 50%、稀有裝 4／5／6 條為 8 : 3 : 1。這是社群推定值（Kalandralang 採用），<b>不是官方公布的數字</b>；所有模擬結果都以這個機率為準。</div>
       <div class="krun">
         <label class="klab" for="knn">模擬次數</label>
@@ -170,7 +179,8 @@ root.innerHTML=`
 <footer class="kfoot">資料：<a href="https://github.com/lvlvllvlvllvlvl/RePoE" target="_blank" rel="noopener">RePoE</a>（PoE1，遊戲版本 ${esc(D.version)}，MIT；遊戲資料版權屬 Grinding Gear Games）。
   通貨規則參考 <a href="https://github.com/doomeer/kalandralang" target="_blank" rel="noopener">Kalandralang</a>（MIT）的實作。
   詞綴條數機率（魔法 1／2 條 50 : 50、稀有 4／5／6 條 8 : 3 : 1）為社群推定值，非官方數字。
-  不含勢力、分裂、精髓、化石、工藝台、收穫。</footer>`;
+  園藝工藝台的選項和生命力數量來自遊戲資料 HarvestCraftOptions（pathofexile-dat）。
+  不含勢力、分裂、附魔；豐收只做「重鑄並包含 X」和「增加 X 並移除」，其他選項待確認或不適用。</footer>`;
 
 /* ── 左側：類別、底材、物品等級 ── */
 const clsSel=$("kcls"), bq=$("kbq"), bl=$("kbases"), lvr=$("klvr"), lvn=$("klvn");
@@ -266,7 +276,48 @@ function drawEss(){
   $("kessgo").setAttribute("aria-disabled",!!err);
   $("kessgo").dataset.tip=(info?info.en+"\n"+info.desc:"")+(err?"\n\n不能用："+err:"");
   $("kmethess").hidden=S.method!=="essence";
+  drawFos(); drawHv();
 }
+/* 豐收重鑄：只列「重鑄並包含 1 個 X 詞綴」；費用照遊戲資料 */
+function hvCostText(o){ return Object.entries(o.c).map(([k,n])=>n.toLocaleString("en-US")+" "+(E.curInfo(k)||{zh:k}).zh).join("＋"); }
+function drawHv(){
+  const list=E.harvest.filter(o=>o.a==="reforge");
+  if(!list.some(o=>o.id===S.harvest)) S.harvest=(list[0]||{}).id||"";
+  $("kmhv").innerHTML=list.map(o=>`<option value="${esc(o.id)}" ${o.id===S.harvest?"selected":""}>包含 1 個${esc(E.hvTagZh(o))}詞綴（${esc(hvCostText(o))}）</option>`).join("");
+  $("kmethhv").hidden=S.method!=="harvest";
+}
+$("kmhv").onchange=e=>{ S.harvest=e.target.value; drawPrices(); };
+/* 化石：勾選放進鑄新儀（手動「用鑄新儀」和「化石重鑄」共用）；相加／相乘存在這台電腦 */
+const FOSSIL_MODE_KEY="poe-craft-fossil-mode";
+function fossilMode(){ try{ return localStorage.getItem(FOSSIL_MODE_KEY)==="mul"?"mul":"add"; }catch(e){ return "add"; } }
+E.setFossilMode(fossilMode());
+function drawFos(){
+  $("kfosmax").textContent=E.MAX_FOSSILS;
+  $("kfos").innerHTML=E.fossils.map(f=>{
+    const on=S.fossils.includes(f.id);
+    return `<label class="kfo${f.why?" off":""}${on?" on":""}" title="${esc(f.nz+"："+(f.desc||[]).join("、")+(f.why?"\n先不開放（待確認）："+f.why:""))}">
+      <input type="checkbox" data-f="${esc(f.id)}" ${on?"checked":""} ${f.why?"disabled":""}><img src="img/craft/items/${esc(f.ic)}" alt=""><span>${esc(L()==="zh"?f.nz:f.n)}</span></label>`;
+  }).join("");
+  document.querySelectorAll('input[name="kfm"]').forEach(r=>r.checked=r.value===fossilMode());
+  const k=E.resoKey(S.fossils), err=S.fossils.length?E.check(S.item,k):"還沒有選化石。";
+  $("kresogo").setAttribute("aria-disabled",!!err);
+  $("kresogo").dataset.tip=(S.fossils.length?E.curInfo(k).desc:"")+(err?"\n\n不能用："+err:"");
+  $("kmethfos").hidden=S.method!=="fossil";
+}
+$("kfos").addEventListener("change",e=>{
+  const x=e.target.closest("input[data-f]"); if(!x) return;
+  const id=x.dataset.f, i=S.fossils.indexOf(id);
+  if(x.checked&&i<0){
+    if(S.fossils.length>=E.MAX_FOSSILS){ x.checked=false; S.msg={bad:true,t:"鑄新儀最多放 "+E.MAX_FOSSILS+" 顆化石（終極鑄新儀 "+E.MAX_FOSSILS+" 孔）"}; drawMsg(); return; }
+    S.fossils.push(id);
+  }else if(!x.checked&&i>=0) S.fossils.splice(i,1);
+  drawFos(); drawPrices();
+});
+document.querySelectorAll('input[name="kfm"]').forEach(r=>r.onchange=()=>{
+  try{ localStorage.setItem(FOSSIL_MODE_KEY,r.value); }catch(e){}
+  E.setFossilMode(r.value);
+});
+$("kresogo").onclick=()=>{ if(S.fossils.length) useCurrency(E.resoKey(S.fossils)); };
 $("kess").onchange=e=>{ S.ess=e.target.value; drawEss(); };
 /* 工藝台：清單在 craft-benchlist.js；做完一項就記到操作紀錄，清單保持開著 */
 let benchUI=null;
@@ -287,6 +338,22 @@ $("kbenchgo").onclick=()=>{
     S.msg={bad:false,t:label+"（費用 "+costText(r.cost)+"）"};
     drawAll();
     benchUI.update(S.item,{t:"已完成："+benchName(k)+"（費用 "+costText(r.cost)+"）"});
+  }});
+};
+/* 園藝工藝台：清單在 craft-harvest.js；右邊的生命力計數＝這次操作紀錄裡用掉的（上一步會扣回） */
+let hvUI=null;
+function hvUsed(){ const u={}; for(const h of S.hist) for(const [k,n] of Object.entries(h.cost||{})) u[k]=(u[k]||0)+n; return u; }
+$("kharvestgo").onclick=()=>{
+  if(!window.CraftHarvest) return;
+  hvUI=CraftHarvest.open({E,item:S.item,lang:L(),host:root,used:hvUsed,onCraft(k){
+    const r=E.apply(S.item,k), name=E.hvText(E.hvByKey[k]);
+    if(!r.ok){ hvUI.update(S.item,{bad:true,t:r.err}); return; }
+    const cost=E.harvestCost(k), label="園藝："+name;
+    S.hist.push({label,before:S.item,after:r.item,cost});
+    S.item=r.item;
+    S.msg={bad:false,t:label+"（"+costText(cost)+"）→ "+summary(r.item)};
+    drawAll();
+    hvUI.update(S.item,{t:"已賦予："+name+"（"+costText(cost)+"）→ "+summary(r.item)});
   }});
 };
 $("kmess").onchange=e=>{ S.essence=e.target.value; drawPrices(); };
@@ -431,6 +498,8 @@ $("klimit").onchange=e=>{ S.limit=Math.max(10,Math.round(+e.target.value)||10000
 function drawPrices(){
   const list=CE.CURRENCIES.slice();
   if(S.method==="essence"&&S.essence) list.push(E.curInfo(S.essence));
+  if(S.method==="fossil"&&S.fossils.length){ for(const id of S.fossils) list.push(E.curInfo("fos:"+id)); list.push(E.curInfo("res:c"+S.fossils.length)); }
+  if(S.method==="harvest"&&S.harvest) for(const k of Object.keys(E.harvestCost("hv:"+S.harvest))) list.push(Object.assign({},E.curInfo(k),{zh:E.curInfo(k).zh+"（每 1 個）"}));
   $("kprices").innerHTML=list.map(c=>`<label class="kprice"><span>${esc(c.zh)}</span>
     ${c.k==="chaos"?`<input type="number" value="1" disabled aria-label="混沌石單價">`
       :`<input type="number" min="0" step="any" data-k="${c.k}" value="${S.prices[c.k]!=null?esc(S.prices[c.k]):""}" placeholder="—" aria-label="${esc(c.zh)}單價">`}</label>`).join("");
@@ -448,7 +517,8 @@ let worker=null, workerBroken=false;
 function run(){
   if(S.running) return;
   const o={b:S.b,lv:S.lv,method:S.method,mode:S.mode,need:S.need,
-    targets:S.targets.map(t=>({ty:t.ty,g:t.g,maxTier:t.maxTier})),n:S.n,limit:S.limit,essence:S.essence};
+    targets:S.targets.map(t=>({ty:t.ty,g:t.g,maxTier:t.maxTier})),n:S.n,limit:S.limit,essence:S.essence,
+    fossils:S.fossils.slice(),fossilMode:fossilMode(),harvest:S.harvest};
   if(!o.targets.length){ showRunErr("還沒有設定目標詞綴。"); return; }
   const err=E.feasible(o);
   if(err){ showRunErr(err); return; }

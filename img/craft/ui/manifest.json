@@ -417,6 +417,16 @@
    "w": 173,
    "h": 100
   },
+  "harvest_side": {
+   "name": "Harvest/CraftingBase",
+   "w": 331,
+   "h": 552
+  },
+  "harvest_slot": {
+   "name": "Harvest/CraftingLargeSlot",
+   "w": 208,
+   "h": 361
+  },
   "lifeforce_wild": {
    "name": "art/2ditems/currency/harvest/wildlifeforce.dds",
    "w": 80,
