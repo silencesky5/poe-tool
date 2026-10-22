@@ -105,33 +105,48 @@
 #tab-craft .kmod.dc .ktag{border-style:dashed}
 #tab-craft .kmod.dc.meta .ktxt{color:#E8D6A0;font-style:italic}
 
-/* 工藝台清單（craft-benchlist.js） */
+/* 工藝台清單（craft-benchlist.js）：官方美術圖在 img/craft/ui/（遊戲檔案抽出），面板底用 CSS 模擬 */
 #tab-craft .kbl-veil{position:fixed;inset:0;z-index:80;background:rgba(6,5,5,.72);display:flex;align-items:center;justify-content:center;padding:16px}
-#tab-craft .kbl{background:#1B1B19;border:1px solid #46443F;border-left:4px solid var(--accent);border-radius:8px;width:100%;max-width:640px;
-  max-height:min(86vh,760px);display:flex;flex-direction:column;color:var(--bone);box-shadow:0 16px 40px rgba(0,0,0,.6)}
-#tab-craft .kbl-head{display:flex;align-items:baseline;gap:10px;padding:14px 18px 6px}
-#tab-craft .kbl-head b{font-size:17px}
-#tab-craft .kbl-sub{color:var(--muted);font-size:13px;margin-right:auto}
-#tab-craft .kbl-x{background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
-#tab-craft .kbl-bar{display:flex;gap:10px;align-items:center;padding:4px 18px 6px}
-#tab-craft .kbl-bar input[type=text]{flex:1}
-#tab-craft .kbl-chk{font-size:13px;color:var(--muted);white-space:nowrap;display:flex;gap:4px;align-items:center}
-#tab-craft .kbl-msg{min-height:18px;padding:0 18px;font-size:13px;color:#9FD3A8}
+#tab-craft .kbl{width:100%;max-width:660px;max-height:min(92vh,900px);display:flex;flex-direction:column;color:#E6E2DB;
+  background:linear-gradient(#17140f,#0e0c09);border:1px solid #4a3f2c;box-shadow:0 0 0 2px #0a0907,0 16px 40px rgba(0,0,0,.7);border-radius:3px}
+#tab-craft .kbl-head{display:flex;align-items:center;gap:10px;padding:8px 14px;background:url(img/craft/ui/bench_top.webp) center/100% 100% no-repeat;min-height:34px}
+#tab-craft .kbl-head b{font-family:var(--serif);font-size:18px;color:#E9C98A;letter-spacing:.12em;text-shadow:0 1px 2px #000}
+#tab-craft .kbl-sub{color:#BFB49E;font-size:12.5px;margin-right:auto}
+#tab-craft .kbl-x{background:none;border:0;color:#BFB49E;font-size:22px;cursor:pointer;line-height:1}
+#tab-craft .kbl-item{position:relative;flex:none;margin:0 auto;width:min(100%,560px);aspect-ratio:1133/516}
+#tab-craft .kbl-wings{position:absolute;inset:0;width:100%;height:100%}
+#tab-craft .kbl-slot{position:absolute;left:43%;top:8%;width:14%;height:56%;display:flex;align-items:center;justify-content:center}
+#tab-craft .kbl-slot img{max-width:92%;max-height:92%;object-fit:contain;filter:drop-shadow(0 2px 4px #000)}
+#tab-craft .kbl-tabs{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;padding:6px 10px 2px}
+#tab-craft .kbl-tab{position:relative;width:40px;height:36px;padding:0;border:0;background:none;cursor:pointer}
+#tab-craft .kbl-tab img{position:absolute;inset:0;width:100%;height:100%}
+#tab-craft .kbl-tab img.on{opacity:0}
+#tab-craft .kbl-tab[aria-selected="true"] img.on,#tab-craft .kbl-tab:hover img.on{opacity:1}
+#tab-craft .kbl-bar{display:flex;gap:10px;align-items:center;padding:6px 14px}
+#tab-craft .kbl-bar input[type=text]{flex:1;background:#0b0a08;border:1px solid #4a3f2c}
+#tab-craft .kbl-chk{font-size:12.5px;color:#BFB49E;white-space:nowrap;display:flex;gap:4px;align-items:center}
+#tab-craft .kbl-msg{min-height:18px;padding:0 14px;font-size:13px;color:#9FD3A8}
 #tab-craft .kbl-msg.bad{color:#E58A78}
-#tab-craft .kbl-list{overflow:auto;padding:4px 12px 8px;flex:1}
-#tab-craft .kbl-sec{font-size:12px;color:var(--gold);letter-spacing:.12em;margin:10px 6px 4px}
-#tab-craft .kbl-row{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:#1D1D1B;border:1px solid #33312D;
-  color:#B8E2F2;border-radius:5px;padding:7px 10px;margin:3px 0;cursor:pointer;font:inherit;font-size:14px}
-#tab-craft .kbl-row:hover{border-color:var(--accent)}
+#tab-craft .kbl-list{overflow:auto;padding:2px 10px 8px;flex:1;min-height:120px}
+#tab-craft .kbl-sec{height:30px;margin:8px 0 4px;display:flex;align-items:center;justify-content:center;
+  background:url(img/craft/ui/bench_section.webp) center/100% 100% no-repeat}
+#tab-craft .kbl-sec span{font-family:var(--serif);font-size:15px;color:#E9C98A;letter-spacing:.2em}
+#tab-craft .kbl-row{display:flex;gap:8px;align-items:center;width:100%;min-height:40px;text-align:left;border:0;color:#B8E2F2;
+  padding:5px 10px 5px 6px;margin:2px 0;cursor:pointer;font:inherit;font-size:14px;
+  background:url(img/craft/ui/bench_row.webp) center/100% 100% no-repeat}
+#tab-craft .kbl-row:hover{background-image:url(img/craft/ui/bench_row_hover.webp)}
 #tab-craft .kbl-row.meta{color:#E8D6A0}
-#tab-craft .kbl-row.off{color:#6D6A63;cursor:not-allowed}
+#tab-craft .kbl-row.off{color:#6D6A63;cursor:not-allowed;filter:grayscale(.85)}
+#tab-craft .kbl-row.off:hover{background-image:url(img/craft/ui/bench_row.webp)}
+#tab-craft .kbl-tier{flex:none;width:22px;height:29px}
 #tab-craft .kbl-t{flex:1;min-width:0}
 #tab-craft .kbl-t em{display:block;font-style:normal;font-size:12px;color:#D9A86C}
 #tab-craft .kbl-t em.why{color:#9C988F}
-#tab-craft .kbl-c{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end;max-width:45%}
-#tab-craft .kbl-cost{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:var(--muted);white-space:nowrap}
-#tab-craft .kbl-cost img{width:18px;height:18px}
-#tab-craft .kbl-none{color:var(--muted);padding:14px 6px;font-size:14px}
-#tab-craft .kbl-foot{padding:8px 18px 14px;font-size:12px;color:#8C887F;line-height:1.6;border-top:1px solid #2C2A27}
-@media (max-width:560px){ #tab-craft .kbl-row{flex-wrap:wrap} #tab-craft .kbl-c{max-width:100%;justify-content:flex-start} }
+#tab-craft .kbl-lv{flex:none;width:52px;text-align:right;font-size:12.5px;color:#C8BBA0;font-family:var(--mono)}
+#tab-craft .kbl-c{flex:none;display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end;min-width:64px}
+#tab-craft .kbl-cost{display:inline-flex;align-items:center;gap:1px;font-size:13px;color:#E6E2DB;white-space:nowrap}
+#tab-craft .kbl-cost img{width:24px;height:24px}
+#tab-craft .kbl-none{color:#9C988F;padding:14px 6px;font-size:14px}
+#tab-craft .kbl-foot{padding:8px 14px 12px;font-size:12px;color:#8C887F;line-height:1.6;border-top:1px solid #2C2A27}
+@media (max-width:560px){ #tab-craft .kbl-row{flex-wrap:wrap} #tab-craft .kbl-lv{width:auto} #tab-craft .kbl-c{min-width:0} #tab-craft .kbl-tab{width:34px;height:31px} }
 #kbench .kb-benchcur{background:#1B1B19;border:1px solid var(--accent);color:var(--bone);border-radius:4px;font-size:12px;padding:2px 6px;white-space:nowrap}

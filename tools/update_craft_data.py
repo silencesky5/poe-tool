@@ -36,6 +36,7 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import build_craft_data as B  # noqa: E402
 import extract_stash_layout as X  # noqa: E402
+import extract_ui_art as UIA  # noqa: E402
 
 DATA_JS = os.path.join(ROOT, "craft-data.js")
 CACHE = os.path.join(HERE, "_repoe_cache")
@@ -223,6 +224,12 @@ def main():
             X.extract(new_v)
         except Exception as e:
             say("      警告：倉庫頁排列表沒有更新（沿用舊的）：", e)
+        # 工藝台／園藝工藝台的官方介面美術圖、工藝台物品類別分頁
+        say("      抽工藝台介面美術圖（pathofexile-dat）")
+        try:
+            UIA.extract(new_v)
+        except Exception as e:
+            say("      警告：工藝台介面美術圖沒有更新（沿用舊的）：", e)
         src = NEW
     else:
         say("[3/9] 用指定的資料夾：", src)

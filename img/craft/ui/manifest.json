@@ -1,0 +1,575 @@
+{
+ "patch": "3.29.3.3",
+ "source": "pathofexile-dat（官方更新伺服器）＋ art/uiimages1.txt",
+ "found": {
+  "bench_item": {
+   "name": "CraftingWindow/MasterCraftingItem",
+   "w": 1133,
+   "h": 516
+  },
+  "bench_top": {
+   "name": "CraftingWindow/MasterCraftingTopBG",
+   "w": 1133,
+   "h": 154
+  },
+  "bench_row": {
+   "name": "CraftingWindow/MasterCraftingRecipeDefault",
+   "w": 1086,
+   "h": 75
+  },
+  "bench_row_hover": {
+   "name": "CraftingWindow/MasterCraftingRecipeHover",
+   "w": 1086,
+   "h": 75
+  },
+  "bench_row_selected": {
+   "name": "CraftingWindow/MasterCraftingRecipeSelected",
+   "w": 1086,
+   "h": 75
+  },
+  "bench_section": {
+   "name": "CraftingWindow/ModTypeBG",
+   "w": 1052,
+   "h": 57
+  },
+  "bench_titlebar": {
+   "name": "CraftingWindow/WindowTitlebarThin",
+   "w": 1133,
+   "h": 42
+  },
+  "tier1": {
+   "name": "CraftingWindow/Tier1",
+   "w": 60,
+   "h": 78
+  },
+  "tier2": {
+   "name": "CraftingWindow/Tier2",
+   "w": 60,
+   "h": 78
+  },
+  "tier3": {
+   "name": "CraftingWindow/Tier3",
+   "w": 60,
+   "h": 78
+  },
+  "tier4": {
+   "name": "CraftingWindow/Tier4",
+   "w": 60,
+   "h": 78
+  },
+  "tier5": {
+   "name": "CraftingWindow/Tier5",
+   "w": 60,
+   "h": 78
+  },
+  "tier0": {
+   "name": "CraftingWindow/TierNone",
+   "w": 60,
+   "h": 78
+  },
+  "filter_All": {
+   "name": "CraftingWindow/Icons/All",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_All": {
+   "name": "CraftingWindow/FilterButtons/AllDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_All_on": {
+   "name": "CraftingWindow/FilterButtons/AllSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1Claw": {
+   "name": "CraftingWindow/Icons/1Claw",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1Claw": {
+   "name": "CraftingWindow/FilterButtons/1ClawDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1Claw_on": {
+   "name": "CraftingWindow/FilterButtons/1ClawSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1HandAxe": {
+   "name": "CraftingWindow/Icons/1HandAxe",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1HandAxe": {
+   "name": "CraftingWindow/FilterButtons/1HandAxeDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1HandAxe_on": {
+   "name": "CraftingWindow/FilterButtons/1HandAxeSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1HandMace": {
+   "name": "CraftingWindow/Icons/1HandMace",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1HandMace": {
+   "name": "CraftingWindow/FilterButtons/1HandMaceDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1HandMace_on": {
+   "name": "CraftingWindow/FilterButtons/1HandMaceSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1HandSword": {
+   "name": "CraftingWindow/Icons/1HandSword",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1HandSword": {
+   "name": "CraftingWindow/FilterButtons/1HandSwordDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1HandSword_on": {
+   "name": "CraftingWindow/FilterButtons/1HandSwordSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1HandedMelee": {
+   "name": "CraftingWindow/Icons/1HandedMelee",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1HandedMelee": {
+   "name": "CraftingWindow/FilterButtons/1HandedMeleeDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1HandedMelee_on": {
+   "name": "CraftingWindow/FilterButtons/1HandedMeleeSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1HandedRange": {
+   "name": "CraftingWindow/Icons/1HandedRange",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1HandedRange": {
+   "name": "CraftingWindow/FilterButtons/1HandedRangeDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1HandedRange_on": {
+   "name": "CraftingWindow/FilterButtons/1HandedRangeSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_1Staff": {
+   "name": "CraftingWindow/Icons/1Staff",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_1Staff": {
+   "name": "CraftingWindow/FilterButtons/1StaffDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_1Staff_on": {
+   "name": "CraftingWindow/FilterButtons/1StaffSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_2HandMace": {
+   "name": "CraftingWindow/Icons/2HandMace",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_2HandMace": {
+   "name": "CraftingWindow/FilterButtons/2HandMaceDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_2HandMace_on": {
+   "name": "CraftingWindow/FilterButtons/2HandMaceSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_2HandSword": {
+   "name": "CraftingWindow/Icons/2HandSword",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_2HandSword": {
+   "name": "CraftingWindow/FilterButtons/2HandSwordDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_2HandSword_on": {
+   "name": "CraftingWindow/FilterButtons/2HandSwordSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_2HandedMelee": {
+   "name": "CraftingWindow/Icons/2HandedMelee",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_2HandedMelee": {
+   "name": "CraftingWindow/FilterButtons/2HandedMeleeDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_2HandedMelee_on": {
+   "name": "CraftingWindow/FilterButtons/2HandedMeleeSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_2HandedRange": {
+   "name": "CraftingWindow/Icons/2HandedRange",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_2HandedRange": {
+   "name": "CraftingWindow/FilterButtons/2HandedRangeDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_2HandedRange_on": {
+   "name": "CraftingWindow/FilterButtons/2HandedRangeSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Amulet": {
+   "name": "CraftingWindow/Icons/Amulet",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Amulet": {
+   "name": "CraftingWindow/FilterButtons/AmuletDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Amulet_on": {
+   "name": "CraftingWindow/FilterButtons/AmuletSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Armour": {
+   "name": "CraftingWindow/Icons/Armour",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Armour": {
+   "name": "CraftingWindow/FilterButtons/ArmourDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Armour_on": {
+   "name": "CraftingWindow/FilterButtons/ArmourSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Belt": {
+   "name": "CraftingWindow/Icons/Belt",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Belt": {
+   "name": "CraftingWindow/FilterButtons/BeltDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Belt_on": {
+   "name": "CraftingWindow/FilterButtons/BeltSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Boots": {
+   "name": "CraftingWindow/Icons/Boots",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Boots": {
+   "name": "CraftingWindow/FilterButtons/BootsDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Boots_on": {
+   "name": "CraftingWindow/FilterButtons/BootsSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Flask": {
+   "name": "CraftingWindow/Icons/Flask",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Flask": {
+   "name": "CraftingWindow/FilterButtons/FlaskDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Flask_on": {
+   "name": "CraftingWindow/FilterButtons/FlaskSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Gloves": {
+   "name": "CraftingWindow/Icons/Gloves",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Gloves": {
+   "name": "CraftingWindow/FilterButtons/GlovesDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Gloves_on": {
+   "name": "CraftingWindow/FilterButtons/GlovesSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Helmet": {
+   "name": "CraftingWindow/Icons/Helmet",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Helmet": {
+   "name": "CraftingWindow/FilterButtons/HelmetDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Helmet_on": {
+   "name": "CraftingWindow/FilterButtons/HelmetSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Quiver": {
+   "name": "CraftingWindow/Icons/Quiver",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Quiver": {
+   "name": "CraftingWindow/FilterButtons/QuiverDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Quiver_on": {
+   "name": "CraftingWindow/FilterButtons/QuiverSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Ring": {
+   "name": "CraftingWindow/Icons/Ring",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Ring": {
+   "name": "CraftingWindow/FilterButtons/RingDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Ring_on": {
+   "name": "CraftingWindow/FilterButtons/RingSelected",
+   "w": 64,
+   "h": 58
+  },
+  "filter_Shield": {
+   "name": "CraftingWindow/Icons/Shield",
+   "w": 45,
+   "h": 45
+  },
+  "filterbtn_Shield": {
+   "name": "CraftingWindow/FilterButtons/ShieldDefault",
+   "w": 64,
+   "h": 58
+  },
+  "filterbtn_Shield_on": {
+   "name": "CraftingWindow/FilterButtons/ShieldSelected",
+   "w": 64,
+   "h": 58
+  },
+  "harvest_window": {
+   "name": "Harvest/RewardUIBaseSimplified",
+   "w": 1231,
+   "h": 1048
+  },
+  "harvest_panel": {
+   "name": "Harvest/RewardInfoPanel",
+   "w": 775,
+   "h": 128
+  },
+  "harvest_panel_hover": {
+   "name": "Harvest/RewardInfoPanelHover",
+   "w": 775,
+   "h": 128
+  },
+  "harvest_counter": {
+   "name": "Harvest/HarvestLifeforceCounter",
+   "w": 173,
+   "h": 100
+  },
+  "lifeforce_wild": {
+   "name": "art/2ditems/currency/harvest/wildlifeforce.dds",
+   "w": 80,
+   "h": 80
+  },
+  "lifeforce_vivid": {
+   "name": "art/2ditems/currency/harvest/vividlifeforce.dds",
+   "w": 80,
+   "h": 80
+  },
+  "lifeforce_primal": {
+   "name": "art/2ditems/currency/harvest/primallifeforce.dds",
+   "w": 80,
+   "h": 80
+  },
+  "lifeforce_sacred": {
+   "name": "art/2ditems/currency/harvest/sacredlifeforce.dds",
+   "w": 80,
+   "h": 80
+  }
+ },
+ "missing": {},
+ "css": {
+  "bench_panel": "工藝台清單的深色面板底（遊戲是由多個小元件拼成，切割表裡沒有整張；網頁用 CSS 漸層＋邊框模擬）",
+  "bench_search": "搜尋框（遊戲用通用輸入框元件；網頁用 CSS）"
+ },
+ "benchTabs": [
+  {
+   "code": "1HandedMelee",
+   "en": "One Hand Melee",
+   "zh": "單手近戰",
+   "classes": [
+    "Dagger",
+    "Rune Dagger",
+    "One Hand Axe",
+    "One Hand Mace",
+    "One Hand Sword",
+    "Claw",
+    "Sceptre",
+    "Thrusting One Hand Sword"
+   ]
+  },
+  {
+   "code": "2HandedMelee",
+   "en": "Two Hand Melee",
+   "zh": "雙手近戰",
+   "classes": [
+    "Two Hand Axe",
+    "Two Hand Mace",
+    "Two Hand Sword",
+    "Staff",
+    "Warstaff"
+   ]
+  },
+  {
+   "code": "1HandedRange",
+   "en": "One Hand Ranged",
+   "zh": "單手遠距",
+   "classes": [
+    "Wand"
+   ]
+  },
+  {
+   "code": "2HandedRange",
+   "en": "Two Hand Ranged",
+   "zh": "雙手遠距",
+   "classes": [
+    "Bow"
+   ]
+  },
+  {
+   "code": "Shield",
+   "en": "Shield",
+   "zh": "盾牌",
+   "classes": [
+    "Shield"
+   ]
+  },
+  {
+   "code": "Helmet",
+   "en": "Helmet",
+   "zh": "頭盔",
+   "classes": [
+    "Helmet"
+   ]
+  },
+  {
+   "code": "Armour",
+   "en": "Body Armour",
+   "zh": "胸甲",
+   "classes": [
+    "Body Armour"
+   ]
+  },
+  {
+   "code": "Gloves",
+   "en": "Gloves",
+   "zh": "手套",
+   "classes": [
+    "Gloves"
+   ]
+  },
+  {
+   "code": "Boots",
+   "en": "Boots",
+   "zh": "鞋子",
+   "classes": [
+    "Boots"
+   ]
+  },
+  {
+   "code": "Ring",
+   "en": "Ring",
+   "zh": "戒指",
+   "classes": [
+    "Ring"
+   ]
+  },
+  {
+   "code": "Amulet",
+   "en": "Amulet",
+   "zh": "項鍊",
+   "classes": [
+    "Amulet"
+   ]
+  },
+  {
+   "code": "Belt",
+   "en": "Belt",
+   "zh": "腰帶",
+   "classes": [
+    "Belt"
+   ]
+  },
+  {
+   "code": "Flask",
+   "en": "Flask",
+   "zh": "藥劑",
+   "classes": [
+    "LifeFlask",
+    "ManaFlask",
+    "HybridFlask",
+    "UtilityFlask",
+    "UtilityFlaskCritical"
+   ]
+  },
+  {
+   "code": "Quiver",
+   "en": "Quiver",
+   "zh": "箭袋",
+   "classes": [
+    "Quiver"
+   ]
+  }
+ ]
+}

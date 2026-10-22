@@ -104,3 +104,11 @@ node tools/test_craft_engine.js
 - 遊戲資料：104 種精髓各有專屬格、4 個通用格、1 個大格。荒蕪精髓沒有專屬格，網頁放在第一個通用格。
 - 通貨頁：`CurrencyStashTabLayout` 的「一般」（SlotGroup 0，52 格）和目前的背景圖 `stash_page_A`（69 格）對不起來，`CURRENCY_SLOT`／`DECOR_SLOT` 仍是手動設定；SlotGroup 1 ↔ `stash_currency_general`、SlotGroup 3 ↔ `stash_page_B` 對得上。
 - 2026-10-22 更新：通貨頁「一般」改用官方 3.29 美術圖（`mtx/currencystash/4k/backgroundbase.dds` → `img/craft/stash_currency_official.webp`）＋ `CurrencyStashTabLayout`（SlotGroup 0＋3）。`extract_stash_layout.py` 會取出美術圖、用影像分析算出遊戲座標 → 圖上像素的換算（需要 Pillow、numpy），`build_craft_data.py` 產生 `craft-data.js` 的 `curTab`。手動的 `CURRENCY_SLOT`／`DECOR_SLOT` 已移除；版面上其他通貨自動加成擺設。隱藏格（ShowIfEmpty＝否）倉庫裡沒有該物品時不顯示。原本的截圖背景 `stash_page_A` 移到 `備份\通貨頁截圖背景_2026-10-22\`。
+
+## 工藝台介面（2026-10-22 加入）
+- 美術圖：`tools/extract_ui_art.py` 讀遊戲的介面圖集切割表 `art/uiimages1.txt`，從官方圖集切出元件存成 `img/craft/ui/*.webp`（清單在 `img/craft/ui/manifest.json`），每季更新腳本會自動重抽。
+  - 工藝台：金色翅膀物品格（MasterCraftingItem）、上方橫條（MasterCraftingTopBG）、分區標題（ModTypeBG）、列底（MasterCraftingRecipeDefault／Hover／Selected）、階級盾牌（Tier1～5、TierNone）、物品類別分頁（FilterButtons、Icons）。
+  - 園藝工藝台（備用，功能這次不做）：藤蔓外框＋標題牌（Harvest/RewardUIBaseSimplified）、面板（RewardInfoPanel）、生命力計數框；生命力圖示用物品圖檔（art/2ditems/currency/harvest/*lifeforce.dds）。
+  - 沒找到、用 CSS 模擬：清單面板的深色底、搜尋框（遊戲裡是多個通用小元件拼成，切割表沒有整張）。
+- 物品類別分頁：遊戲資料 `CraftingItemClassCategories`（英文／繁中名稱、包含的物品類別），放在 `craft-data.js` 的 `benchUI.tabs`。
+- 每列的「lvl」＝做完後裝備的角色需求等級＝詞綴等級的 80%（無條件捨去），和遊戲畫面一致。遊戲資料 `CraftingBenchOptions.RequiredLevel` 對裝備詞綴都是 0，物品等級不限制工藝台（Kalandralang 也不檢查）。

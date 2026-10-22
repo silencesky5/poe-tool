@@ -263,6 +263,22 @@ def currency_tab(here, bases_raw, zh_bases, cur_key, decor, icon_jobs):
     return {"bg": art["file"], "w": art["w"], "h": art["h"], "patch": game["patch"], "slots": slots}
 
 
+def bench_ui(here):
+    """工藝台介面：官方美術圖清單和物品類別分頁（img/craft/ui/manifest.json，extract_ui_art.py 產生）。
+    分頁只留包含模擬器物品類別的。"""
+    p = os.path.join(here, "..", "img", "craft", "ui", "manifest.json")
+    if not os.path.exists(p):
+        print("警告：沒有工藝台介面美術圖，網頁改用 CSS")
+        return None
+    m = json.load(open(p, encoding="utf-8"))
+    tabs = [{"code": t["code"], "zh": t["zh"], "en": t["en"], "classes": [c for c in t["classes"] if c in CLASSES]}
+            for t in m.get("benchTabs", [])]
+    tabs = [t for t in tabs if t["classes"]]
+    art = {k: [v["w"], v["h"]] for k, v in m.get("found", {}).items()}
+    print(f"工藝台介面：美術圖 {len(art)} 個、物品類別分頁 {len(tabs)} 個（{m.get('patch')}）")
+    return {"tabs": tabs, "art": art, "patch": m.get("patch")}
+
+
 def first_weight(spawn_weights, tags):
     """依列表順序取第一個底材也有的 tag 的權重（Kalandralang 的規則）。"""
     for sw in spawn_weights:
@@ -547,6 +563,7 @@ def main():
         "mods": out_mods,
         "essences": out_ess,
         "essTab": essence_tab(os.path.dirname(os.path.abspath(__file__)), [e["id"] for e in out_ess]),
+        "benchUI": bench_ui(os.path.dirname(os.path.abspath(__file__))),
         "curTab": currency_tab(os.path.dirname(os.path.abspath(__file__)), bases_raw, zh_bases,
                                {v: k for k, v in {**CURRENCY_BASES, **DECOR_BASES}.items()}, decor, icon_jobs),
         "bench": out_bench,

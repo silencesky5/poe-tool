@@ -319,6 +319,9 @@ function create(D){
     if(hasGroup(t,m)) return {err:"物品上已經有同一類（群組 "+m.gr.join("、")+"）的詞綴。"};
     return {err:null,replace};
   }
+  /* 工藝台每列右邊的「lvl」：做完後裝備的角色需求等級＝詞綴等級的 80%（無條件捨去）。
+     遊戲資料 CraftingBenchOptions 的 RequiredLevel 對裝備詞綴都是 0，物品等級不限制工藝台（照 Kalandralang）。 */
+  function craftLevel(mi){ return Math.floor(mods[mi].lv*0.8); }
   /* 這件物品可以看到的工藝台選項（含不能做的原因、實際費用） */
   function benchFor(item){
     const cls=bases[item.b].c;
@@ -665,7 +668,7 @@ function create(D){
   return {
     data:D, bases, mods, modById, baseById, tagId, NORMAL, MAGIC, RARE, toStored, fromStored, fromIndexed, modName,
     essences, essByKey, curInfo, essenceMod, methodUses, tagLabel, sourceNote,
-    bench, benchByKey, benchFor, benchCheck, applyBench, metaOf, craftedCount, maxCrafted, removable,
+    bench, benchByKey, benchFor, benchCheck, applyBench, craftLevel, metaOf, craftedCount, maxCrafted, removable,
     make, clone, check, apply, applyMut, pool, poolView, counts, maxSide, tagSet, weightOf,
     tierOf, tierCount, render, modRange, baseName, implicitLines, feasible, runOne, summarize, costStats, isDone, needCount,
   };

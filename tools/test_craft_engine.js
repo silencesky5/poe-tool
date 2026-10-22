@@ -460,5 +460,25 @@ for(const [b,lv] of [[helm,86],[helm,40],[ring,86],[bow,60]]){
   ok(["scrollfrag","wisdom","vaal","chance","mirror","fracture","binding"].every(d=>pos(d).length===1),"原本的擺設通貨（卷軸碎片、瓦爾寶珠等）都還在");
 }
 
+// ── 工藝台介面：lvl、物品類別分頁、官方美術圖 ──
+{
+  const lv=id=>E.craftLevel(E.modById[id].i);
+  ok(lv("EinharMasterIncreasedLife5_")===64&&lv("EinharMasterDegenerationDamage2")===40,
+    "lvl＝詞綴等級的 80%：「(71-85) 最大生命」lvl 64、「增加 (21-30)% 持續傷害」lvl 40（和遊戲畫面一致）");
+  const life5=E.bench.find(o=>o.k==="EinharMasterIncreasedLife5_");
+  const low=E.make(E.bases.findIndex(b=>b.c==="Body Armour"),1);
+  ok(!E.benchCheck(low,life5).err,"工藝台不看物品等級：物品等級 1 的胸甲也能做 lvl 64 的生命（遊戲資料 RequiredLevel＝0，照 Kalandralang）");
+  const U=E.data.benchUI;
+  ok(U&&U.tabs.length===12,"物品類別分頁 12 個（遊戲資料 CraftingItemClassCategories，扣掉模擬器沒有的藥劑、箭袋）");
+  const classes=[...new Set(E.bases.map(b=>b.c))];
+  ok(classes.every(c=>U.tabs.filter(t=>t.classes.includes(c)).length===1),"模擬器的每個物品類別都剛好屬於一個分頁");
+  const need=["bench_item","bench_top","bench_section","bench_row","bench_row_hover","tier0","tier1","tier2","tier3","tier4","tier5",
+    "filterbtn_All","filterbtn_All_on",...U.tabs.flatMap(t=>["filterbtn_"+t.code,"filterbtn_"+t.code+"_on"]),
+    "harvest_window","lifeforce_wild","lifeforce_vivid","lifeforce_primal","lifeforce_sacred"];
+  const miss=need.filter(n=>!fs.existsSync(path.join(__dirname,"..","img","craft","ui",n+".webp")));
+  ok(miss.length===0,`官方介面美術圖 ${need.length} 個都在 img/craft/ui/`+(miss.length?"（缺："+miss.join("、")+"）":""));
+  ok(E.bench.filter(o=>o.a==="add").every(o=>o.t>=0&&o.t<=5),"每條工藝詞綴的階級都在 0～5（有對應的階級盾牌）");
+}
+
 console.log(fail?`\n有 ${fail} 項失敗`:"\n全部通過");
 process.exit(fail?1:0);
