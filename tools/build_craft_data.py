@@ -160,6 +160,109 @@ def legacy_v2():
     return {"b": j["bases"], "m": j["mods"]}
 
 
+def align_slots(game, slots):
+    """把遊戲倉庫頁的格子（左上角座標＋寬高，遊戲單位）對到背景圖的格子（stash_layouts.json，像素）。
+    比例＝兩邊最常見的水平格距之比；平移試遍所有「遊戲格 → 圖上格」的配對，選對上最多格的。
+    回傳 {遊戲格 id: 圖上格 i}、對上的格數。"""
+    def gap(xs):
+        xs = sorted(set(round(x) for x in xs))
+        d = {}
+        for a, b in zip(xs, xs[1:]):
+            v = round((b - a) / 2) * 2
+            if v > 20:
+                d[v] = d.get(v, 0) + 1
+        return max(d.items(), key=lambda kv: kv[1])[0]
+    unit = gap([r["x"] for r in game])
+    pts = [(r["x"] + r["w"] * unit / 2, r["y"] + r["h"] * unit / 2) for r in game]
+    img = [(s["x"] + s["w"] / 2, s["y"] + s["h"] / 2) for s in slots]
+    k = gap([p[0] for p in img]) / unit
+    tol = gap([p[0] for p in img]) * 0.3
+
+    def nearest(x, y):
+        return min(((abs(px - x) + abs(py - y), i) for i, (px, py) in enumerate(img)))
+
+    best = None
+    for gx, gy in pts:
+        for ix, iy in img:
+            tx, ty = ix - k * gx, iy - k * gy
+            n = sum(1 for (px, py) in pts if nearest(k * px + tx, k * py + ty)[0] < tol)
+            if not best or n > best[0]:
+                best = (n, tx, ty)
+    _, tx, ty = best
+    out = {}
+    for r, (px, py) in zip(game, pts):
+        d, i = nearest(k * px + tx, k * py + ty)
+        if d < tol and i not in out.values():
+            out[r["id"]] = slots[i]["i"]
+    return out, len(out)
+
+
+def essence_tab(here, essence_ids):
+    """精髓倉庫頁：官方排列表（tools/stash_layout_game.json，extract_stash_layout.py 產生）對到背景圖 stash_page_D。
+    對不齊（例如新賽季多了精髓、背景圖還沒換）時印警告並回傳 None（網頁改用依序排列）。"""
+    gp = os.path.join(here, "stash_layout_game.json")
+    lp = os.path.join(here, "..", "img", "craft", "stash_layouts.json")
+    if not (os.path.exists(gp) and os.path.exists(lp)):
+        print("警告：沒有倉庫頁排列表，精髓頁改用依序排列")
+        return None
+    game = json.load(open(gp, encoding="utf-8"))
+    page = json.load(open(lp, encoding="utf-8"))["stash_page_D"]
+    m, n = align_slots(game["essence"], page["slots"])
+    if n != len(game["essence"]):
+        print(f"警告：精髓頁排列表只對上 {n}/{len(game['essence'])} 格，改用依序排列")
+        return None
+    slots = {r["item"]: m[r["id"]] for r in game["essence"] if r["item"]}
+    generic = [m[r["id"]] for r in game["essence"] if not r["item"] and r["w"] == 1]
+    missing = [e for e in essence_ids if e not in slots]
+    print(f"精髓頁：官方排列 {len(slots)} 種精髓、通用格 {len(generic)} 個（{game['patch']}）"
+          + (f"；排列表裡沒有的精髓：{missing}" if missing else ""))
+    return {"slots": slots, "generic": generic, "patch": game["patch"]}
+
+
+def currency_tab(here, bases_raw, zh_bases, cur_key, decor, icon_jobs):
+    """通貨頁「一般」：官方 3.29 美術圖（stash_currency_official.webp）＋ CurrencyStashTabLayout 的格子
+    （SlotGroup 0 的通貨格＋SlotGroup 3 的大格和通用格）。座標換算由 extract_stash_layout.py 算好。
+    版面上的物品不在模擬器通貨／擺設清單裡的，自動加成擺設（鍵值 "x:" ＋ Metadata 最後一段）。
+    hide：ShowIfEmpty＝否的格子（倉庫裡有這個物品才顯示）。"""
+    gp = os.path.join(here, "stash_layout_game.json")
+    if not os.path.exists(gp):
+        print("警告：沒有倉庫頁排列表，通貨頁沒有格子資料")
+        return None
+    game = json.load(open(gp, encoding="utf-8"))
+    art = game.get("currencyArt")
+    if not art or not os.path.exists(os.path.join(here, "..", "img", "craft", art["file"])):
+        print("警告：沒有通貨頁官方美術圖，通貨頁沒有格子資料")
+        return None
+    k, tx, ty, u = art["k"], art["tx"], art["ty"], art["unit"]
+    inset = 0.08   # 格框內側（圖示放在框裡面）
+    slots, added = [], 0
+    for r in game["currency"]:
+        if r["group"] not in (0, 3):
+            continue
+        key = None
+        if r["item"]:
+            key = cur_key.get(r["item"])
+            if not key:
+                key = "x:" + r["item"].split("/")[-1]
+                b = bases_raw.get(r["item"]) or {}
+                dds = (b.get("visual_identity") or {}).get("dds_file")
+                if key not in decor and b and dds:
+                    decor[key] = {"en": b["name"], "zh": (zh_bases.get(r["item"]) or {}).get("name") or b["name"],
+                                  "ic": icon_name(dds)}
+                    icon_jobs[decor[key]["ic"]] = dds
+                    added += 1
+            if key not in decor and key not in CURRENCY_BASES:
+                key = None
+        ip = k * u * inset
+        slots.append({"k": key, "x": round(k * r["x"] + tx + ip, 1), "y": round(k * r["y"] + ty + ip, 1),
+                      "w": round(k * u * r["w"] - 2 * ip, 1), "h": round(k * u * r["h"] - 2 * ip, 1),
+                      "hide": bool(r["group"] == 0 and not r["show"]),
+                      "kind": "item" if r["item"] else ("craft" if r["id"] == "CraftingSlot" else "generic")})
+    print(f"通貨頁：官方美術圖 {art['w']}×{art['h']}、格子 {len(slots)} 個（隱藏格 {sum(s['hide'] for s in slots)}），"
+          f"新增擺設通貨 {added} 種（{game['patch']}）")
+    return {"bg": art["file"], "w": art["w"], "h": art["h"], "patch": game["patch"], "slots": slots}
+
+
 def first_weight(spawn_weights, tags):
     """依列表順序取第一個底材也有的 tag 的權重（Kalandralang 的規則）。"""
     for sw in spawn_weights:
@@ -443,6 +546,9 @@ def main():
         "decor": decor,
         "mods": out_mods,
         "essences": out_ess,
+        "essTab": essence_tab(os.path.dirname(os.path.abspath(__file__)), [e["id"] for e in out_ess]),
+        "curTab": currency_tab(os.path.dirname(os.path.abspath(__file__)), bases_raw, zh_bases,
+                               {v: k for k, v in {**CURRENCY_BASES, **DECOR_BASES}.items()}, decor, icon_jobs),
         "bench": out_bench,
         "v2": legacy_v2(),
         "trans": out_trans,

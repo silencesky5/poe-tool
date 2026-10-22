@@ -415,5 +415,50 @@ for(const [b,lv] of [[helm,86],[helm,40],[ring,86],[bow,60]]){
   }
 }
 
+// ── 精髓倉庫頁：照遊戲資料 EssenceStashTabLayout 的位置 ──
+{
+  const T=E.data.essTab, L=JSON.parse(fs.readFileSync(path.join(__dirname,"..","img","craft","stash_layouts.json"),"utf8")).stash_page_D;
+  const G=JSON.parse(fs.readFileSync(path.join(__dirname,"stash_layout_game.json"),"utf8"));
+  ok(T&&Object.keys(T.slots).length===104&&T.generic.length===4,"精髓頁排列表：104 種精髓有專屬格、4 個通用格（遊戲資料共 109 格，含中間大格）");
+  const all=[...Object.values(T.slots),...T.generic];
+  ok(new Set(all).size===all.length&&all.every(i=>L.slots.some(s=>s.i===i&&!s.big)),"每一格都對到背景圖上不同的小格，不重複、不佔用中間大格");
+  const noSlot=E.essences.filter(e=>T.slots[e.id]===undefined).map(e=>e.n);
+  ok(noSlot.length===1&&noSlot[0]==="Essence of Desolation","遊戲排列表裡沒有專屬格的只有荒蕪精髓（放在通用格）");
+  // 同一列（同一種精髓）y 相同；左側區塊的高階在外側（左），右側區塊的高階在外側（右）
+  const x=id=>L.slots.find(s=>s.i===T.slots[id]).x, y=id=>L.slots.find(s=>s.i===T.slots[id]).y;
+  const C="Metadata/Items/Currency/CurrencyEssence";
+  const greed=[1,2,3,4,5,6,7].map(n=>C+"Greed"+n), envy=[1,2,3].map(n=>C+"Envy"+n);
+  ok(greed.every(id=>Math.abs(y(id)-y(greed[0]))<5)&&greed.every((id,i)=>!i||x(id)<x(greed[i-1])),"貪婪（7 階）同一列；低語在最靠中間、破空在最左邊（遊戲資料）");
+  ok(envy.every(id=>Math.abs(y(id)-y(envy[0]))<5)&&envy.every((id,i)=>!i||x(id)>x(envy[i-1]))&&x(envy[0])>L.width/2,"忌妒（3 階）在右側短區塊同一列；咆哮在左、破空在最右（遊戲資料）");
+  const corr=["Hysteria1","Insanity1","Horror1","Delirium1"].map(n=>C+n);
+  ok(corr.every(id=>x(id)>L.width*0.7&&y(id)>L.height*0.45),"腐化精髓 4 種在右下");
+  ok(G.essence.length===109&&G.patch===E.data.version,"排列表的遊戲版本和資料版本一致（"+G.patch+"）");
+}
+
+// ── 通貨倉庫頁「一般」：官方 3.29 美術圖＋遊戲資料 CurrencyStashTabLayout ──
+{
+  const T=E.data.curTab, G=JSON.parse(fs.readFileSync(path.join(__dirname,"stash_layout_game.json"),"utf8"));
+  const raw=G.currency.filter(r=>r.group===0||r.group===3);
+  ok(T&&fs.existsSync(path.join(__dirname,"..","img","craft",T.bg)),"通貨頁背景：官方美術圖 "+(T&&T.bg)+" 存在");
+  ok(T.slots.length===raw.length&&T.slots.length===67,`格子數＝遊戲資料 SlotGroup 0＋3（${T.slots.length} 格：通貨 52、大格 1、通用格 14）`);
+  ok(T.slots.filter(s=>s.hide).length===raw.filter(r=>r.group===0&&!r.show).length,`隱藏格（ShowIfEmpty＝否）${T.slots.filter(s=>s.hide).length} 格有標記`);
+  const pos=k=>T.slots.filter(s=>s.k===k);
+  ok(CE.CURRENCIES.every(c=>pos(c.k).length===1&&!pos(c.k)[0].hide),"模擬器的 10 顆通貨在通貨頁各有 1 個格子，而且不是隱藏格");
+  const meta={transmute:"CurrencyUpgradeToMagic",alt:"CurrencyRerollMagic",annul:"CurrencyRemoveMod",exalt:"CurrencyAddModToRare",regal:"CurrencyUpgradeMagicToRare",
+    alch:"CurrencyUpgradeToRare",chaos:"CurrencyRerollRare",aug:"CurrencyAddModToMagic",divine:"CurrencyModValues",scour:"CurrencyConvertToNormal"};
+  const k=G.currencyArt.k, tx=G.currencyArt.tx, ty=G.currencyArt.ty;
+  const okPos=Object.entries(meta).every(([key,m])=>{ const r=raw.find(x=>x.item==="Metadata/Items/Currency/"+m&&x.show); const s=pos(key)[0];
+    return r&&Math.abs(s.x-(k*r.x+tx))<k*85*0.2&&Math.abs(s.y-(k*r.y+ty))<k*85*0.2; });
+  ok(okPos,"10 顆通貨的位置和遊戲資料的座標一致（換算後誤差 < 0.2 格）");
+  // 大格（CraftingSlot）按資料是 2×4 格，換算後下緣會碰到通用格；網頁不畫它（美術圖上的框比較短），所以不列入
+  const vis=T.slots.filter(s=>!s.hide&&s.kind!=="craft");
+  let overlap=0;
+  for(let i=0;i<vis.length;i++) for(let j=i+1;j<vis.length;j++){ const a=vis[i],b=vis[j];
+    if(a.x<b.x+b.w&&b.x<a.x+a.w&&a.y<b.y+b.h&&b.y<a.y+a.h) overlap++; }
+  ok(overlap===0&&vis.every(s=>s.x>=0&&s.y>=0&&s.x+s.w<=T.w&&s.y+s.h<=T.h),"顯示的格子（通貨格、通用格）互不重疊，都在美術圖範圍內");
+  ok(T.slots.filter(s=>s.kind==="item"&&!s.hide).every(s=>s.k&&(CE.CUR[s.k]||E.data.decor[s.k])),"每個會顯示的通貨格都有對應的通貨或擺設（名稱、圖示）");
+  ok(["scrollfrag","wisdom","vaal","chance","mirror","fracture","binding"].every(d=>pos(d).length===1),"原本的擺設通貨（卷軸碎片、瓦爾寶珠等）都還在");
+}
+
 console.log(fail?`\n有 ${fail} 項失敗`:"\n全部通過");
 process.exit(fail?1:0);

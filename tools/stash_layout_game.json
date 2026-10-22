@@ -1,0 +1,2300 @@
+{
+ "patch": "3.29.3.3",
+ "source": "pathofexile-dat 16.0.1（官方更新伺服器）",
+ "essence": [
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred1",
+   "x": 480,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred2",
+   "x": 408,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred3",
+   "x": 335,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred4",
+   "x": 263,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred5",
+   "x": 190,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred6",
+   "x": 117,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHatred7",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHatred7",
+   "x": 44,
+   "y": 183,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe1",
+   "x": 480,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe2",
+   "x": 408,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe3",
+   "x": 335,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe4",
+   "x": 263,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe5",
+   "x": 190,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe6",
+   "x": 117,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWoe7",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWoe7",
+   "x": 44,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed1",
+   "x": 480,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed2",
+   "x": 408,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed3",
+   "x": 335,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed4",
+   "x": 263,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed5",
+   "x": 190,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed6",
+   "x": 117,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceGreed7",
+   "item": "Metadata/Items/Currency/CurrencyEssenceGreed7",
+   "x": 44,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt1",
+   "x": 480,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt2",
+   "x": 408,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt3",
+   "x": 335,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt4",
+   "x": 263,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt5",
+   "x": 190,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt6",
+   "x": 117,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceContempt7",
+   "item": "Metadata/Items/Currency/CurrencyEssenceContempt7",
+   "x": 44,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSorrow1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSorrow1",
+   "x": 408,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSorrow2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSorrow2",
+   "x": 335,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSorrow3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSorrow3",
+   "x": 263,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSorrow4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSorrow4",
+   "x": 190,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSorrow5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSorrow5",
+   "x": 117,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSorrow6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSorrow6",
+   "x": 44,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnger1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnger1",
+   "x": 408,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnger2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnger2",
+   "x": 335,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnger3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnger3",
+   "x": 263,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnger4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnger4",
+   "x": 190,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnger5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnger5",
+   "x": 117,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnger6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnger6",
+   "x": 44,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceTorment1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceTorment1",
+   "x": 408,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceTorment2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceTorment2",
+   "x": 335,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceTorment3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceTorment3",
+   "x": 263,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceTorment4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceTorment4",
+   "x": 190,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceTorment5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceTorment5",
+   "x": 117,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceTorment6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceTorment6",
+   "x": 44,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceFear1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceFear1",
+   "x": 408,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceFear2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceFear2",
+   "x": 335,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceFear3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceFear3",
+   "x": 263,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceFear4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceFear4",
+   "x": 190,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceFear5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceFear5",
+   "x": 117,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceFear6",
+   "item": "Metadata/Items/Currency/CurrencyEssenceFear6",
+   "x": 44,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSuffering1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSuffering1",
+   "x": 335,
+   "y": 692,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSuffering2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSuffering2",
+   "x": 263,
+   "y": 692,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSuffering3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSuffering3",
+   "x": 190,
+   "y": 692,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSuffering4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSuffering4",
+   "x": 117,
+   "y": 692,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSuffering5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSuffering5",
+   "x": 44,
+   "y": 692,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceRage1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceRage1",
+   "x": 335,
+   "y": 619,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceRage2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceRage2",
+   "x": 263,
+   "y": 619,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceRage3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceRage3",
+   "x": 190,
+   "y": 619,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceRage4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceRage4",
+   "x": 117,
+   "y": 619,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceRage5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceRage5",
+   "x": 44,
+   "y": 618,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWrath1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWrath1",
+   "x": 335,
+   "y": 764,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWrath2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWrath2",
+   "x": 263,
+   "y": 764,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWrath3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWrath3",
+   "x": 190,
+   "y": 764,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWrath4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWrath4",
+   "x": 117,
+   "y": 764,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceWrath5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceWrath5",
+   "x": 44,
+   "y": 764,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDoubt1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDoubt1",
+   "x": 335,
+   "y": 837,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDoubt2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDoubt2",
+   "x": 263,
+   "y": 837,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDoubt3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDoubt3",
+   "x": 190,
+   "y": 837,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDoubt4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDoubt4",
+   "x": 117,
+   "y": 837,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDoubt5",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDoubt5",
+   "x": 44,
+   "y": 837,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnguish1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnguish1",
+   "x": 613,
+   "y": 182,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnguish2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnguish2",
+   "x": 685,
+   "y": 182,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnguish3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnguish3",
+   "x": 760,
+   "y": 182,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceAnguish4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceAnguish4",
+   "x": 833,
+   "y": 182,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceLoathing1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceLoathing1",
+   "x": 613,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceLoathing2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceLoathing2",
+   "x": 685,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceLoathing3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceLoathing3",
+   "x": 760,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceLoathing4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceLoathing4",
+   "x": 833,
+   "y": 38,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSpite1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSpite1",
+   "x": 613,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSpite2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSpite2",
+   "x": 686,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSpite3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSpite3",
+   "x": 760,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceSpite4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceSpite4",
+   "x": 833,
+   "y": 256,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceZeal1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceZeal1",
+   "x": 613,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceZeal2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceZeal2",
+   "x": 686,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceZeal3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceZeal3",
+   "x": 760,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceZeal4",
+   "item": "Metadata/Items/Currency/CurrencyEssenceZeal4",
+   "x": 833,
+   "y": 111,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceMisery1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceMisery1",
+   "x": 686,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceMisery2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceMisery2",
+   "x": 760,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceMisery3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceMisery3",
+   "x": 833,
+   "y": 474,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDread1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDread1",
+   "x": 686,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDread2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDread2",
+   "x": 760,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDread3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDread3",
+   "x": 833,
+   "y": 547,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceScorn1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceScorn1",
+   "x": 686,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceScorn2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceScorn2",
+   "x": 760,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceScorn3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceScorn3",
+   "x": 833,
+   "y": 329,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceEnvy1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceEnvy1",
+   "x": 686,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceEnvy2",
+   "item": "Metadata/Items/Currency/CurrencyEssenceEnvy2",
+   "x": 760,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceEnvy3",
+   "item": "Metadata/Items/Currency/CurrencyEssenceEnvy3",
+   "x": 833,
+   "y": 402,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHysteria1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHysteria1",
+   "x": 833,
+   "y": 838,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceInsanity1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceInsanity1",
+   "x": 833,
+   "y": 620,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceHorror1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceHorror1",
+   "x": 833,
+   "y": 693,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEssenceDelirium1",
+   "item": "Metadata/Items/Currency/CurrencyEssenceDelirium1",
+   "x": 833,
+   "y": 765,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "GenericSlot0",
+   "item": null,
+   "x": 760,
+   "y": 620,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "GenericSlot1",
+   "item": null,
+   "x": 760,
+   "y": 693,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "GenericSlot2",
+   "item": null,
+   "x": 760,
+   "y": 765,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "GenericSlot3",
+   "item": null,
+   "x": 760,
+   "y": 838,
+   "w": 1,
+   "h": 1
+  },
+  {
+   "id": "CraftingSlot",
+   "item": null,
+   "x": 514,
+   "y": 653,
+   "w": 2,
+   "h": 4
+  }
+ ],
+ "currency": [
+  {
+   "id": "Metadata/Items/Currency/CurrencyWeaponQuality",
+   "item": "Metadata/Items/Currency/CurrencyWeaponQuality",
+   "x": 591,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyIdentification",
+   "item": "Metadata/Items/Currency/CurrencyIdentification",
+   "x": 113,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollRare",
+   "item": "Metadata/Items/Currency/CurrencyRerollRare",
+   "x": 760,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyArmourQuality",
+   "item": "Metadata/Items/Currency/CurrencyArmourQuality",
+   "x": 676,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDuplicate",
+   "item": "Metadata/Items/Currency/CurrencyDuplicate",
+   "x": 478,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeToRare",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeToRare",
+   "x": 676,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeRandomly",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeRandomly",
+   "x": 282,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyPassiveRefund",
+   "item": "Metadata/Items/Currency/CurrencyPassiveRefund",
+   "x": 591,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeToMagic",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeToMagic",
+   "x": 27,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollMagic",
+   "item": "Metadata/Items/Currency/CurrencyRerollMagic",
+   "x": 112,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyConvertToNormal",
+   "item": "Metadata/Items/Currency/CurrencyConvertToNormal",
+   "x": 591,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddModToRare",
+   "item": "Metadata/Items/Currency/CurrencyAddModToRare",
+   "x": 393,
+   "y": 180,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeMagicToRare",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeMagicToRare",
+   "x": 591,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddModToMagic",
+   "item": "Metadata/Items/Currency/CurrencyAddModToMagic",
+   "x": 282,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyPortal",
+   "item": "Metadata/Items/Currency/CurrencyPortal",
+   "x": 197,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyFlaskQuality",
+   "item": "Metadata/Items/Currency/CurrencyFlaskQuality",
+   "x": 760,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyGemQuality",
+   "item": "Metadata/Items/Currency/CurrencyGemQuality",
+   "x": 845,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollSocketColours",
+   "item": "Metadata/Items/Currency/CurrencyRerollSocketColours",
+   "x": 281,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollSocketLinks",
+   "item": "Metadata/Items/Currency/CurrencyRerollSocketLinks",
+   "x": 196,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollSocketNumbers",
+   "item": "Metadata/Items/Currency/CurrencyRerollSocketNumbers",
+   "x": 113,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyModValues",
+   "item": "Metadata/Items/Currency/CurrencyModValues",
+   "x": 845,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollImplicit",
+   "item": "Metadata/Items/Currency/CurrencyRerollImplicit",
+   "x": 845,
+   "y": 179,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMapQuality",
+   "item": "Metadata/Items/Currency/CurrencyMapQuality",
+   "x": 846,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyIdentificationShard",
+   "item": "Metadata/Items/Currency/CurrencyIdentificationShard",
+   "x": 28,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeToMagicShard",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeToMagicShard",
+   "x": 28,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollMagicShard",
+   "item": "Metadata/Items/Currency/CurrencyRerollMagicShard",
+   "x": 113,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeToRareShard",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeToRareShard",
+   "x": 675,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyCorrupt",
+   "item": "Metadata/Items/Currency/CurrencyCorrupt",
+   "x": 845,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "CraftingSlot",
+   "item": null,
+   "x": 406,
+   "y": 360,
+   "w": 2,
+   "h": 4,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic1",
+   "item": null,
+   "x": 182,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic2",
+   "item": null,
+   "x": 266,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic3",
+   "item": null,
+   "x": 351,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic4",
+   "item": null,
+   "x": 437,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic5",
+   "item": null,
+   "x": 522,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencySilverCoin",
+   "item": "Metadata/Items/Currency/CurrencySilverCoin",
+   "x": 266,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddAtlasMod",
+   "item": "Metadata/Items/Currency/CurrencyAddAtlasMod",
+   "x": 351,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddAtlasModMid",
+   "item": "Metadata/Items/Currency/CurrencyAddAtlasModMid",
+   "x": 437,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddAtlasModHigh",
+   "item": "Metadata/Items/Currency/CurrencyAddAtlasModHigh",
+   "x": 591,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyPerandusCoin",
+   "item": "Metadata/Items/Currency/CurrencyPerandusCoin",
+   "x": 182,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": false
+  },
+  {
+   "id": "Generic6",
+   "item": null,
+   "x": 607,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic7",
+   "item": null,
+   "x": 694,
+   "y": 680,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic8",
+   "item": null,
+   "x": 179,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic9",
+   "item": null,
+   "x": 265,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic10",
+   "item": null,
+   "x": 351,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic11",
+   "item": null,
+   "x": 437,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic12",
+   "item": null,
+   "x": 522,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic13",
+   "item": null,
+   "x": 607,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Generic14",
+   "item": null,
+   "x": 694,
+   "y": 770,
+   "w": 1,
+   "h": 1,
+   "group": 3,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollRareShard",
+   "item": "Metadata/Items/Currency/CurrencyRerollRareShard",
+   "x": 760,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyDuplicateShard",
+   "item": "Metadata/Items/Currency/CurrencyDuplicateShard",
+   "x": 478,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddModToRareShard",
+   "item": "Metadata/Items/Currency/CurrencyAddModToRareShard",
+   "x": 393,
+   "y": 264,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeMagicToRareShard",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeMagicToRareShard",
+   "x": 591,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRemoveModShard",
+   "item": "Metadata/Items/Currency/CurrencyRemoveModShard",
+   "x": 196,
+   "y": 265,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRemoveMod",
+   "item": "Metadata/Items/Currency/CurrencyRemoveMod",
+   "x": 197,
+   "y": 180,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollMapType",
+   "item": "Metadata/Items/Currency/CurrencyRerollMapType",
+   "x": 266,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollMapTypeShard",
+   "item": "Metadata/Items/Currency/CurrencyRerollMapTypeShard",
+   "x": 0,
+   "y": 0,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeMapTier",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeMapTier",
+   "x": 351,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollUnique",
+   "item": "Metadata/Items/Currency/CurrencyRerollUnique",
+   "x": 111,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeToRareAndSetSockets",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeToRareAndSetSockets",
+   "x": 196,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyStrongboxQuality",
+   "item": "Metadata/Items/Currency/CurrencyStrongboxQuality",
+   "x": 437,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/AtlasExiles/ApplyInfluence",
+   "item": "Metadata/Items/AtlasExiles/ApplyInfluence",
+   "x": 760,
+   "y": 248,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollUniqueShard",
+   "item": "Metadata/Items/Currency/CurrencyRerollUniqueShard",
+   "x": 0,
+   "y": 0,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeToRareAndSetSocketsShard",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeToRareAndSetSocketsShard",
+   "x": 0,
+   "y": 0,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeMapTierShard",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeMapTierShard",
+   "x": 0,
+   "y": 0,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyStrongboxQualityShard",
+   "item": "Metadata/Items/Currency/CurrencyStrongboxQualityShard",
+   "x": 0,
+   "y": 0,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/AtlasExiles/AddModToRareCrusader",
+   "item": "Metadata/Items/AtlasExiles/AddModToRareCrusader",
+   "x": 719,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/AtlasExiles/AddModToRareRedeemer",
+   "item": "Metadata/Items/AtlasExiles/AddModToRareRedeemer",
+   "x": 634,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/AtlasExiles/AddModToRareHunter",
+   "item": "Metadata/Items/AtlasExiles/AddModToRareHunter",
+   "x": 634,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/AtlasExiles/AddModToRareWarlord",
+   "item": "Metadata/Items/AtlasExiles/AddModToRareWarlord",
+   "x": 719,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAtlasPassiveRefund",
+   "item": "Metadata/Items/Currency/CurrencyAtlasPassiveRefund",
+   "x": 676,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyUpgradeInfluenceMod",
+   "item": "Metadata/Items/Currency/CurrencyUpgradeInfluenceMod",
+   "x": 676,
+   "y": 248,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddAtlasModMaven",
+   "item": "Metadata/Items/Currency/CurrencyAddAtlasModMaven",
+   "x": 591,
+   "y": 367,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEnkindlingOrb",
+   "item": "Metadata/Items/Currency/CurrencyEnkindlingOrb",
+   "x": 393,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyInstillingOrb",
+   "item": "Metadata/Items/Currency/CurrencyInstillingOrb",
+   "x": 478,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollRareVeiled",
+   "item": "Metadata/Items/Currency/CurrencyRerollRareVeiled",
+   "x": 760,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollDefences",
+   "item": "Metadata/Items/Currency/CurrencyRerollDefences",
+   "x": 676,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyCleansingFireOrb1",
+   "item": "Metadata/Items/Currency/CurrencyEldritchEmber1",
+   "x": 591,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyCleansingFireOrb2",
+   "item": "Metadata/Items/Currency/CurrencyEldritchEmber2",
+   "x": 676,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyCleansingFireOrb3",
+   "item": "Metadata/Items/Currency/CurrencyEldritchEmber3",
+   "x": 760,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyCleansingFireOrb4",
+   "item": "Metadata/Items/Currency/CurrencyEldritchEmber4",
+   "x": 845,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyGreatTangleOrb1",
+   "item": "Metadata/Items/Currency/CurrencyEldritchIchor1",
+   "x": 591,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyGreatTangleOrb2",
+   "item": "Metadata/Items/Currency/CurrencyEldritchIchor2",
+   "x": 676,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyGreatTangleOrb3",
+   "item": "Metadata/Items/Currency/CurrencyEldritchIchor3",
+   "x": 760,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyGreatTangleOrb4",
+   "item": "Metadata/Items/Currency/CurrencyEldritchIchor4",
+   "x": 845,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyConflictOrb",
+   "item": "Metadata/Items/Currency/CurrencyConflictOrb",
+   "x": 845,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEldritchRerollRare",
+   "item": "Metadata/Items/Currency/CurrencyEldritchRerollRare",
+   "x": 591,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEldritchAddModToRare",
+   "item": "Metadata/Items/Currency/CurrencyEldritchAddModToRare",
+   "x": 676,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyEldritchRemoveMod",
+   "item": "Metadata/Items/Currency/CurrencyEldritchRemoveMod",
+   "x": 760,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeRerollRare",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeRerollRare",
+   "x": 353,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeAddModToRare",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeAddModToRare",
+   "x": 436,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeWeaponQuality",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeWeaponQuality",
+   "x": 521,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeArmourQuality",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeArmourQuality",
+   "x": 353,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeUpgradeModTier",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeUpgradeModTier",
+   "x": 436,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeUpgradeToUnique",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeUpgradeToUnique",
+   "x": 521,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeRerollSocketLinks",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeRerollSocketLinks",
+   "x": 353,
+   "y": 262,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeRerollSocketNumbers",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeRerollSocketNumbers",
+   "x": 436,
+   "y": 262,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeRerollSocketColours",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeRerollSocketColours",
+   "x": 521,
+   "y": 262,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/HarvestSeedRed",
+   "item": "Metadata/Items/Currency/HarvestSeedRed",
+   "x": 146,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/HarvestSeedGreen",
+   "item": "Metadata/Items/Currency/HarvestSeedGreen",
+   "x": 239,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/HarvestSeedBlue",
+   "item": "Metadata/Items/Currency/HarvestSeedBlue",
+   "x": 146,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/HarvestSeedBoss",
+   "item": "Metadata/Items/Currency/HarvestSeedBoss",
+   "x": 239,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyFractureRare",
+   "item": "Metadata/Items/Currency/CurrencyFractureRare",
+   "x": 27,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyFractureRareShard",
+   "item": "Metadata/Items/Currency/CurrencyFractureRareShard",
+   "x": 27,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHinekorasLock",
+   "item": "Metadata/Items/Currency/CurrencyHinekorasLock",
+   "x": 281,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/DivinationCards/DivinationCardDeck",
+   "item": "Metadata/Items/DivinationCards/DivinationCardDeck",
+   "x": 761,
+   "y": 366,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMapQualityRarity",
+   "item": "Metadata/Items/Currency/CurrencyMapQualityRarity",
+   "x": 393,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMapQualityPackSize",
+   "item": "Metadata/Items/Currency/CurrencyMapQualityPackSize",
+   "x": 478,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMapQualityScarabs",
+   "item": "Metadata/Items/Currency/CurrencyMapQualityScarabs",
+   "x": 393,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMapQualityCurrency",
+   "item": "Metadata/Items/Currency/CurrencyMapQualityCurrency",
+   "x": 436,
+   "y": 248,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMapQualityDivinationCards",
+   "item": "Metadata/Items/Currency/CurrencyMapQualityDivinationCards",
+   "x": 478,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRerollRareVeiledChaos",
+   "item": "Metadata/Items/Currency/CurrencyRerollRareVeiledChaos",
+   "x": 845,
+   "y": 450,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyStackedScarab",
+   "item": "Metadata/Items/Currency/CurrencyStackedScarab",
+   "x": 266,
+   "y": 860,
+   "w": 1,
+   "h": 1,
+   "group": 0,
+   "show": false
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddZanaInfluence",
+   "item": "Metadata/Items/Currency/CurrencyAddZanaInfluence",
+   "x": 53,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyRemoveZanaInfluence",
+   "item": "Metadata/Items/Currency/CurrencyRemoveZanaInfluence",
+   "x": 239,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMoreZanaInfluencedItems",
+   "item": "Metadata/Items/Currency/CurrencyMoreZanaInfluencedItems",
+   "x": 146,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddModToRareShaper",
+   "item": "Metadata/Items/Currency/CurrencyAddModToRareShaper",
+   "x": 803,
+   "y": 78,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyAddModToRareElder",
+   "item": "Metadata/Items/Currency/CurrencyAddModToRareElder",
+   "x": 803,
+   "y": 163,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/FearMemoryThread",
+   "item": "Metadata/Items/Currency/FearMemoryThread",
+   "x": 146,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/BenevolenceMemoryThread",
+   "item": "Metadata/Items/Currency/BenevolenceMemoryThread",
+   "x": 239,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/IgnoranceMemoryThread",
+   "item": "Metadata/Items/Currency/IgnoranceMemoryThread",
+   "x": 53,
+   "y": 79,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeGeneric",
+   "item": "Metadata/Items/Currency/AstrolabeGeneric",
+   "x": 146,
+   "y": 248,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeHarvest",
+   "item": "Metadata/Items/Currency/AstrolabeHarvest",
+   "x": 239,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeAbyss",
+   "item": "Metadata/Items/Currency/AstrolabeAbyss",
+   "x": 146,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeBreach",
+   "item": "Metadata/Items/Currency/AstrolabeBreach",
+   "x": 53,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeRitual",
+   "item": "Metadata/Items/Currency/AstrolabeRitual",
+   "x": 53,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeBlight",
+   "item": "Metadata/Items/Currency/AstrolabeBlight",
+   "x": 53,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeUltimatum",
+   "item": "Metadata/Items/Currency/AstrolabeUltimatum",
+   "x": 146,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeDelirium",
+   "item": "Metadata/Items/Currency/AstrolabeDelirium",
+   "x": 146,
+   "y": 418,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeLegion",
+   "item": "Metadata/Items/Currency/AstrolabeLegion",
+   "x": 239,
+   "y": 333,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/AstrolabeExpedition",
+   "item": "Metadata/Items/Currency/AstrolabeExpedition",
+   "x": 239,
+   "y": 503,
+   "w": 1,
+   "h": 1,
+   "group": 1,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMutatedAddModToMagic",
+   "item": "Metadata/Items/Currency/CurrencyMutatedAddModToMagic",
+   "x": 633,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMutatedUpgradeMagicToRare",
+   "item": "Metadata/Items/Currency/CurrencyMutatedUpgradeMagicToRare",
+   "x": 633,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyMutatedAddModToRare",
+   "item": "Metadata/Items/Currency/CurrencyMutatedAddModToRare",
+   "x": 726,
+   "y": 85,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyBreachUpgradeUniqueGeneral",
+   "item": "Metadata/Items/Currency/CurrencyBreachUpgradeUniqueGeneral",
+   "x": 726,
+   "y": 173,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/LegionCocoonGloves",
+   "item": "Metadata/Items/Currency/LegionCocoonGloves",
+   "x": 146,
+   "y": 360,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/LegionCocoonBoots",
+   "item": "Metadata/Items/Currency/LegionCocoonBoots",
+   "x": 146,
+   "y": 448,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/LegionCocoonHelmet",
+   "item": "Metadata/Items/Currency/LegionCocoonHelmet",
+   "x": 239,
+   "y": 360,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/LegionCocoonShield",
+   "item": "Metadata/Items/Currency/LegionCocoonShield",
+   "x": 239,
+   "y": 448,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/LegionCocoonBodyArmour",
+   "item": "Metadata/Items/Currency/LegionCocoonBodyArmour",
+   "x": 193,
+   "y": 536,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/HarvestSeedFaridun",
+   "item": "Metadata/Items/Currency/HarvestSeedFaridun",
+   "x": 146,
+   "y": 262,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  },
+  {
+   "id": "Metadata/Items/Currency/CurrencyHellscapeModValues",
+   "item": "Metadata/Items/Currency/CurrencyHellscapeModValues",
+   "x": 239,
+   "y": 262,
+   "w": 1,
+   "h": 1,
+   "group": 2,
+   "show": true
+  }
+ ],
+ "currencyArt": {
+  "file": "stash_currency_official.webp",
+  "game": "art/textures/interface/2d/2dart/uiimages/ingame/mtx/currencystash/4k/backgroundbase.dds",
+  "w": 1272,
+  "h": 1272,
+  "k": 1.3484,
+  "tx": -16.5,
+  "ty": -21.5,
+  "unit": 85
+ }
+}

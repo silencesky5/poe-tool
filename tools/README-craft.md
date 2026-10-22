@@ -97,3 +97,10 @@ node tools/test_craft_engine.js
 ## 存檔
 - v3 存 id，不受編號變動影響。v2（記編號）的舊存檔用 `tools/legacy_v2_index.json`（3.29.3.3 當時的順序，固定不改）轉換；資料多了精髓、工藝詞綴後編號已經位移，所以不能再用目前的編號解讀 v2。
 - 製裝相關檔案在 index.html 加了版本號（`VER`、`craft-bench.css?v=`），改這些檔案時要一起改，否則瀏覽器可能用舊檔。
+
+## 倉庫頁排列（2026-10-22 加入）
+- 精髓頁的格子位置照遊戲資料 `EssenceStashTabLayout`：RePoE 沒有，用 `tools/extract_stash_layout.py`（pathofexile-dat，從官方更新伺服器）抽成 `tools/stash_layout_game.json`，每季更新腳本會自動重抽。
+- `build_craft_data.py` 把遊戲座標對到背景圖 `stash_page_D` 的格子（固定比例＋最佳平移），結果放在 `craft-data.js` 的 `essTab`。對不齊（例如新賽季多了精髓）時會印警告，網頁改用依序排列。
+- 遊戲資料：104 種精髓各有專屬格、4 個通用格、1 個大格。荒蕪精髓沒有專屬格，網頁放在第一個通用格。
+- 通貨頁：`CurrencyStashTabLayout` 的「一般」（SlotGroup 0，52 格）和目前的背景圖 `stash_page_A`（69 格）對不起來，`CURRENCY_SLOT`／`DECOR_SLOT` 仍是手動設定；SlotGroup 1 ↔ `stash_currency_general`、SlotGroup 3 ↔ `stash_page_B` 對得上。
+- 2026-10-22 更新：通貨頁「一般」改用官方 3.29 美術圖（`mtx/currencystash/4k/backgroundbase.dds` → `img/craft/stash_currency_official.webp`）＋ `CurrencyStashTabLayout`（SlotGroup 0＋3）。`extract_stash_layout.py` 會取出美術圖、用影像分析算出遊戲座標 → 圖上像素的換算（需要 Pillow、numpy），`build_craft_data.py` 產生 `craft-data.js` 的 `curTab`。手動的 `CURRENCY_SLOT`／`DECOR_SLOT` 已移除；版面上其他通貨自動加成擺設。隱藏格（ShowIfEmpty＝否）倉庫裡沒有該物品時不顯示。原本的截圖背景 `stash_page_A` 移到 `備份\通貨頁截圖背景_2026-10-22\`。

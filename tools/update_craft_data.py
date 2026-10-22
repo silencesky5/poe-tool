@@ -4,7 +4,8 @@
 步驟：
   1. 檢查版本：RePoE fork 的 version.txt 和 craft-data.js 的 version 一樣就結束
   2. 版本沒變時提示：新賽季剛開時 RePoE 可能還沒更新，晚點再試
-  3. 下載英文＋繁中資料到 tools/_repoe_new/（上一版的快取 tools/_repoe_cache/ 先保留）
+  3. 下載英文＋繁中資料到 tools/_repoe_new/（上一版的快取 tools/_repoe_cache/ 先保留），
+     並用 pathofexile-dat 抽倉庫頁排列表（tools/stash_layout_game.json，精髓頁的格子位置）
   4. 產生新資料並寫差異報告 docs/日期_製裝資料差異_舊版_to_新版.md；差異太大就停下來要人確認
   5. 存檔相容：存檔用底材 Metadata 路徑和詞綴 id，編號變了也不影響；被移除的底材／詞綴列在報告裡
   6. 換上新資料（舊的 craft-data.js 備份到 備份/），只下載新增的圖示
@@ -34,6 +35,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 import build_craft_data as B  # noqa: E402
+import extract_stash_layout as X  # noqa: E402
 
 DATA_JS = os.path.join(ROOT, "craft-data.js")
 CACHE = os.path.join(HERE, "_repoe_cache")
@@ -215,6 +217,12 @@ def main():
     if not src:
         say("[3/9] 下載資料到", NEW)
         download(NEW)
+        # 倉庫頁排列表（精髓頁的格子位置）：RePoE 沒有，用 pathofexile-dat 從官方更新伺服器抽；失敗就沿用舊的
+        say("      抽倉庫頁排列表（pathofexile-dat）")
+        try:
+            X.extract(new_v)
+        except Exception as e:
+            say("      警告：倉庫頁排列表沒有更新（沿用舊的）：", e)
         src = NEW
     else:
         say("[3/9] 用指定的資料夾：", src)

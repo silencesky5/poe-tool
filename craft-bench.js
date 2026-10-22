@@ -11,24 +11,24 @@ const E=CE.create(D);
 
 /* ── 設定 ── */
 const COLS=12, ROWS=12, UNDO_MAX=50, FLASH_MS=2000;
-/* 通貨放在「一般」頁的第幾格（stash_layouts.json 裡 CURRENCY_PAGE 那張背景的 i，由上到下、由左到右） */
-const CURRENCY_PAGE="stash_page_A";
-const CURRENCY_SLOT={transmute:10,alt:11,annul:12,exalt:14,regal:16,alch:17,chaos:18,aug:23,divine:29,scour:35};
-/* 擺設用的通貨：模擬器還不支援，只放圖示（右鍵拿不起來）。
-   某顆做成可用時，把它從這裡搬到 CURRENCY_SLOT（並在 craft-engine.js 的 CURRENCIES 加上規則）。
-   機會石、瓦爾寶珠：Kalandralang 沒有實作，規則先不做。 */
-const DECOR_SLOT={scrollfrag:0,wisdom:1,portal:2,whetstone:6,scrap:7,bauble:8,gcp:9,chance:13,mirror:15,
-  blessed:19,transshard:20,altshard:21,chaosshard:22,mirrorshard:24,exaltshard:26,alchshard:27,regalshard:28,
-  annulshard:30,jeweller:31,fusing:32,chrom:33,sacred:36,deck:37,vaal:38,fracture:39,fractureshard:40,
-  binding:41,regret:43,unmaking:44};
+/* 通貨頁「一般」：官方 3.29 美術圖＋遊戲資料 CurrencyStashTabLayout 的格子（craft-data.js 的 curTab，
+   tools/extract_stash_layout.py 抽出、build_craft_data.py 換算成圖上的位置）。
+   格子裡是模擬器能用的通貨（CraftEngine.CURRENCIES）就能右鍵拿起；其他通貨只放圖示當擺設（右鍵拿不起來）。
+   某顆做成可用時，在 craft-engine.js 的 CURRENCIES 加上規則即可，位置照遊戲資料不用另外設定。
+   機會石、瓦爾寶珠：Kalandralang 沒有實作，規則先不做。
+   隱藏格（遊戲 ShowIfEmpty＝否，例如六分儀）：倉庫裡沒有這個物品時不顯示；模擬器的倉庫只有能用的通貨，
+   所以只有能用的通貨在隱藏格時才會出現。 */
+const CUR_TAB=D.curTab||null;
 /* 通貨頁的三個子分頁；按鈕在每一頁都放在同一個相對位置（以 1254 寬計算） */
 const CUR_SUBS=[
-  {k:"general",zh:"一般",bg:CURRENCY_PAGE,box:[150,14,418,75]},
+  {k:"general",zh:"一般",bg:CUR_TAB?CUR_TAB.bg.replace(/\.webp$/,""):"",box:[150,14,418,75]},
   {k:"atlas",zh:"輿圖",bg:"stash_currency_general",box:[483,14,752,75]},
   {k:"league",zh:"聯盟",bg:"stash_page_B",box:[818,14,1086,75]},
 ];
-/* 精髓倉庫頁（stash_layouts.json 的 stash_page_D）：精髓依資料順序（同類型、低階到高階）放進格子，
-   位置和遊戲內的精髓倉庫不一定相同。中間的大格（遺忘的污染器皿，3.27 起已移除）留空。 */
+/* 精髓倉庫頁（stash_layouts.json 的 stash_page_D）：位置照遊戲資料的 EssenceStashTabLayout
+   （craft-data.js 的 essTab.slots，tools/extract_stash_layout.py 抽出、build_craft_data.py 對到背景圖的格子）。
+   遊戲排列表沒有專屬格的精髓（荒蕪精髓）放在通用格；中間的大格（CraftingSlot）留空。
+   沒有 essTab（排列表對不齊）時改成依序排列。 */
 const ESSENCE_PAGE="stash_page_D";
 const TAB_COLORS=["#7a1f1f","#7a4a1f","#6b6a1f","#2f6b2f","#1f6b66","#1f4f7a","#4a2f7a","#6b1f5a","#3a3a3a"];
 const IMG="img/craft/";
@@ -254,7 +254,8 @@ function drawPage(){
 }
 function drawCurrencyPage(){
   const sub=CUR_SUBS.find(s=>s.k===S.curSub)||CUR_SUBS[0];
-  const L=S.layouts&&S.layouts[sub.bg];
+  const T=sub.k==="general"?CUR_TAB:null;
+  const L=T?{width:T.w,height:T.h}:S.layouts&&S.layouts[sub.bg];
   const W=L?L.width:1254, H=L?L.height:1254;
   const pct=(v,t)=>(v/t*100).toFixed(3)+"%";
   let h=`<div class="kb-cur" style="background-image:url(${IMG}${sub.bg}.webp)">`;
@@ -262,18 +263,19 @@ function drawCurrencyPage(){
     const [x0,y0,x1,y1]=s.box;
     return `<button class="kb-sub" data-sub="${s.k}" style="left:${pct(x0,1254)};top:${pct(y0,1254)};width:${pct(x1-x0,1254)};height:${pct(y1-y0,1254)};background-image:url(${IMG}subtab_${s.k===sub.k?"selected":"normal"}.webp)">${s.zh}</button>`;
   }).join("");
-  if(sub.k==="general"&&L){
+  if(T){
     const at=sl=>`left:${pct(sl.x,W)};top:${pct(sl.y,H)};width:${pct(sl.w,W)};height:${pct(sl.h,H)}`;
-    for(const c of CE.CURRENCIES){
-      const sl=L.slots.find(s=>s.i===CURRENCY_SLOT[c.k]); if(!sl) continue;
-      const held=S.held&&S.held.kind==="cur"&&S.held.k===c.k;
-      h+=`<div class="kb-slot${held?" held":""}" data-cur="${c.k}" style="${at(sl)}">
-        ${curIcon(c.k)}${S.used[c.k]?`<span class="kb-n">${S.used[c.k]}</span>`:""}</div>`;
-    }
-    for(const [k,i] of Object.entries(DECOR_SLOT)){
-      const sl=L.slots.find(s=>s.i===i), d=(D.decor||{})[k];
-      if(!sl||!d||CE.CUR[k]) continue;
-      h+=`<div class="kb-slot kb-decor" data-decor="${k}" style="${at(sl)}">${iconHTML(IMG+"items/"+d.ic,d.zh)}${S.used[k]?`<span class="kb-n">${S.used[k]}</span>`:""}</div>`;
+    for(const sl of T.slots){
+      if(sl.kind!=="item"||!sl.k) continue;               // 大格、通用格：美術圖上的空框
+      const usable=!!CE.CUR[sl.k], d=(D.decor||{})[sl.k];
+      if(sl.hide&&!usable) continue;                       // 隱藏格：倉庫裡沒有就不顯示
+      const n=S.used[sl.k]?`<span class="kb-n">${S.used[sl.k]}</span>`:"";
+      if(usable){
+        const held=S.held&&S.held.kind==="cur"&&S.held.k===sl.k;
+        h+=`<div class="kb-slot${held?" held":""}" data-cur="${sl.k}" style="${at(sl)}">${curIcon(sl.k)}${n}</div>`;
+      }else if(d){
+        h+=`<div class="kb-slot kb-decor" data-decor="${esc(sl.k)}" style="${at(sl)}">${iconHTML(IMG+"items/"+d.ic,d.zh)}${n}</div>`;
+      }
     }
   }
   h+=`</div>`;
@@ -282,7 +284,7 @@ function drawCurrencyPage(){
   pageEl.style.height=L?`calc(var(--grid) * ${H/W})`:"";
   const total=Object.values(S.used).reduce((a,b)=>a+b,0);
   $("kb-curbar").innerHTML=sub.k==="general"
-    ?`<span>右上角數字＝已經用了幾次（共 ${total} 次）</span><button class="kb-btn" id="kb-zero"${total?"":" disabled"}>歸零</button>`
+    ?`<span>右上角數字＝已經用了幾次（共 ${total} 次）${T?`・版面照遊戲資料（${esc(T.patch)}）`:"・沒有通貨頁排列資料"}</span><button class="kb-btn" id="kb-zero"${total?"":" disabled"}>歸零</button>`
     :`<span>${sub.zh}：之後會用到，目前是空的</span>`;
 }
 function drawEssencePage(){
@@ -290,9 +292,11 @@ function drawEssencePage(){
   const W=L?L.width:1240, H=L?L.height:1269;
   const pct=(v,t)=>(v/t*100).toFixed(3)+"%";
   const slots=L?L.slots.filter(s=>!s.big).sort((a,b)=>a.i-b.i):[];
+  const T=D.essTab, byI=i=>L&&L.slots.find(s=>s.i===i);
+  const generic=T?T.generic.slice():[];
   let h=`<div class="kb-cur" style="background-image:url(${IMG}${ESSENCE_PAGE}.webp)">`;
   E.essences.forEach((e,j)=>{
-    const sl=slots[j]; if(!sl) return;
+    const sl=T?byI(T.slots[e.id]!==undefined?T.slots[e.id]:generic.shift()):slots[j]; if(!sl) return;
     const held=S.held&&S.held.kind==="cur"&&S.held.k===e.k;
     h+=`<div class="kb-slot${held?" held":""}" data-cur="${esc(e.k)}" style="left:${pct(sl.x,W)};top:${pct(sl.y,H)};width:${pct(sl.w,W)};height:${pct(sl.h,H)}">
       ${curIcon(e.k)}${S.used[e.k]?`<span class="kb-n">${S.used[e.k]}</span>`:""}</div>`;
@@ -301,7 +305,8 @@ function drawEssencePage(){
   pageEl.innerHTML=h;
   pageEl.style.height=L?`calc(var(--grid) * ${H/W})`:"";
   const n=E.essences.reduce((a,e)=>a+(S.used[e.k]||0),0);
-  $("kb-curbar").innerHTML=`<span>精髓 ${E.essences.length} 種・右上角數字＝已經用了幾次（共 ${n} 次）・格子位置依類型和階級排列，和遊戲內不一定相同</span>`;
+  $("kb-curbar").innerHTML=`<span>精髓 ${E.essences.length} 種・右上角數字＝已經用了幾次（共 ${n} 次）・`+
+    (T?`格子位置照遊戲資料（${esc(T.patch)}）；荒蕪精髓沒有專屬格，放在通用格`:`格子依序排列（沒有遊戲排列資料）`)+`</span>`;
 }
 function drawGrid(el,list){
   const cell="var(--cell)";
