@@ -39,18 +39,6 @@
   text-shadow:0 0 2px #000,0 0 3px #000;font-family:var(--mono);pointer-events:none}
 #kbench .kb-curbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px;font-size:12.5px;color:var(--dim)}
 
-/* 分頁清單 */
-#kbench .kb-list{width:180px;flex:none;display:flex;flex-direction:column;gap:4px}
-#kbench .kb-row{display:flex;align-items:center;gap:4px;background:var(--tc,#1C1A16);border:1px solid #3A342A;border-radius:3px;
-  padding:5px 6px;cursor:pointer;color:#E6DCC4;font-size:13.5px}
-#kbench .kb-row[aria-selected="true"]{border-color:#C9A15A;box-shadow:0 0 0 1px #C9A15A inset}
-#kbench .kb-row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#kbench .kb-row .cnt{font-size:11px;color:#B8AE98;font-family:var(--mono)}
-#kbench .kb-row button{background:none;border:0;color:#CFC3A6;cursor:pointer;padding:0 3px;font-size:13px;opacity:.7}
-#kbench .kb-row button:hover{opacity:1;color:#fff}
-#kbench .kb-row.drag{opacity:.4}
-#kbench .kb-row.over{box-shadow:0 -2px 0 #C9A15A}
-#kbench .kb-row .grip{cursor:grab;color:#8A7E66;font-size:12px}
 #kbench .kb-btn{background:#1D1D1B;border:1px solid #46443F;color:#E6E2DB;font-family:var(--sans);font-size:13.5px;
   padding:6px 12px;border-radius:4px;cursor:pointer}
 #kbench .kb-btn:hover{border-color:#67645C;background:#262624}
@@ -65,8 +53,42 @@
   display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;background:rgba(80,20,15,.25)}
 #kbench .kb-discard.armed{border-style:solid;background:rgba(140,30,20,.35);color:#FFB4A6}
 #kbench .kb-hint{font-size:12px;color:var(--dim);line-height:1.7;margin-top:6px}
-@media(max-width:1180px){#kbench .kb-list{width:100%;flex-direction:row;flex-wrap:wrap}
-  #kbench .kb-list .kb-row{flex:0 1 auto}}
+/* 分頁列：拖曳排序、「＋」新增、右鍵選單 */
+#kbench .kb-chip[draggable="true"]{cursor:pointer}
+#kbench .kb-chip.drag{opacity:.4}
+#kbench .kb-chip.over-l{box-shadow:inset 3px 0 0 #E9C98A}
+#kbench .kb-chip.over-r{box-shadow:inset -3px 0 0 #E9C98A}
+#kbench .kb-add{position:sticky;right:0;color:#E9C98A;font-weight:700;padding:3px 9px;background:#221D15;box-shadow:-6px 0 6px #0E0D0B}
+#kbench .kb-add:hover{color:#fff;border-color:#8C7445}
+#kbench .kb-menu{position:fixed;z-index:75;min-width:170px;background:#1B1B19;border:1px solid #46443F;border-radius:4px;
+  padding:4px;box-shadow:0 10px 28px rgba(0,0,0,.6);display:flex;flex-direction:column}
+#kbench .kb-menu-note{font-size:12px;color:#9C988F;padding:4px 8px 6px;border-bottom:1px solid #2E2C28;margin-bottom:2px;max-width:260px}
+#kbench .kb-menu button{background:none;border:0;color:#E6E2DB;text-align:left;padding:6px 8px;font-size:13.5px;border-radius:3px;cursor:pointer;font-family:var(--sans)}
+#kbench .kb-menu button:hover,#kbench .kb-menu button:focus-visible{background:#2C2A26;color:#fff;outline:none}
+
+/* 右側面板（工藝台／園藝）：和背包一樣寬；寬螢幕三欄放得下時縮小格子，放不下就換到背包下方 */
+#kbench .kb-outer{container-type:inline-size}
+#kbench .kb-side{width:calc(var(--grid) + 12px);flex:none;background:#0E0D0B;border:1px solid #2E2A22;border-radius:6px;padding:6px;
+  margin-left:calc(var(--grid) + 26px)}   /* 兩欄時：換到下一行、對齊背包那一欄（倉庫寬＋間距） */
+#kbench .kb-side[hidden]{display:none}
+@container (min-width:1152px){
+  #kbench .kb.paneled{--cell:min(40px,calc((100cqw - 72px) / 36));--grid:calc(var(--cell) * 12)}
+  #kbench .kb.paneled .kb-side{margin-left:0}
+}
+/* 只放得下一欄時（倉庫、背包、面板上下排）：面板靠左對齊 */
+@container (max-width:1001px){ #kbench .kb-side{margin-left:0} }
+#tab-craft .kbl.kbl-embed{max-width:none;max-height:none;width:100%;box-sizing:border-box}
+#tab-craft .kbl-embed .kbl-list{flex:none;height:calc(var(--grid) * .62);min-height:180px}
+#tab-craft .kbl-slot[data-kslot],#tab-craft .khv-slot[data-kslot]{cursor:pointer}
+#tab-craft .kbl-slot[data-kslot]:hover,#tab-craft .kbl-slot[data-kslot].over{box-shadow:0 0 0 2px #C9A15A,0 0 12px rgba(201,161,90,.5);border-radius:4px}
+#tab-craft .khv-slot[data-kslot]:hover,#tab-craft .khv-slot[data-kslot].over{box-shadow:0 0 0 2px #9FD3E8,0 0 12px rgba(160,220,255,.45);border-radius:4px}
+#tab-craft .kbl-empty,#tab-craft .khv-empty{color:#8C887F;font-size:12px;text-align:center;line-height:1.4;pointer-events:none}
+#tab-craft .kbl-go{display:flex;justify-content:flex-end;padding:6px 14px 0}
+#tab-craft .kbl-apply{min-width:110px;padding:7px 18px;cursor:pointer;border:2px solid #6A5A3C;border-radius:3px;
+  background:linear-gradient(#3A2F1E,#1A140C);color:#F0D9A2;font-family:var(--serif);font-size:15px;letter-spacing:.2em}
+#tab-craft .kbl-apply:hover{border-color:#C9A15A;color:#fff}
+#tab-craft .kbl-apply[aria-disabled="true"]{opacity:.5;cursor:not-allowed}
+#tab-craft .kbl-row.sel{outline:2px solid #C9A25A;outline-offset:-2px}
 
 /* 游標上的東西、提示、說明框（position:fixed，跟著滑鼠） */
 #kbench .kb-cursor{position:fixed;left:0;top:0;pointer-events:none;z-index:60;display:none;
@@ -110,7 +132,7 @@
 #tab-craft .kbl{width:100%;max-width:660px;max-height:min(92vh,900px);display:flex;flex-direction:column;color:#E6E2DB;
   background:linear-gradient(#17140f,#0e0c09);border:1px solid #4a3f2c;box-shadow:0 0 0 2px #0a0907,0 16px 40px rgba(0,0,0,.7);border-radius:3px}
 #tab-craft .kbl-head{display:flex;align-items:center;gap:10px;padding:8px 14px;background:url(img/craft/ui/bench_top.webp) center/100% 100% no-repeat;min-height:34px}
-#tab-craft .kbl-head b{font-family:var(--serif);font-size:18px;color:#E9C98A;letter-spacing:.12em;text-shadow:0 1px 2px #000}
+#tab-craft .kbl-head b{font-family:var(--serif);font-size:18px;color:#E9C98A;letter-spacing:.12em;text-shadow:0 1px 2px #000;white-space:nowrap}
 #tab-craft .kbl-sub{color:#BFB49E;font-size:12.5px;margin-right:auto}
 #tab-craft .kbl-x{background:none;border:0;color:#BFB49E;font-size:22px;cursor:pointer;line-height:1}
 #tab-craft .kbl-item{position:relative;flex:none;margin:0 auto;width:min(100%,560px);aspect-ratio:1133/516}
@@ -225,23 +247,38 @@
 #tab-craft .khv-msg{min-height:1.4em;padding:4px 10px;color:#9FD39A;background:#0D0B09}
 #tab-craft .khv-msg.bad{color:#F08A6A}
 #tab-craft .khv-foot{padding:0 10px 8px;font-size:12px;color:#8A847A;background:#0D0B09}
-/* 窄螢幕：改成上下排列（美術圖縮太小會看不清楚） */
+/* 視窗模式（模擬器）窄螢幕：改成上下排列（美術圖縮太小會看不清楚） */
 @container (max-width:640px){
-  #tab-craft .khv-stage{--u:.42px;aspect-ratio:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;font-size:14px;
+  #tab-craft .khv-veil .khv-stage{--u:.42px;aspect-ratio:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:8px 0;font-size:14px;
     background:url(img/craft/ui/harvest_window.webp) center/cover}
-  #tab-craft .khv-frame{display:none}
-  #tab-craft .khv-stage>*{position:static!important;left:auto!important;top:auto!important}
-  #tab-craft .khv-title{width:auto;height:auto;font-size:20px;color:#E9C98A;text-shadow:0 1px 2px #000}
-  #tab-craft .khv-x{position:absolute!important;right:8px;top:8px!important;width:32px;height:32px;font-size:22px}
-  #tab-craft .khv-tab{width:44px;height:44px;padding:4px}
-  #tab-craft .khv-list{width:100%;height:auto;max-height:55vh}
-  #tab-craft .khv-row{min-height:0;padding:8px 10px 34px}
-  #tab-craft .khv-c img{width:20px;height:20px}
-  #tab-craft .khv-side{position:relative!important;width:190px;height:317px}
-  #tab-craft .khv-side .khv-slot{left:35px;top:23px;width:120px;height:207px}
-  #tab-craft .khv-side .khv-go{left:30px;top:246px;width:130px;height:37px;font-size:16px}
-  #tab-craft .khv-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
-  #tab-craft .khv-cnt{width:100px;height:58px}
-  #tab-craft .khv-cnt .ic{width:40px;height:40px;margin-left:5px}
-  #tab-craft .khv-cnt span{font-size:14px}
+  #tab-craft .khv-veil .khv-frame{display:none}
+  #tab-craft .khv-veil .khv-stage>*{position:static!important;left:auto!important;top:auto!important}
+  #tab-craft .khv-veil .khv-title{width:auto;height:auto;font-size:20px;color:#E9C98A;text-shadow:0 1px 2px #000}
+  #tab-craft .khv-veil .khv-x{position:absolute!important;right:8px;top:8px!important;width:32px;height:32px;font-size:22px}
+  #tab-craft .khv-veil .khv-tab{width:44px;height:44px;padding:4px}
+  #tab-craft .khv-veil .khv-list{width:100%;height:auto;max-height:55vh}
+  #tab-craft .khv-veil .khv-row{min-height:0;padding:8px 10px 34px}
+  #tab-craft .khv-veil .khv-c img{width:20px;height:20px}
+  #tab-craft .khv-veil .khv-side{position:relative!important;width:190px;height:317px}
+  #tab-craft .khv-veil .khv-side .khv-slot{left:35px;top:23px;width:120px;height:207px}
+  #tab-craft .khv-veil .khv-side .khv-go{left:30px;top:246px;width:130px;height:37px;font-size:16px}
+  #tab-craft .khv-veil .khv-counts{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}
+  #tab-craft .khv-veil .khv-cnt{width:100px;height:58px}
+  #tab-craft .khv-veil .khv-cnt .ic{width:40px;height:40px;margin-left:5px}
+  #tab-craft .khv-veil .khv-cnt span{font-size:14px}
 }
+
+/* 園藝嵌在製裝台右側面板：只放藤蔓外框（1231 寬），右邊的物品面板和計數移到外框下面 */
+#tab-craft .khv.khv-embed{width:100%;max-height:none;overflow:visible}
+#tab-craft .khv-embed .khv-stage{--u:calc(100cqw/1231);aspect-ratio:1231/1048;font-size:max(12px,calc(var(--u)*27))}
+#tab-craft .khv-embed .khv-title{font-size:max(15px,calc(var(--u)*40))}
+#tab-craft .khv-embed .khv-x{left:calc(var(--u)*1130);top:calc(var(--u)*40)}
+#tab-craft .khv-embed .khv-row{min-height:0;padding:6px 10px 30px}
+#tab-craft .khv-embed .khv-c img{width:20px;height:20px}
+#tab-craft .khv-under{--u:.46px;display:flex;gap:12px;justify-content:center;align-items:flex-start;padding:8px 0 2px}
+#tab-craft .khv-under .khv-side{position:relative;left:auto;top:auto;flex:none}
+#tab-craft .khv-under .khv-go{font-size:15px}
+#tab-craft .khv-under .khv-counts{position:static;display:flex;flex-direction:column;gap:2px}
+#tab-craft .khv-under .khv-cnt{width:92px;height:53px}
+#tab-craft .khv-under .khv-cnt .ic{width:38px;height:38px;margin-left:4px}
+#tab-craft .khv-under .khv-cnt span{font-size:13px}

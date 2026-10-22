@@ -1,5 +1,6 @@
-/* 製裝方法 → 製裝台：仿遊戲的倉庫＋背包。
-   右鍵拿通貨 → 左鍵點裝備套用（Shift 連續用）；左鍵拿起／放下裝備；Ctrl＋左鍵在背包和倉庫間快速移動。
+/* 製裝方法 → 製裝台：仿遊戲的倉庫＋背包＋右側的工藝台／園藝面板。
+   右鍵拿通貨 → 左鍵點裝備套用（Shift 連續用）；左鍵拿起／放下裝備；Ctrl＋左鍵在背包和倉庫（或打開的面板的裝備格）間快速移動。
+   倉庫分頁列：最右邊「＋」新增；一般倉庫頁按右鍵改名、刪除，拖曳調整順序（通貨、精髓、化石固定在最前面）。
    規則在 craft-engine.js；存檔一律透過 window.CraftStorage（存檔是一整個物件，這裡只動自己的欄位）。
    index.html 在第一次打開「製裝方法」分頁時才載入這支（在 craft-data.js、craft-engine.js 之後）。 */
 (function(){
@@ -69,11 +70,14 @@ const S={
   resoSel:[],             // 放進鑄新儀的化石（Metadata 路徑）
   curSub:"general",
   held:null,              // {kind:"cur",k} 或 {kind:"item",e,from:{cid,x,y},snap}
+  panel:null,             // 右側面板："bench" 工藝台、"harvest" 園藝，null＝關著
+  slot:[],                // 面板的裝備格（最多 1 件，格式和背包一樣 {id,x:0,y:0,item}）
   undo:[],
   layouts:null,
   ready:false,
 };
-const cont=cid=>cid==="inv"?S.inv:(S.tabs.find(t=>t.id===cid)||{}).items||null;
+const FIXED_TABS=["currency","essence","delve"];
+const cont=cid=>cid==="inv"?S.inv:cid==="slot"?S.slot:(S.tabs.find(t=>t.id===cid)||{}).items||null;
 
 /* ── 存檔 ──
    v3：裝備存底材的 Metadata 路徑和詞綴 id（E.toStored），每季更新資料後編號變了也讀得回來；
@@ -126,14 +130,18 @@ function fromSave(d){
   if(ok&&d.currencyUsed&&typeof d.currencyUsed==="object")
     for(const [k,v] of Object.entries(d.currencyUsed)){ const n=v|0; if(n>0&&E.curInfo(k)) S.used[k]=n; }
   if(!S.tabs.length) S.tabs.push({id:uid(),name:"暫存區",color:TAB_COLORS[0],items:[]});
-  S.active=ok&&(["currency","essence","delve"].includes(d.activeTab)||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
+  S.active=ok&&(FIXED_TABS.includes(d.activeTab)||S.tabs.some(t=>t.id===d.activeTab))?d.activeTab:"currency";
+  /* 面板的裝備格（舊存檔沒有這兩個欄位＝面板關著、裝備格空著） */
+  S.slot=ok&&v>=3?readEntries(d.craftSlot,v,"slot").slice(0,1).map(e=>({...e,x:0,y:0})):[];
+  S.panel=ok&&(d.benchPanel==="bench"||d.benchPanel==="harvest")?d.benchPanel:null;
+  if(S.slot.length&&!S.panel) S.panel="bench";
 }
 /* 存檔時：拿在游標上的裝備當作還在原位 */
 function toSave(){
-  const inv=S.inv.slice(), tabs=S.tabs.map(t=>({id:t.id,name:t.name,color:t.color,items:t.items.slice()}));
+  const inv=S.inv.slice(), slot=S.slot.slice(), tabs=S.tabs.map(t=>({id:t.id,name:t.name,color:t.color,items:t.items.slice()}));
   const h=S.held;
   if(h&&h.kind==="item"){
-    const list=h.from.cid==="inv"?inv:(tabs.find(t=>t.id===h.from.cid)||{}).items||inv;
+    const list=h.from.cid==="inv"?inv:h.from.cid==="slot"&&!slot.length?slot:(tabs.find(t=>t.id===h.from.cid)||{}).items||inv;
     const s=sizeOf(h.e.item);
     let p=fits(list,h.from.x,h.from.y,s.w,s.h)?{x:h.from.x,y:h.from.y}:firstFit(list,s.w,s.h);
     let target=list;
@@ -142,7 +150,7 @@ function toSave(){
   }
   const strip=e=>({id:e.id,x:e.x,y:e.y,item:E.toStored(e.item)});
   const out={v:SAVE_V,dataVersion:D.version,inventory:inv.map(strip),tabs:tabs.map(t=>({...t,items:t.items.map(strip)})),
-    currencyUsed:{...S.used},activeTab:S.active};
+    currencyUsed:{...S.used},activeTab:S.active,craftSlot:slot.map(strip),benchPanel:S.panel};
   if(unreadable.length) out.unreadable=unreadable;
   return out;
 }
@@ -183,7 +191,7 @@ window.addEventListener("craftstorage:data",e=>{
 /* ── 上一步：每個動作前存一份快照（只含物品和通貨次數，不含分頁名稱和顏色） ── */
 function snapshot(){
   const c=e=>({id:e.id,x:e.x,y:e.y,item:E.clone(e.item)});
-  return {inv:S.inv.map(c),tabs:Object.fromEntries(S.tabs.map(t=>[t.id,t.items.map(c)])),used:{...S.used}};
+  return {inv:S.inv.map(c),slot:S.slot.map(c),tabs:Object.fromEntries(S.tabs.map(t=>[t.id,t.items.map(c)])),used:{...S.used}};
 }
 function pushUndo(snap,label){
   S.undo.push({snap:snap||snapshot(),label});
@@ -194,6 +202,8 @@ function undo(){
   if(S.held&&S.held.kind==="item") returnHeld();
   const u=S.undo.pop(); if(!u) { flash("沒有可以退回的動作"); return; }
   S.inv=u.snap.inv;
+  S.slot=u.snap.slot||[];
+  if(S.slot.length&&!S.panel) S.panel="bench";   // 退回到裝備還在裝備格的時候：把面板打開
   for(const t of S.tabs) if(u.snap.tabs[t.id]) t.items=u.snap.tabs[t.id];
   S.used=u.snap.used;
   flash("已退回："+u.label,true);
@@ -202,26 +212,27 @@ function undo(){
 
 /* ── 骨架 ── */
 root.innerHTML=`
-<div class="kb">
+<div class="kb-outer"><div class="kb">
   <section class="kb-stash" aria-label="倉庫">
     <img class="kb-head" src="${IMG}stash_header.webp" alt="倉庫" draggable="false">
     <div class="kb-strip" id="kb-strip" role="tablist" aria-label="倉庫分頁"></div>
     <div class="kb-page" id="kb-page"></div>
     <div class="kb-curbar" id="kb-curbar"></div>
   </section>
-  <nav class="kb-list" id="kb-list" aria-label="倉庫分頁清單"></nav>
   <section class="kb-inv" aria-label="背包">
     <div class="kb-invbar"><span class="t">背包</span>
       <button class="kb-btn" id="kb-vendor">底材商人</button>
-      <button class="kb-btn" id="kb-craftbench" title="點這裡，再點一件裝備，打開工藝台">工藝台</button>
-      <button class="kb-btn" id="kb-harvest" title="點這裡，再點一件裝備，打開園藝工藝台（豐收）">園藝</button>
+      <button class="kb-btn" id="kb-craftbench" aria-pressed="false" title="在背包右邊打開工藝台（再按一次關閉）">工藝台</button>
+      <button class="kb-btn" id="kb-harvest" aria-pressed="false" title="在背包右邊打開園藝工藝台（豐收；再按一次關閉）">園藝</button>
       <button class="kb-btn" id="kb-undo" title="Ctrl+Z">上一步</button></div>
     <div class="kb-grid" id="kb-inv" data-cid="inv"></div>
     <div class="kb-discard" id="kb-discard">丟棄（把裝備放進來）</div>
     <div class="kb-hint">右鍵點通貨拿起 → 左鍵點裝備套用；按住 Shift 可以一直用；右鍵或 Esc 放下。<br>
-      左鍵拿起裝備、再點一格放下；Ctrl＋左鍵在背包和倉庫間快速移動；按住 Alt 看詞綴範圍；Ctrl+Z 上一步。</div>
+      左鍵拿起裝備、再點一格放下；Ctrl＋左鍵在背包和倉庫（面板打開時是裝備格）間快速移動；按住 Alt 看詞綴範圍；Ctrl+Z 上一步。<br>
+      倉庫分頁：「＋」新增、右鍵改名或刪除、拖曳調整順序。</div>
   </section>
-</div>
+  <section class="kb-side" id="kb-side" aria-label="工藝台／園藝面板" hidden></section>
+</div></div>
 <div class="kb-cursor" id="kb-cursor"></div>
 <div class="kb-tip" id="kb-tip" hidden></div>`;
 const $=id=>document.getElementById(id);
@@ -242,15 +253,18 @@ const itemIcon=item=>{ const b=E.bases[item.b]; return iconHTML(IMG+"items/"+b.i
 const curIcon=k=>{ const c=E.curInfo(k); return iconHTML(IMG+"items/"+(c.ic||k+".png"),c.zh); };
 
 /* ── 畫面 ── */
-function drawAll(){ drawStrip(); drawPage(); drawList(); drawGrid(invEl,S.inv); drawCursor(); drawUndo(); }
+function drawAll(){ drawStrip(); drawPage(); drawGrid(invEl,S.inv); drawPanel(); drawCursor(); drawUndo(); }
 function drawUndo(){ $("kb-undo").disabled=!S.undo.length; }
 
 function tabStyle(t){ return t?`--tc:${t.color}`:""; }
+/* 分頁列：通貨、精髓、化石固定在最前面；一般倉庫頁可以拖曳排序、右鍵改名／刪除；最右邊「＋」新增 */
 function drawStrip(){
-  const chips=[`<button class="kb-chip" role="tab" data-tab="currency" aria-selected="${S.active==="currency"}">通貨</button>`,
-    `<button class="kb-chip" role="tab" data-tab="essence" aria-selected="${S.active==="essence"}">精髓</button>`,
-    `<button class="kb-chip" role="tab" data-tab="delve" aria-selected="${S.active==="delve"}">化石</button>`]
-    .concat(S.tabs.map(t=>`<button class="kb-chip" role="tab" data-tab="${esc(t.id)}" aria-selected="${S.active===t.id}" style="${tabStyle(t)}">${esc(t.name)}</button>`));
+  const chips=[`<button class="kb-chip fixed" role="tab" data-tab="currency" aria-selected="${S.active==="currency"}">通貨</button>`,
+    `<button class="kb-chip fixed" role="tab" data-tab="essence" aria-selected="${S.active==="essence"}">精髓</button>`,
+    `<button class="kb-chip fixed" role="tab" data-tab="delve" aria-selected="${S.active==="delve"}">化石</button>`]
+    .concat(S.tabs.map(t=>`<button class="kb-chip" role="tab" draggable="true" data-tab="${esc(t.id)}" aria-selected="${S.active===t.id}" style="${tabStyle(t)}"
+      title="右鍵改名或刪除・拖曳調整順序">${esc(t.name)}</button>`))
+    .concat(`<button class="kb-chip kb-add" id="kb-newtab" title="新增倉庫頁" aria-label="新增倉庫頁">＋</button>`);
   $("kb-strip").innerHTML=chips.join("");
   const on=$("kb-strip").querySelector('[aria-selected="true"]');
   if(on) on.scrollIntoView({block:"nearest",inline:"nearest"});
@@ -359,17 +373,88 @@ function drawGrid(el,list){
     return `<div class="kb-item r${e.item.r}" data-id="${esc(e.id)}" style="left:calc(${cell} * ${e.x});top:calc(${cell} * ${e.y});width:calc(${cell} * ${s.w});height:calc(${cell} * ${s.h})">${itemIcon(e.item)}</div>`;
   }).join("")+`<div class="kb-prev" hidden></div>`;
 }
-function drawList(){
-  const cnt=t=>t.items.length?`<span class="cnt">${t.items.length}</span>`:"";
-  $("kb-list").innerHTML=
-    `<div class="kb-row" data-tab="currency" aria-selected="${S.active==="currency"}"><span class="nm">通貨</span></div>`+
-    `<div class="kb-row" data-tab="essence" aria-selected="${S.active==="essence"}"><span class="nm">精髓</span></div>`+
-    `<div class="kb-row" data-tab="delve" aria-selected="${S.active==="delve"}"><span class="nm">化石</span></div>`+
-    S.tabs.map(t=>`<div class="kb-row" data-tab="${esc(t.id)}" draggable="true" aria-selected="${S.active===t.id}" style="${tabStyle(t)}">
-      <span class="grip" aria-hidden="true">⋮⋮</span><span class="nm">${esc(t.name)}</span>${cnt(t)}
-      <button data-act="edit" aria-label="改名和顏色" title="改名、選顏色">✎</button>
-      <button data-act="del" aria-label="刪除" title="刪除（只能刪空的頁）">×</button></div>`).join("")+
-    `<button class="kb-btn" id="kb-newtab">＋ 新增倉庫頁</button>`;
+/* ── 右側面板（工藝台／園藝）：清單在 craft-benchlist.js、craft-harvest.js，這裡管裝備格和套用 ── */
+let panelUI=null, panelKind=null;
+const sideEl=$("kb-side");
+function slotEntry(){ return S.slot[0]||null; }
+function costText(c){ return Object.entries(c).map(([k,n])=>(E.curInfo(k)||{zh:k}).zh+" ×"+n.toLocaleString("en-US")).join("、"); }
+function drawPanel(){
+  if(panelKind!==S.panel){
+    if(panelUI) panelUI.close();
+    panelUI=null; panelKind=S.panel; sideEl.innerHTML="";
+    const e=slotEntry(), common={E,item:e&&e.item,lang:L(),host:sideEl,embed:true,onClose:()=>togglePanel(S.panel)};
+    if(S.panel==="bench"&&window.CraftBenchList) panelUI=CraftBenchList.open({...common,onCraft:benchCraft});
+    if(S.panel==="harvest"&&window.CraftHarvest) panelUI=CraftHarvest.open({...common,used:()=>S.used,onCraft:harvestCraft});
+  }else if(panelUI){ const e=slotEntry(); panelUI.update(e&&e.item); }
+  sideEl.hidden=!S.panel;
+  root.querySelector(".kb").classList.toggle("paneled",!!S.panel);
+  $("kb-craftbench").setAttribute("aria-pressed",S.panel==="bench");
+  $("kb-harvest").setAttribute("aria-pressed",S.panel==="harvest");
+}
+/* 工藝台：每做一項就扣費用、記進「上一步」、存檔 */
+function benchCraft(k){
+  const e=slotEntry(); if(!e) return;
+  const o=E.benchByKey[k], name=o.a==="remove"?"移除工藝詞綴":E.modRange(o.m,L()).join(" / ");
+  const snap=snapshot(), r=E.applyBench(e.item,k);
+  if(!r.ok){ panelUI.update(e.item,{bad:true,t:r.err}); return; }
+  e.item=r.item;
+  for(const [c,n] of Object.entries(r.cost)) S.used[c]=(S.used[c]||0)+n;
+  pushUndo(snap,"工藝台");
+  redrawCurPage(); save(); refreshTip();
+  panelUI.update(e.item,{t:"已完成："+name+"（費用 "+costText(r.cost)+"）"});
+}
+/* 園藝：每賦予一次就記生命力用量 */
+function harvestCraft(k){
+  const e=slotEntry(); if(!e) return;
+  const snap=snapshot(), r=E.apply(e.item,k), name=E.hvText(E.hvByKey[k]);
+  if(!r.ok){ panelUI.update(e.item,{bad:true,t:r.err}); return; }
+  e.item=r.item;
+  const cost=E.harvestCost(k);
+  for(const [c,n] of Object.entries(cost)) S.used[c]=(S.used[c]||0)+n;
+  pushUndo(snap,"園藝工藝台");
+  redrawCurPage(); save(); refreshTip();
+  panelUI.update(e.item,{t:"已賦予："+name+"（"+costText(cost)+"）"});
+}
+/* 按「工藝台」「園藝」：開這一個（另一個會關掉，裝備格的裝備留著）；再按一次＝關閉，裝備移回背包 */
+function togglePanel(kind){
+  if(S.panel===kind){ closePanel(); return; }
+  S.panel=kind; hideTip(); drawPanel(); save();
+}
+/* 關閉：裝備格的裝備放回背包；背包滿了放到暫存區（沒有就放第一個放得下的倉庫頁） */
+function closePanel(){
+  if(S.held&&S.held.kind==="item"&&S.held.from.cid==="slot") returnHeld();
+  const e=slotEntry();
+  if(e){
+    const s=sizeOf(e.item);
+    let to="inv", p=firstFit(S.inv,s.w,s.h);
+    if(!p){
+      const tabs=S.tabs.slice().sort((a,b)=>(b.name==="暫存區")-(a.name==="暫存區"));
+      for(const t of tabs){ p=firstFit(t.items,s.w,s.h); if(p){ to=t.id; break; } }
+    }
+    if(!p){ flash("背包和倉庫頁都放不下這件裝備，面板先不關"); return; }
+    const snap=snapshot();
+    S.slot=[];
+    cont(to).push({...e,x:p.x,y:p.y});
+    pushUndo(snap,"關閉面板");
+    if(to!=="inv") flash("背包滿了，裝備放到「"+S.tabs.find(t=>t.id===to).name+"」",true);
+  }
+  S.panel=null; hideTip(); drawAll(); save();
+}
+/* 拿著的裝備放進裝備格（裝備格已有裝備就互換，那件到游標上） */
+function placeInSlot(){
+  const h=S.held, snap=h.snap||snapshot(), old=slotEntry();
+  S.slot=[{...h.e,x:0,y:0}];
+  if(old){ S.held={kind:"item",e:old,from:{cid:"slot",x:0,y:0},snap:null}; pushUndo(snap,"互換裝備"); }
+  else{ S.held=null; pushUndo(snap,"放進裝備格"); }
+  clearPreviews(); drawPanel(); drawCursor(); save();
+}
+function slotClick(ev){
+  const e=slotEntry();
+  if(S.held&&S.held.kind==="item"){ placeInSlot(); return; }
+  if(!e){ if(!S.held) flash("裝備格是空的：左鍵拿起背包裡的裝備再點這裡，或 Ctrl＋左鍵點背包裡的裝備"); return; }
+  if(S.held&&S.held.kind==="cur"){ applyCurrency("slot",e,ev.shiftKey); return; }
+  if(ev.ctrlKey||ev.metaKey){ quickMove("slot",e); return; }
+  pickItem("slot",e);
 }
 
 /* ── 游標上的東西 ── */
@@ -382,9 +467,6 @@ function drawCursor(){
   if(h.kind==="cur"){
     cursorEl.innerHTML=curIcon(h.k);
     cursorEl.style.width=cursorEl.style.height=c+"px";
-  }else if(h.kind==="bench"||h.kind==="harvest"){
-    cursorEl.innerHTML=`<span class="kb-benchcur">${h.kind==="bench"?"工藝台":"園藝工藝台"}：點一件裝備</span>`;
-    cursorEl.style.width=cursorEl.style.height="auto";
   }else{
     const s=sizeOf(h.e.item);
     cursorEl.innerHTML=itemIcon(h.e.item);
@@ -407,7 +489,7 @@ function placement(gridEl,list,cx,cy){
   const hits=list.filter(e=>overlap(e,x,y,s.w,s.h));
   return {x,y,w:s.w,h:s.h,hits,ok:hits.length<=1};
 }
-function clearPreviews(){ root.querySelectorAll(".kb-prev").forEach(p=>p.hidden=true); }
+function clearPreviews(){ root.querySelectorAll(".kb-prev").forEach(p=>p.hidden=true); root.querySelectorAll("[data-kslot].over").forEach(x=>x.classList.remove("over")); }
 function showPreview(gridEl,p){
   const el=gridEl.querySelector(".kb-prev"); if(!el) return;
   el.hidden=false;
@@ -534,6 +616,7 @@ function returnHeld(){
   const h=S.held; if(!h||h.kind!=="item") return;
   const s=sizeOf(h.e.item);
   let list=cont(h.from.cid)||S.inv;
+  if(h.from.cid==="slot"&&(S.slot.length||!S.panel)) list=S.inv;   // 裝備格只放 1 件
   let p=fits(list,h.from.x,h.from.y,s.w,s.h)?{x:h.from.x,y:h.from.y}:firstFit(list,s.w,s.h);
   if(!p){ list=S.inv; p=firstFit(list,s.w,s.h); }
   if(!p){ flash("放不回去：空間不足"); return; }
@@ -557,38 +640,6 @@ function applyCurrency(cid,e,keep){
   redrawCurPage();
   tipTarget={cid,id:e.id}; refreshTip();
   save();
-}
-/* 工藝台（清單在 craft-benchlist.js）：每做一項就扣費用、記進「上一步」、存檔；清單保持開著 */
-function openCraftBench(cid,e){
-  if(!window.CraftBenchList) return;
-  hideTip();
-  const name=k=>{ const o=E.benchByKey[k]; return o.a==="remove"?"移除工藝詞綴":E.modRange(o.m,L()).join(" / "); };
-  const ui=CraftBenchList.open({E,item:e.item,lang:L(),host:root,onCraft(k){
-    const snap=snapshot();
-    const r=E.applyBench(e.item,k);
-    if(!r.ok){ ui.update(e.item,{bad:true,t:r.err}); return; }
-    e.item=r.item;
-    for(const [c,n] of Object.entries(r.cost)) S.used[c]=(S.used[c]||0)+n;
-    pushUndo(snap,"工藝台");
-    redrawContainer(cid); redrawCurPage(); save();
-    ui.update(e.item,{t:"已完成："+name(k)+"（費用 "+Object.entries(r.cost).map(([c,n])=>(E.curInfo(c)||{zh:c}).zh+" ×"+n).join("、")+"）"});
-  }});
-}
-/* 園藝工藝台（清單在 craft-harvest.js）：每賦予一次就記生命力用量、記進「上一步」、存檔；視窗保持開著 */
-function openHarvest(cid,e){
-  if(!window.CraftHarvest) return;
-  hideTip();
-  const ui=CraftHarvest.open({E,item:e.item,lang:L(),host:root,used:()=>S.used,onCraft(k){
-    const snap=snapshot(), name=E.hvText(E.hvByKey[k]);
-    const r=E.apply(e.item,k);
-    if(!r.ok){ ui.update(e.item,{bad:true,t:r.err}); return; }
-    e.item=r.item;
-    const cost=E.harvestCost(k);
-    for(const [c,n] of Object.entries(cost)) S.used[c]=(S.used[c]||0)+n;
-    pushUndo(snap,"園藝工藝台");
-    redrawContainer(cid); redrawCurPage(); save();
-    ui.update(e.item,{t:"已賦予："+name+"（"+Object.entries(cost).map(([c,n])=>(E.curInfo(c)||{zh:c}).zh+" ×"+n.toLocaleString("en-US")).join("、")+"）"});
-  }});
 }
 function pickItem(cid,e){
   const list=cont(cid);
@@ -615,16 +666,19 @@ function placeHeld(cid,gridEl){
     pushUndo(snap,"移動裝備");
   }
   clearPreviews();
-  redrawContainer(cid); drawCursor(); drawList();
+  redrawContainer(cid); drawCursor();
   save();
 }
 function quickMove(cid,e){
   let to;
-  if(cid==="inv"){
-    if(["currency","essence","delve"].includes(S.active)){ flash("先打開一個一般倉庫頁"); return; }
+  if(cid==="inv"&&S.panel){
+    if(S.slot.length){ flash("裝備格已經有裝備（先把它拿出來）"); return; }
+    to="slot";
+  }else if(cid==="inv"){
+    if(FIXED_TABS.includes(S.active)){ flash("先打開一個一般倉庫頁"); return; }
     to=S.active;
   }else to="inv";
-  const dst=cont(to), s=sizeOf(e.item), p=firstFit(dst,s.w,s.h);
+  const dst=cont(to), s=sizeOf(e.item), p=to==="slot"?{x:0,y:0}:firstFit(dst,s.w,s.h);
   if(!p){ flash("空間不足"); return; }
   const snap=snapshot();
   const src=cont(cid);
@@ -635,8 +689,8 @@ function quickMove(cid,e){
 }
 function redrawContainer(cid){
   if(cid==="inv") drawGrid(invEl,S.inv);
+  else if(cid==="slot") drawPanel();
   else if(S.active===cid) drawGrid($("kb-tabgrid"),cont(cid));
-  drawList();
 }
 
 /* ── 滑鼠 ── */
@@ -650,11 +704,17 @@ document.addEventListener("mousemove",ev=>{
   mouse={x:ev.clientX,y:ev.clientY};
   if(!S.ready||root.offsetParent===null) return;
   moveCursor();
-  const g=gridOf(ev.target);
+  const g=gridOf(ev.target), ks=ev.target.closest&&ev.target.closest("[data-kslot]");
   if(S.held&&S.held.kind==="item"){
     clearPreviews();
     if(g){ showPreview(g,placement(g,cont(g.dataset.cid),ev.clientX,ev.clientY)); }
+    if(ks) ks.classList.add("over");
     hideTip();
+    return;
+  }
+  if(ks&&slotEntry()){
+    const e=slotEntry();
+    if(!tipTarget||tipTarget.id!==e.id){ tipTarget={cid:"slot",id:e.id}; refreshTip(); } else placeTip();
     return;
   }
   // 說明框
@@ -675,6 +735,8 @@ document.addEventListener("mousemove",ev=>{
 });
 /* 製裝台自己處理完的右鍵不再往上傳（處理時格子會重畫，下面 document 那層會誤判成「點在外面」） */
 root.addEventListener("contextmenu",ev=>{
+  const chip=ev.target.closest(".kb-chip[data-tab]");
+  if(chip){ ev.preventDefault(); ev.stopPropagation(); tabMenu(chip.dataset.tab,ev.clientX,ev.clientY); return; }
   const decor=ev.target.closest(".kb-decor");
   if(decor){ ev.preventDefault(); ev.stopPropagation(); flash("模擬器尚未支援"); return; }   // 擺設：拿不起來
   const slot=ev.target.closest(".kb-slot");
@@ -696,30 +758,25 @@ document.addEventListener("contextmenu",ev=>{
 root.addEventListener("click",ev=>{
   if(ev.button!==0) return;
   const t=ev.target;
-  // 分頁籤、清單、通貨子分頁
-  const chip=t.closest(".kb-chip, .kb-row");
-  if(chip&&!t.closest("button[data-act]")){ setActive(chip.dataset.tab); return; }
-  const act=t.closest("button[data-act]");
-  if(act){ const row=act.closest(".kb-row"); if(act.dataset.act==="edit") editTab(row.dataset.tab); else deleteTab(row.dataset.tab); return; }
+  // 右側面板：裝備格由這裡處理，清單裡的按鈕由 craft-benchlist.js／craft-harvest.js 自己處理
+  if(t.closest("[data-kslot]")){ slotClick(ev); return; }
+  if(t.closest("#kb-side")) return;
+  // 分頁籤、通貨子分頁
+  if(t.closest("#kb-newtab")){ editTab(null); return; }
+  const chip=t.closest(".kb-chip[data-tab]");
+  if(chip){ setActive(chip.dataset.tab); return; }
   const sub=t.closest(".kb-sub");
   if(sub){ S.curSub=sub.dataset.sub; drawCurrencyPage(); return; }
-  if(t.closest("#kb-newtab")){ editTab(null); return; }
   const fm=t.closest("[data-fmode]");
   if(fm){ try{ localStorage.setItem(FOSSIL_MODE_KEY,fm.dataset.fmode); }catch(e){} E.setFossilMode(fm.dataset.fmode); drawDelvePage();
     flash("多顆化石的增加效果："+(fm.dataset.fmode==="mul"?"相乘":"相加")+"（社群推定值）",true); return; }
   if(t.closest("#kb-zero")){ S.used={}; drawCurrencyPage(); save(); flash("已歸零",true); return; }
   if(t.closest("#kb-undo")){ undo(); return; }
   if(t.closest("#kb-vendor")){ openVendor(); return; }
-  if(t.closest("#kb-craftbench")){
-    if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
-    S.held={kind:"bench"}; drawCursor(); redrawCurPage(); flash("點一件裝備打開工藝台（右鍵或 Esc 取消）",true); return;
-  }
-  if(t.closest("#kb-harvest")){
-    if(S.held&&S.held.kind==="item"){ flash("先把手上的裝備放下"); return; }
-    S.held={kind:"harvest"}; drawCursor(); redrawCurPage(); flash("點一件裝備打開園藝工藝台（右鍵或 Esc 取消）",true); return;
-  }
+  if(t.closest("#kb-craftbench")){ togglePanel("bench"); return; }
+  if(t.closest("#kb-harvest")){ togglePanel("harvest"); return; }
   if(t.closest(".kb-decor")){ const k=t.closest(".kb-decor").dataset.decor||"";
-    flash(/^x:HarvestSeed/.test(k)?"生命力是園藝工藝台的費用：按背包上方的「園藝」，再點一件裝備":"模擬器尚未支援",/^x:HarvestSeed/.test(k)); return; }
+    flash(/^x:HarvestSeed/.test(k)?"生命力是園藝工藝台的費用：按背包上方的「園藝」打開面板":"模擬器尚未支援",/^x:HarvestSeed/.test(k)); return; }
   if(t.closest(".kb-slot")){ flash("按右鍵拿起通貨"); return; }
   if(t.closest("#kb-discard")){ discardHeld(); return; }
   const g=gridOf(t);
@@ -729,8 +786,6 @@ root.addEventListener("click",ev=>{
   const e=entryAt(g,cid,ev.clientX,ev.clientY);
   if(!e) return;
   if(S.held&&S.held.kind==="cur"){ applyCurrency(cid,e,ev.shiftKey); return; }
-  if(S.held&&S.held.kind==="bench"){ S.held=null; drawCursor(); openCraftBench(cid,e); return; }
-  if(S.held&&S.held.kind==="harvest"){ S.held=null; drawCursor(); openHarvest(cid,e); return; }
   if(ev.ctrlKey||ev.metaKey){ quickMove(cid,e); return; }
   pickItem(cid,e);
 });
@@ -740,7 +795,7 @@ function benchVisible(){ return root.offsetParent!==null; }
 document.addEventListener("keydown",ev=>{
   if(!S.ready||!benchVisible()) return;
   if(ev.target.closest&&ev.target.closest("input,textarea,select,[contenteditable]")) return;
-  if(root.querySelector(".kb-veil,.kbl-veil,.khv-veil")) return;
+  if(root.querySelector(".kb-veil,.kbl-veil,.khv-veil,.kb-menu")) return;
   if(ev.key==="Escape"&&S.held){ ev.preventDefault(); dropHeld(); return; }
   if((ev.ctrlKey||ev.metaKey)&&!ev.shiftKey&&(ev.key==="z"||ev.key==="Z")){ ev.preventDefault(); undo(); return; }
   if(ev.key==="Alt"){ ev.preventDefault(); if(!altDown){ altDown=true; refreshTip(); } }
@@ -750,9 +805,9 @@ window.addEventListener("blur",()=>{ if(altDown){ altDown=false; refreshTip(); }
 
 /* ── 分頁 ── */
 function setActive(id){
-  if(!["currency","essence","delve"].includes(id)&&!S.tabs.some(t=>t.id===id)) return;
+  if(!FIXED_TABS.includes(id)&&!S.tabs.some(t=>t.id===id)) return;
   S.active=id; hideTip();
-  drawStrip(); drawPage(); drawList(); save();
+  drawStrip(); drawPage(); save();
 }
 function editTab(id){
   const t=id?S.tabs.find(x=>x.id===id):null;
@@ -760,7 +815,7 @@ function editTab(id){
   const m=modal(`<h3>${t?"改名、選顏色":"新增倉庫頁"}</h3>
     <label class="klab" for="kb-tname">名稱</label>
     <input type="text" id="kb-tname" maxlength="20" value="${esc(t?t.name:"倉庫頁 "+(S.tabs.length+1))}">
-    <div class="klab">顏色（清單那一列的底色）</div>
+    <div class="klab">顏色（分頁籤的底色）</div>
     <div class="kb-colors">${TAB_COLORS.map(c=>`<button type="button" data-c="${c}" style="background:${c}" aria-pressed="${c===color}" aria-label="顏色 ${c}"></button>`).join("")}</div>
     <div class="acts"><button class="kb-btn" data-x>取消</button><button class="kb-btn pri" data-ok>${t?"確定":"建立"}</button></div>`);
   const input=m.el.querySelector("#kb-tname");
@@ -774,53 +829,84 @@ function editTab(id){
     const name=input.value.trim().slice(0,20)||"倉庫頁";
     if(t){ t.name=name; t.color=color; }
     else{ const n={id:uid(),name,color,items:[]}; S.tabs.push(n); S.active=n.id; }
-    m.close(); drawStrip(); drawPage(); drawList(); save();
+    m.close(); drawStrip(); drawPage(); save();
   };
   m.el.querySelector("[data-ok]").onclick=ok;
   m.el.querySelector("[data-x]").onclick=m.close;
   input.onkeydown=e=>{ if(e.key==="Enter") ok(); };
 }
+/* 刪除：空的頁直接刪；有裝備的要先確認（裝備會一起刪掉，「上一步」也找不回來）；至少留一個一般倉庫頁 */
 function deleteTab(id){
   const t=S.tabs.find(x=>x.id===id); if(!t) return;
-  if(t.items.length){
-    const m=modal(`<h3>不能刪除「${esc(t.name)}」</h3><p>請先把物品移走（這一頁還有 ${t.items.length} 件）。</p>
-      <div class="acts"><button class="kb-btn pri" data-x>知道了</button></div>`);
-    m.el.querySelector("[data-x]").onclick=m.close; return;
-  }
-  const m=modal(`<h3>刪除「${esc(t.name)}」？</h3><p>這一頁是空的，刪除後就不見了。</p>
-    <div class="acts"><button class="kb-btn" data-x>取消</button><button class="kb-btn pri" data-ok>刪除</button></div>`);
-  m.el.querySelector("[data-x]").onclick=m.close;
-  m.el.querySelector("[data-ok]").onclick=()=>{
+  if(S.tabs.length<=1){ flash("至少要留一個一般倉庫頁"); return; }
+  const remove=()=>{
     S.tabs.splice(S.tabs.indexOf(t),1);
-    if(S.active===id) S.active=S.tabs[0]?S.tabs[0].id:"currency";
-    m.close(); drawStrip(); drawPage(); drawList(); save();
+    if(S.active===id) S.active=S.tabs[0].id;
+    hideTip(); drawStrip(); drawPage(); save();
   };
+  if(!t.items.length){ remove(); flash("已刪除「"+t.name+"」",true); return; }
+  const m=modal(`<h3>刪除「${esc(t.name)}」？</h3><p>這一頁還有 <b>${t.items.length}</b> 件裝備，刪除後會一起消失，<b>不能用「上一步」找回</b>。</p>
+    <div class="acts"><button class="kb-btn" data-x>取消</button><button class="kb-btn pri" data-ok>刪除這一頁和裡面的裝備</button></div>`);
+  m.el.querySelector("[data-x]").onclick=m.close;
+  m.el.querySelector("[data-ok]").onclick=()=>{ m.close(); remove(); };
 }
-/* 拖曳排序（只有一般倉庫頁可以拖，通貨固定第一個） */
+/* 分頁右鍵選單：改名（和顏色）、刪除。通貨、精髓、化石是固定頁，選單只說明不能改 */
+let menuEl=null;
+function closeMenu(){ if(menuEl){ menuEl.remove(); menuEl=null; document.removeEventListener("mousedown",menuOutside,true); document.removeEventListener("keydown",menuKey,true); } }
+function menuOutside(e){ if(menuEl&&!menuEl.contains(e.target)) closeMenu(); }
+function menuKey(e){ if(e.key==="Escape"){ e.stopPropagation(); e.preventDefault(); closeMenu(); } }
+function tabMenu(id,x,y){
+  closeMenu(); hideTip();
+  const fixed=FIXED_TABS.includes(id), t=S.tabs.find(q=>q.id===id);
+  menuEl=document.createElement("div");
+  menuEl.className="kb-menu"; menuEl.setAttribute("role","menu");
+  menuEl.innerHTML=fixed
+    ?`<div class="kb-menu-note">「${esc({currency:"通貨",essence:"精髓",delve:"化石"}[id])}」是固定頁，不能改名或刪除</div>`
+    :`<div class="kb-menu-note">${esc(t.name)}（${t.items.length} 件）</div>
+      <button type="button" role="menuitem" data-m="edit">改名、選顏色…</button>
+      <button type="button" role="menuitem" data-m="del">刪除${t.items.length?"…":""}</button>`;
+  root.appendChild(menuEl);
+  const w=menuEl.offsetWidth, h=menuEl.offsetHeight;
+  menuEl.style.left=clamp(x,4,innerWidth-w-4)+"px";
+  menuEl.style.top=clamp(y,4,innerHeight-h-4)+"px";
+  menuEl.onclick=e=>{
+    const b=e.target.closest("button[data-m]"); if(!b) return;
+    closeMenu();
+    if(b.dataset.m==="edit") editTab(id); else deleteTab(id);
+  };
+  const first=menuEl.querySelector("button"); if(first) first.focus();
+  document.addEventListener("mousedown",menuOutside,true);
+  document.addEventListener("keydown",menuKey,true);
+}
+window.addEventListener("blur",closeMenu);
+window.addEventListener("scroll",closeMenu,true);
+/* 拖曳分頁籤排序（只有一般倉庫頁可以拖；放在目標的左半邊＝插到它前面，右半邊＝後面） */
 let dragId=null;
-const listEl=$("kb-list");
-listEl.addEventListener("dragstart",e=>{
-  const row=e.target.closest(".kb-row[draggable]"); if(!row) return;
-  dragId=row.dataset.tab; row.classList.add("drag");
+const stripEl=$("kb-strip");
+const dropSide=(chip,e)=>{ const r=chip.getBoundingClientRect(); return e.clientX<r.left+r.width/2?"l":"r"; };
+function clearDrop(){ stripEl.querySelectorAll(".over-l,.over-r").forEach(x=>x.classList.remove("over-l","over-r")); }
+stripEl.addEventListener("dragstart",e=>{
+  const chip=e.target.closest(".kb-chip[draggable]"); if(!chip) return;
+  dragId=chip.dataset.tab; chip.classList.add("drag"); closeMenu(); hideTip();
   e.dataTransfer.effectAllowed="move";
   try{ e.dataTransfer.setData("text/plain",dragId); }catch(x){}
 });
-listEl.addEventListener("dragover",e=>{
+stripEl.addEventListener("dragover",e=>{
   if(!dragId) return;
-  const row=e.target.closest(".kb-row[draggable]");
-  listEl.querySelectorAll(".over").forEach(x=>x.classList.remove("over"));
-  if(row&&row.dataset.tab!==dragId){ e.preventDefault(); row.classList.add("over"); }
+  const chip=e.target.closest(".kb-chip[draggable]");
+  clearDrop();
+  if(chip&&chip.dataset.tab!==dragId){ e.preventDefault(); e.dataTransfer.dropEffect="move"; chip.classList.add("over-"+dropSide(chip,e)); }
 });
-listEl.addEventListener("drop",e=>{
-  const row=e.target.closest(".kb-row[draggable]");
-  if(!dragId||!row) return;
+stripEl.addEventListener("drop",e=>{
+  const chip=e.target.closest(".kb-chip[draggable]");
+  if(!dragId||!chip||chip.dataset.tab===dragId) return;
   e.preventDefault();
-  const from=S.tabs.findIndex(t=>t.id===dragId);
-  const [t]=S.tabs.splice(from,1);
-  S.tabs.splice(S.tabs.findIndex(x=>x.id===row.dataset.tab),0,t);
-  dragId=null; drawStrip(); drawList(); save();
+  const [t]=S.tabs.splice(S.tabs.findIndex(x=>x.id===dragId),1);
+  const i=S.tabs.findIndex(x=>x.id===chip.dataset.tab);
+  S.tabs.splice(dropSide(chip,e)==="l"?i:i+1,0,t);
+  dragId=null; drawStrip(); save();
 });
-listEl.addEventListener("dragend",()=>{ dragId=null; drawList(); });
+stripEl.addEventListener("dragend",()=>{ dragId=null; clearDrop(); drawStrip(); });
 
 /* ── 丟棄 ── */
 function discardHeld(){
